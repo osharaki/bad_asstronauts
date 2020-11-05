@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "546971180899",
+    "firebase_url": "https://bad-asstronauts.firebaseio.com",
+    "project_id": "bad-asstronauts",
+    "storage_bucket": "bad-asstronauts.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546971180899:android:22b3d35c867de4458f7d56",
+        "android_client_info": {
+          "package_name": "com.example.gameOff2020"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546971180899-knidcdb1gs3d4orkkuo84ifp4lduub0k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdVtynkU1IY_uAlFAs8j4jenOBnQ9WIG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546971180899-knidcdb1gs3d4orkkuo84ifp4lduub0k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
