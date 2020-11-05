@@ -1,16 +1,3 @@
-# gameOff2020
+# Game Off 2020 :joystick:
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+*\<insert-name-here\>* is a fast-paced, multiplayer spaceship game where players scour the cosmos for a valuable resource and compete to see who can hoard the most of it on their home planet. All the while, players must also defend their stash from scavenging opponents.
