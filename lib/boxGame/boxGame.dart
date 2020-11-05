@@ -1,5 +1,6 @@
 import "dart:ui";
 import "dart:math";
+import "package:flame/flame.dart";
 import 'package:flame/anchor.dart';
 import "package:flame/game.dart";
 import 'package:flame/gestures.dart';
@@ -8,9 +9,12 @@ import 'package:flame/text_config.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
 import 'package:gameOff2020/utils/math.dart';
+import 'box.dart';
 
 class BoxGame extends Game with TapDetector {
+  Box box;
   Size screenSize;
+  double tileSize;
   String mode = "game";
   String level = "easy";
   int tick = 0;
@@ -22,9 +26,6 @@ class BoxGame extends Game with TapDetector {
   bool playing = false;
   bool started = false;
   var random = Random();
-  var boxSize = Size(50, 50);
-  var boxColor = Colors.white;
-  var boxPosition = Offset(0, 0);
   var textConfig = TextConfig(
     color: Colors.white,
     textAlign: TextAlign.center,
@@ -41,9 +42,22 @@ class BoxGame extends Game with TapDetector {
     textAlign: TextAlign.center,
   );
 
+  BoxGame() {
+    initialize();
+  }
+
+  void initialize() async {
+    resize(await Flame.util.initialDimensions());
+
+    box = Box(
+      this,
+      spawn: true,
+    );
+  }
+
   @override
   void render(Canvas canvas) {
-    // Paint Black BG
+    // Paint BG
     Rect bgRect = Rect.fromLTWH(
       0,
       0,
@@ -55,34 +69,27 @@ class BoxGame extends Game with TapDetector {
 
     canvas.drawRect(bgRect, bgPaint);
 
-    // Paint Box
-    double xScreenCenter = screenSize.width / 2;
-    double yScreenCenter = screenSize.height / 2;
-
-    Rect boxRect = Rect.fromLTWH(
-      xScreenCenter - boxSize.width / 2 + boxPosition.dx,
-      yScreenCenter - boxSize.height / 2 + boxPosition.dy,
-      boxSize.width,
-      boxSize.height,
-    );
-    Paint boxPaint = Paint();
-    boxPaint.color = (playing) ? boxColor : Colors.white;
-
-    canvas.drawRect(boxRect, boxPaint);
+    box.render(canvas);
 
     // Start
     if (!started && !playing) {
       textConfig.render(
         canvas,
         "TAP TO PLAY",
-        Position(xScreenCenter, yScreenCenter - 100),
+        Position(
+          screenSize.width / 2,
+          screenSize.height / 2 - 100,
+        ),
         anchor: Anchor.center,
       );
 
       scoreTextConfig.render(
         canvas,
         counter.toString(),
-        Position(50, screenSize.height - 50),
+        Position(
+          50,
+          screenSize.height - 50,
+        ),
       );
 
       // Playing
@@ -92,13 +99,19 @@ class BoxGame extends Game with TapDetector {
         scoreTextConfig.render(
           canvas,
           counter.toString(),
-          Position(50, screenSize.height - 50),
+          Position(
+            50,
+            screenSize.height - 50,
+          ),
         );
 
         textConfig.render(
           canvas,
           timeRemaining.toString(),
-          Position(screenSize.width - 50, screenSize.height - 50),
+          Position(
+            screenSize.width - 50,
+            screenSize.height - 50,
+          ),
           anchor: Anchor.center,
         );
 
@@ -112,8 +125,7 @@ class BoxGame extends Game with TapDetector {
         // Stop Playing
         playing = false;
 
-        // Position
-        boxPosition = Offset(0, 0);
+        box = Box(this, spawn: true);
       }
 
       // Retry
@@ -122,14 +134,20 @@ class BoxGame extends Game with TapDetector {
         loseTextConfig.render(
           canvas,
           "YOU LOST!",
-          Position(xScreenCenter, yScreenCenter - 125),
+          Position(
+            screenSize.width / 2,
+            screenSize.height / 2 - 125,
+          ),
           anchor: Anchor.center,
         );
       } else {
         loseTextConfig.render(
           canvas,
           "TIME'S UP!",
-          Position(xScreenCenter, yScreenCenter - 125),
+          Position(
+            screenSize.width / 2,
+            screenSize.height / 2 - 125,
+          ),
           anchor: Anchor.center,
         );
       }
@@ -137,14 +155,20 @@ class BoxGame extends Game with TapDetector {
       scoreTextConfig.render(
         canvas,
         "Your Score: $score",
-        Position(xScreenCenter, yScreenCenter - 90),
+        Position(
+          screenSize.width / 2,
+          screenSize.height / 2 - 90,
+        ),
         anchor: Anchor.center,
       );
 
       textConfig.render(
         canvas,
         "TAP TO REPLAY",
-        Position(xScreenCenter, yScreenCenter + 100),
+        Position(
+          screenSize.width / 2,
+          screenSize.height / 2 + 100,
+        ),
         anchor: Anchor.center,
       );
     }
@@ -152,12 +176,13 @@ class BoxGame extends Game with TapDetector {
 
   @override
   void update(double t) {
-    // Implement Update
+    box.update(t);
   }
 
   @override
   void resize(Size size) {
     screenSize = size;
+    tileSize = screenSize.width / 9;
     super.resize(size);
   }
 
@@ -167,55 +192,18 @@ class BoxGame extends Game with TapDetector {
       // Start Game
       started = true;
 
-      double xScreenCenter = screenSize.width / 2;
-      double yScreenCenter = screenSize.height / 2;
+      if (box.rect.contains(details.globalPosition)) {
+        // Box On Tap Down
+        box.onTapDown(details);
 
-      if (details.globalPosition.dx >=
-              xScreenCenter - boxSize.width / 2 + boxPosition.dx &&
-          details.globalPosition.dx <=
-              xScreenCenter + boxSize.width / 2 + boxPosition.dx &&
-          details.globalPosition.dy >=
-              yScreenCenter - boxSize.height / 2 + boxPosition.dy &&
-          details.globalPosition.dy <=
-              yScreenCenter + boxSize.height / 2 + boxPosition.dy) {
-        //
-        if (!playing) {
-          // Score
-          counter = 0;
-
-          // Time
-          tick = 0;
-          time = 0;
-          timeRemaining = timeLimit;
-        }
-
-        // Color
-        boxColor = Color.fromARGB(
-            255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
-
-        // Position
-        boxPosition = Offset(
-            getRandomValueInRange(
-              min: (xScreenCenter.toInt() - boxSize.width ~/ 2) * -1,
-              max: (xScreenCenter.toInt() - boxSize.width ~/ 2),
-            ).toDouble(),
-            getRandomValueInRange(
-              min: (yScreenCenter.toInt() - boxSize.height ~/ 2) * -1,
-              max: (yScreenCenter.toInt() - boxSize.height ~/ 2),
-            ).toDouble());
-
-        // Score
-        counter += 1;
-        score = counter;
-
-        // Start Playing
-        playing = true;
+        // Create New Box
+        box = Box(this);
       } else {
+        // Spawn Box
+        box = Box(this, spawn: true);
+
         // Stop Playing
         playing = false;
-
-        // Position
-        boxPosition = Offset(0, 0);
       }
     }
   }
