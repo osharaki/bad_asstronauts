@@ -1,5 +1,6 @@
 import "dart:ui";
 import "dart:math";
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flame/anchor.dart';
 import "package:flame/game.dart";
 import 'package:flame/gestures.dart';
@@ -170,14 +171,10 @@ class BoxGame extends Game with TapDetector {
       double xScreenCenter = screenSize.width / 2;
       double yScreenCenter = screenSize.height / 2;
 
-      if (details.globalPosition.dx >=
-              xScreenCenter - boxSize.width / 2 + boxPosition.dx &&
-          details.globalPosition.dx <=
-              xScreenCenter + boxSize.width / 2 + boxPosition.dx &&
-          details.globalPosition.dy >=
-              yScreenCenter - boxSize.height / 2 + boxPosition.dy &&
-          details.globalPosition.dy <=
-              yScreenCenter + boxSize.height / 2 + boxPosition.dy) {
+      if (details.globalPosition.dx >= xScreenCenter - boxSize.width / 2 + boxPosition.dx &&
+          details.globalPosition.dx <= xScreenCenter + boxSize.width / 2 + boxPosition.dx &&
+          details.globalPosition.dy >= yScreenCenter - boxSize.height / 2 + boxPosition.dy &&
+          details.globalPosition.dy <= yScreenCenter + boxSize.height / 2 + boxPosition.dy) {
         //
         if (!playing) {
           // Score
@@ -189,9 +186,17 @@ class BoxGame extends Game with TapDetector {
           timeRemaining = timeLimit;
         }
 
+        // testing Firebase request
+        Firestore.instance
+            .collection('test')
+            .snapshots()
+            .listen((data) {
+          print(data.documents[0]['msg']);
+        });
+
         // Color
-        boxColor = Color.fromARGB(
-            255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
+        boxColor =
+            Color.fromARGB(255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
 
         // Position
         boxPosition = Offset(
