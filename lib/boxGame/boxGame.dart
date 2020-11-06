@@ -6,25 +6,23 @@ import "package:flame/game.dart";
 import 'package:flame/gestures.dart';
 import 'package:flame/position.dart';
 import 'package:flame/text_config.dart';
+import 'package:flame/time.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
 import 'package:gameOff2020/utils/math.dart';
+import 'package:vibration/vibration.dart';
 import 'box.dart';
 
 class BoxGame extends Game with TapDetector {
   Box box;
   Size screenSize;
-  double tileSize;
   String mode = "game";
   String level = "easy";
-  int tick = 0;
-  int time = 0;
-  int timeLimit = 30;
-  int timeRemaining = 30;
   int score = 0;
-  int counter = 0;
-  bool playing = false;
+  Timer interval;
+  double timeLimit = 30;
   bool started = false;
+  bool playing = false;
   var random = Random();
   var textConfig = TextConfig(
     color: Colors.white,
@@ -53,6 +51,14 @@ class BoxGame extends Game with TapDetector {
       this,
       spawn: true,
     );
+
+    interval = Timer(
+      1,
+      repeat: true,
+      callback: () => timeLimit -= 1,
+    );
+
+    interval.start();
   }
 
   @override
@@ -72,7 +78,7 @@ class BoxGame extends Game with TapDetector {
     box.render(canvas);
 
     // Start
-    if (!started && !playing) {
+    if (!started) {
       textConfig.render(
         canvas,
         "TAP TO PLAY",
@@ -85,7 +91,7 @@ class BoxGame extends Game with TapDetector {
 
       scoreTextConfig.render(
         canvas,
-        counter.toString(),
+        score.toString(),
         Position(
           50,
           screenSize.height - 50,
@@ -93,12 +99,12 @@ class BoxGame extends Game with TapDetector {
       );
 
       // Playing
-    } else if (started && playing) {
+    } else if (playing) {
       // If Time
-      if (timeRemaining > 0) {
+      if (timeLimit > 0) {
         scoreTextConfig.render(
           canvas,
-          counter.toString(),
+          score.toString(),
           Position(
             50,
             screenSize.height - 50,
@@ -107,18 +113,13 @@ class BoxGame extends Game with TapDetector {
 
         textConfig.render(
           canvas,
-          timeRemaining.toString(),
+          timeLimit.toStringAsFixed(0),
           Position(
             screenSize.width - 50,
             screenSize.height - 50,
           ),
           anchor: Anchor.center,
         );
-
-        // Time
-        tick += 1;
-        time = (tick / 60).floor();
-        timeRemaining = timeLimit - time;
 
         // If Time's Up
       } else {
@@ -129,8 +130,8 @@ class BoxGame extends Game with TapDetector {
       }
 
       // Retry
-    } else if (started && !playing) {
-      if (timeRemaining > 0) {
+    } else if (!playing) {
+      if (timeLimit > 0) {
         loseTextConfig.render(
           canvas,
           "YOU LOST!",
@@ -177,28 +178,39 @@ class BoxGame extends Game with TapDetector {
   @override
   void update(double t) {
     box.update(t);
+
+    if (playing) {
+      interval.update(t);
+    }
   }
 
   @override
   void resize(Size size) {
     screenSize = size;
-    tileSize = screenSize.width / 9;
-    super.resize(size);
   }
 
-  @override
-  void onTapDown(TapDownDetails details) {
-    if (mode == "game") {
+  void onTapDown(TapDownDetails details) async {
+    if (box.rect.contains(details.globalPosition)) {
       // Start Game
-      started = true;
+      if (!started) started = true;
 
-      if (box.rect.contains(details.globalPosition)) {
-        // Box On Tap Down
-        box.onTapDown(details);
+      // Box On Tap Down
+      box.onTapDown(details);
 
-        // Create New Box
-        box = Box(this);
-      } else {
+      // Create New Box
+      box = Box(this);
+    } else {
+      if (playing) {
+        // Vibration
+        if (await Vibration.hasAmplitudeControl()) {
+          Vibration.vibrate(
+            duration: 1000,
+            amplitude: 125,
+          );
+        } else if (await Vibration.hasVibrator()) {
+          Vibration.vibrate(duration: 1000);
+        }
+
         // Spawn Box
         box = Box(this, spawn: true);
 
