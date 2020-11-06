@@ -9,7 +9,7 @@ void main() async {
 
   var flameUtil = Util();
   await flameUtil.fullScreen();
-  await flameUtil.setOrientation(DeviceOrientation.landscapeLeft);
+  await flameUtil.setLandscape();
 
   var boxGame = BoxGame();
   var tapper = TapGestureRecognizer();

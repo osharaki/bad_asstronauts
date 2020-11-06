@@ -2,6 +2,7 @@ import 'dart:math';
 import "boxGame.dart";
 import "../utils/math.dart";
 import "package:flutter/material.dart";
+import "package:vibration/vibration.dart";
 
 class Box {
   Rect rect;
@@ -51,23 +52,29 @@ class Box {
 
   void update(double t) {}
 
-  void onTapDown(TapDownDetails details) {
+  void onTapDown(TapDownDetails details) async {
     if (!game.playing) {
+      // Start Playing
+      game.playing = true;
+
       // Score
-      game.counter = 0;
-      game.score = game.counter;
+      game.score = 0;
 
       // Time
-      game.tick = 0;
-      game.time = 0;
-      game.timeRemaining = game.timeLimit;
+      game.timeLimit = 30;
     } else {
       // Score
-      game.counter += 1;
-      game.score = game.counter;
+      game.score += 1;
     }
 
-    // Start Playing
-    game.playing = true;
+    // Vibration
+    if (await Vibration.hasAmplitudeControl()) {
+      Vibration.vibrate(
+        duration: 25,
+        amplitude: 50,
+      );
+    } else if (await Vibration.hasVibrator()) {
+      Vibration.vibrate(duration: 25);
+    }
   }
 }

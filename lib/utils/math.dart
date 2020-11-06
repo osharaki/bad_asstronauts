@@ -11,3 +11,16 @@ int getRandomValueInRange({
 
   return randomValue;
 }
+
+double mapValueFromRangeToRange({
+  @required dynamic aValue,
+  @required dynamic aStart,
+  @required dynamic aEnd,
+  @required dynamic bStart,
+  @required dynamic bEnd,
+}) {
+  double slope = (bEnd - bStart) / (aEnd - aStart);
+  double mappedValue = bStart + (slope * (aValue - aStart));
+
+  return mappedValue;
+}
