@@ -10,7 +10,7 @@ class Spaceship {
   double size;
   Sprite sprite;
   bool move = false;
-  double speed = 250;
+  double speed = 500;
   double multiplier = 1;
   double aspectRatio = 1;
   final JoystickGame game;

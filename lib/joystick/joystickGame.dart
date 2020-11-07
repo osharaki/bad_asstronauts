@@ -34,6 +34,19 @@ class JoystickGame extends Game {
 
   @override
   void render(Canvas canvas) {
+    //Render Background
+    var bgRect = Rect.fromLTWH(
+      0,
+      0,
+      screenSize.width,
+      screenSize.height,
+    );
+
+    var bgPaint = Paint();
+    bgPaint.color = Colors.cyan[900];
+
+    canvas.drawRect(bgRect, bgPaint);
+
     // Sync Components' render method with Game's
     spaceship.render(canvas);
     joystick.render(canvas);
