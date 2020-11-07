@@ -1,8 +1,8 @@
 import "package:flame/util.dart";
 import 'package:flutter/material.dart';
-import "package:flutter/services.dart";
 import "package:flutter/gestures.dart";
 import 'package:gameOff2020/boxGame/boxGame.dart';
+import 'package:gameOff2020/firebaseInit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,5 +15,5 @@ void main() async {
   var tapper = TapGestureRecognizer();
   tapper.onTapDown = boxGame.onTapDown;
 
-  runApp(boxGame.widget);
+  runApp(FirebaseInit(boxGame));
 }
