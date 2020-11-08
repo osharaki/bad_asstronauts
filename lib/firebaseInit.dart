@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gameOff2020/boxGame/boxGame.dart';
@@ -26,6 +27,7 @@ class FirebaseInit extends StatelessWidget {
         }
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
+          FirebaseFunctions.instance.useFunctionsEmulator(origin: 'http://localhost:5001');
           return this.game.widget;
         }
 
