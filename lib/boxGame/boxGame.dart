@@ -47,7 +47,7 @@ class BoxGame extends Game with TapDetector {
 
   void initialize() async {
     resize(await Flame.util.initialDimensions());
-
+    // TODO: add box to a stream builder that subscribes to a position field in the database
     box = Box(
       this,
       spawn: true,

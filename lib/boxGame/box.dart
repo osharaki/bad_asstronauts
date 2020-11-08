@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:gameOff2020/boxGame/services/services.dart';
+
 import "boxGame.dart";
 import "../utils/math.dart";
 import "package:flutter/material.dart";
@@ -53,6 +55,10 @@ class Box {
   void update(double t) {}
 
   void onTapDown(TapDownDetails details) async {
+    // TODO: Update firestore position field every time player taps box
+    // updateBoxPos(
+    //     screenHeight: (game.screenSize.height).toInt(),
+    //     screenWidth: (game.screenSize.width).toInt());
     if (!game.playing) {
       // Start Playing
       game.playing = true;
