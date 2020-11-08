@@ -23,13 +23,13 @@ exports.addMessage = functions.https.onRequest(async (req, res) => {
 });
 
 exports.updateBoxPosition = functions.https.onCall((data) => {
-    const screenHeight = data.screenHeight as string;
-    const screenWidth = data.screenWidth as string;
+    const screenHeight = data.screenHeight;
+    const screenWidth = data.screenWidth;
     const size = 50;
 
-    const posX = Math.random() * (parseInt(screenWidth) - size);
-    const posY = Math.random() * (parseInt(screenHeight) - size);
+    const posX = Math.random() * (screenWidth - size);
+    const posY = Math.random() * (screenHeight - size);
 
     // res.json({ posX: posX, posY: posY })
-    return { posX: posX, posY: posY }
+    return { posX: posX, posY: posY, size: size }
 })
