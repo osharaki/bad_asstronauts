@@ -24,6 +24,8 @@ class Joystick {
   bool dragging = false;
   Offset dragPosition;
 
+  Offset nextOffset = Offset(0, 0);
+
   Joystick({@required this.game}) {
     initialize();
   }
@@ -78,7 +80,14 @@ class Joystick {
       distance = (distance < baseRadius) ? distance : baseRadius;
 
       // Use distance as multiplier for spaceship speed
-      game.spaceship.multiplier = distance / baseRadius;
+      double multiplier = distance / baseRadius;
+
+      // Next Frame's Offset
+      // Same as getting Drag Radial Position, but (multiplier * speed * t) is our radius
+      nextOffset = Offset(
+        (multiplier * game.spaceship.speed * t) * cos(radAngle),
+        (multiplier * game.spaceship.speed * t) * sin(radAngle),
+      );
 
       // Position on Joystick circle, to prevent knob from going outside bounds
       var knobRadialPosition = Offset(
@@ -99,6 +108,7 @@ class Joystick {
       // Shift Knob to Joystick center
       Offset difference = dragPosition - knobRect.center;
       knobRect = knobRect.shift(difference);
+      nextOffset = Offset(0, 0);
     }
   }
 
@@ -111,7 +121,6 @@ class Joystick {
     // If drag starts on Knob
     if (knobRect.contains(details.globalPosition)) {
       dragging = true;
-      game.spaceship.move = true;
     }
   }
 
@@ -125,7 +134,6 @@ class Joystick {
   void onPanEnd(DragEndDetails details) {
     // Stop moving Spaceship and return Joystick to center
     dragging = false;
-    game.spaceship.move = false;
     dragPosition = joystickCenter;
   }
 }
