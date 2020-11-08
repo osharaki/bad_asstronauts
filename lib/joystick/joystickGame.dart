@@ -1,7 +1,10 @@
 import 'package:flame/flame.dart';
 import "package:flame/game.dart";
 import 'package:flutter/material.dart';
+import 'package:gameOff2020/joystick/enemy.dart';
+import 'package:gameOff2020/joystick/planet.dart';
 import 'package:gameOff2020/joystick/spaceship.dart';
+import 'package:gameOff2020/joystick/world.dart';
 
 import 'joystick.dart';
 
@@ -9,6 +12,10 @@ class JoystickGame extends Game {
   // Instance Variable
   Size screenSize;
   double tileSize;
+
+  World world;
+  Enemy enemy;
+  Planet planet;
   Joystick joystick;
   Spaceship spaceship;
 
@@ -23,6 +30,9 @@ class JoystickGame extends Game {
     // Initialize Components
     spaceship = Spaceship(game: this);
     joystick = Joystick(game: this);
+    world = World(game: this);
+    enemy = Enemy(game: this);
+    planet = Planet(game: this);
   }
 
   @override
@@ -30,6 +40,9 @@ class JoystickGame extends Game {
     // Sync Components' update method with Game's
     spaceship.update(t);
     joystick.update(t);
+    world.update(t);
+    enemy.update(t);
+    planet.update(t);
   }
 
   @override
@@ -48,6 +61,9 @@ class JoystickGame extends Game {
     canvas.drawRect(bgRect, bgPaint);
 
     // Sync Components' render method with Game's
+    world.render(canvas);
+    planet.render(canvas);
+    enemy.render(canvas);
     spaceship.render(canvas);
     joystick.render(canvas);
   }
