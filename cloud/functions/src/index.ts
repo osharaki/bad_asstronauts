@@ -22,7 +22,7 @@ exports.addMessage = functions.https.onRequest(async (req, res) => {
     res.json({ result: `Message with ID: ${writeResult.id} added.` });
 });
 
-exports.updateBoxPosition = functions.https.onCall((data) => {
+exports.updateBoxPosition = functions.https.onCall(async (data) => {
     const screenHeight = data.screenHeight;
     const screenWidth = data.screenWidth;
     const size = 50;
@@ -30,6 +30,6 @@ exports.updateBoxPosition = functions.https.onCall((data) => {
     const posX = Math.random() * (screenWidth - size);
     const posY = Math.random() * (screenHeight - size);
 
-    // res.json({ posX: posX, posY: posY })
-    return { posX: posX, posY: posY, size: size }
-})
+    await admin.firestore().collection('game').doc('position').set({ posX: posX, posY: posY, size: size });
+    console.log('Position updated successfully');
+});
