@@ -54,14 +54,7 @@ class Box {
         .doc('position')
         .snapshots()
         .listen((documentSnapshot) {
-      if (documentSnapshot.exists) {
-        print('✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️');
-        print(documentSnapshot.data());
-        updatePosition(positionFromServer: documentSnapshot.data());
-      } else {
-        print('❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗');
-        print('Document does not exit');
-      }
+      if (documentSnapshot.exists) updatePosition(positionFromServer: documentSnapshot.data());
     });
   }
 
