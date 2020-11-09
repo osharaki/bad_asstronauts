@@ -22,14 +22,25 @@ exports.addMessage = functions.https.onRequest(async (req, res) => {
     res.json({ result: `Message with ID: ${writeResult.id} added.` });
 });
 
+exports.startGame = functions.https.onCall(async () => {
+    await admin.firestore().collection('game').doc('state').set({ started: true });
+    console.log('Started game successfully');
+})
+
+exports.endGame = functions.https.onCall(async () => {
+    await admin.firestore().collection('game').doc('state').set({ started: false });
+    await admin.firestore().collection('box').doc('position').set({ posX: 50, posY: 50 });
+    console.log('Ended game successfully');
+})
+
 exports.updateBoxPosition = functions.https.onCall(async (data) => {
-    const screenHeight = data.screenHeight;
-    const screenWidth = data.screenWidth;
-    const size = 50;
+    // const screenHeight = data.screenHeight;
+    // const screenWidth = data.screenWidth;
+    const size = 10; //as percentage of height
 
-    const posX = Math.random() * (screenWidth - size);
-    const posY = Math.random() * (screenHeight - size);
+    const posX = Math.random() * 100;
+    const posY = Math.random() * 100;
 
-    await admin.firestore().collection('game').doc('position').set({ posX: posX, posY: posY, size: size });
+    await admin.firestore().collection('box').doc('position').set({ posX: Math.floor(posX), posY: Math.floor(posY), size: size });
     console.log('Position updated successfully');
 });
