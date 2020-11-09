@@ -17,6 +17,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class BoxGame extends Game with TapDetector {
   Box box;
   Size screenSize;
+  double tileSize;
   String mode = "game";
   String level = "easy";
   int score = 0;
@@ -187,6 +188,7 @@ class BoxGame extends Game with TapDetector {
   @override
   void resize(Size size) {
     screenSize = size;
+    tileSize = screenSize.height / 9;
   }
 
   void onTapDown(TapDownDetails details) async {
@@ -213,8 +215,9 @@ class BoxGame extends Game with TapDetector {
           Vibration.vibrate(duration: 1000);
         }
 
-        // Spawn Box
+        // Reset Box Position & Color
         box.updatePosition(reset: true);
+        box.paint.color = Colors.white;
 
         // Stop Playing
         playing = false;

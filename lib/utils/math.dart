@@ -24,3 +24,29 @@ double mapValueFromRangeToRange({
 
   return mappedValue;
 }
+
+dynamic mapValue(
+    {@required dynamic aValue,
+    @required dynamic bValue,
+    @required dynamic bMatch}) {
+  dynamic mappedValue = (aValue * bMatch) / bValue;
+
+  return mappedValue;
+}
+
+dynamic getValueInRangeFromPercent({
+  @required dynamic min,
+  @required dynamic max,
+  @required dynamic percent,
+}) {
+  dynamic range = max - min;
+
+  dynamic value = mapValue(
+        aValue: range,
+        bValue: 100,
+        bMatch: percent,
+      ) +
+      min;
+
+  return value;
+}
