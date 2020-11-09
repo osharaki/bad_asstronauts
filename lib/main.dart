@@ -1,10 +1,11 @@
 import 'package:flame/flame.dart';
 import "package:flame/util.dart";
 import 'package:flutter/material.dart';
-import "package:flutter/services.dart";
 import "package:flutter/gestures.dart";
+import 'package:flutter/services.dart';
 import 'package:gameOff2020/boxGame/boxGame.dart';
 import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:gameOff2020/firebaseInit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
