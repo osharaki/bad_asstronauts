@@ -50,10 +50,6 @@ class Box {
     // Set Default Paint Color
     paint.color = Colors.white;
 
-    /*firestore.collection('game').get().then((QuerySnapshot querySnapshot) {
-      print('!!!!!!!!!!!!!!!!');
-      print(querySnapshot);
-    }).catchError(() => print('Firestore error!!!!!!!!')); */
     FirebaseFirestore.instance.collection('game').doc('position').snapshots().listen((documentSnapshot) {
       if (documentSnapshot.exists) {
         print('✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️');
@@ -121,26 +117,6 @@ class Box {
 
     return position;
   }
-
-  // void updatePosition({bool reset = false}) {
-  //   if (reset) {
-  //     position = Offset(
-  //       (game.screenSize.width / 2) - (size / 2),
-  //       (game.screenSize.height / 2) - (size / 2),
-  //     );
-  //   } else {
-  //     position = Offset(
-  //       getRandomValueInRange(
-  //         min: 0,
-  //         max: (game.screenSize.width - size).toInt(),
-  //       ).toDouble(),
-  //       getRandomValueInRange(
-  //         min: 0,
-  //         max: (game.screenSize.height - size).toInt(),
-  //       ).toDouble(),
-  //     );
-  //   }
-  // }
 
   void updatePosition({bool reset = false, dynamic positionFromServer}) {
     if (reset) {
