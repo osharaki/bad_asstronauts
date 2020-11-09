@@ -16,6 +16,7 @@ import 'box.dart';
 class BoxGame extends Game with TapDetector {
   Box box;
   Size screenSize;
+  double tileSize;
   String mode = "game";
   String level = "easy";
   int score = 0;
@@ -187,6 +188,7 @@ class BoxGame extends Game with TapDetector {
   @override
   void resize(Size size) {
     screenSize = size;
+    tileSize = screenSize.height / 9;
   }
 
   void onTapDown(TapDownDetails details) async {

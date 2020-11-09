@@ -8,10 +8,13 @@ class Box {
   Rect rect;
   Paint paint;
   double size = 50;
+  double sizeMultiplier;
   final BoxGame game;
   var random = Random();
 
   Box(this.game, {bool spawn = false}) {
+    size = game.tileSize * sizeMultiplier;
+
     paint = Paint();
 
     if (spawn) {

@@ -59,7 +59,7 @@ class JoystickGame extends Game {
     screenSize = size;
 
     // Get Tile Size to maintain uniform component size on all devices
-    tileSize = size.height / 9;
+    tileSize = screenSize.height / 9; // 16:9
   }
 
   // Sync Gestures with Components' Gesture methods
