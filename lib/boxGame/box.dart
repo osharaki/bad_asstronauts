@@ -50,10 +50,20 @@ class Box {
     // Set Default Paint Color
     paint.color = Colors.white;
 
-    // FirebaseFirestore.instance
-    //     .collection('game/position')
-    //     .snapshots()
-    //     .listen((data) => updateRectPos(data));
+    /*firestore.collection('game').get().then((QuerySnapshot querySnapshot) {
+      print('!!!!!!!!!!!!!!!!');
+      print(querySnapshot);
+    }).catchError(() => print('Firestore error!!!!!!!!')); */
+    FirebaseFirestore.instance.collection('game').doc('position').snapshots().listen((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        print('✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️');
+        print(documentSnapshot);
+      } else {
+        print('❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗');
+        print('Document does not exits');
+      }
+      // updatePosition(positionFromServer: data);
+    });
   }
 
   void render(Canvas canvas) {
@@ -82,11 +92,9 @@ class Box {
     ).toDouble();
 
     // Ensure Box bounds will not be outide of screen
-    if ((randomWidthPercent + widthRatio) > 100)
-      randomWidthPercent -= widthRatio;
+    if ((randomWidthPercent + widthRatio) > 100) randomWidthPercent -= widthRatio;
 
-    if ((randomHeightPercent + heightRatio) > 100)
-      randomHeightPercent -= heightRatio;
+    if ((randomHeightPercent + heightRatio) > 100) randomHeightPercent -= heightRatio;
 
     // Set final percent position
     Offset positionPercent = Offset(randomWidthPercent, randomHeightPercent);
@@ -134,7 +142,7 @@ class Box {
   //   }
   // }
 
-  void updatePosition({bool reset = false}) {
+  void updatePosition({bool reset = false, dynamic positionFromServer}) {
     if (reset) {
       // Reset to default center position
       position = center;
@@ -146,10 +154,11 @@ class Box {
   }
 
   void onTapDown(TapDownDetails details) async {
-    // TODO: Update firestore position field every time player taps box
-    // updateBoxPos(
-    //     screenHeight: (game.screenSize.height).toInt(),
-    //     screenWidth: (game.screenSize.width).toInt());
+    // Update firestore position field every time player taps box
+    triggerBoxPosUpdate(
+      screenHeight: (game.screenSize.height).toInt(),
+      screenWidth: (game.screenSize.width).toInt(),
+    );
     if (!game.playing) {
       // Start Playing
       game.playing = true;
@@ -190,8 +199,8 @@ class Box {
     rect = Rect.fromLTWH(
       newPos.data['posX'],
       newPos.data['posY'],
-      newPos.data[size],
-      newPos.data[size],
+      newPos.data['size'],
+      newPos.data['size'],
     );
   }
 }

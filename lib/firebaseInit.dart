@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ class FirebaseInit extends StatelessWidget {
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
           FirebaseFunctions.instance.useFunctionsEmulator(origin: 'http://localhost:5001');
+          FirebaseFirestore.instance.settings = Settings(host: '10.0.2.2:8080', sslEnabled: false);
           var boxGame = BoxGame();
           var tapper = TapGestureRecognizer();
           tapper.onTapDown = boxGame.onTapDown;
