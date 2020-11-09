@@ -49,7 +49,9 @@ class BoxGame extends Game with TapDetector {
   }
 
   void initialize() async {
+    print('1. resizing!!!!!!!!!!!!!!!!!!!!!!!!!!');
     resize(await Flame.util.initialDimensions());
+    print('2. initializing box!!!!!!!!!!!!!!!!!!!!!!!!!!');
     box = Box(
       game: this,
     );
@@ -79,6 +81,9 @@ class BoxGame extends Game with TapDetector {
 
     if(box != null)
       box.render(canvas);
+    print('3. rendering box!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    // box.render(canvas);
+
 
     // Start
     if (!started) {
