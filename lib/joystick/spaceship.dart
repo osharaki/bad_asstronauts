@@ -6,14 +6,16 @@ import "joystickGame.dart";
 
 class Spaceship {
   // Instance Variables
+  final JoystickGame game;
+
   Rect rect;
   double size;
   Sprite sprite;
   bool move = false;
   double speed = 500;
+  Offset worldPosition;
   double multiplier = 1;
-  double aspectRatio = 1;
-  final JoystickGame game;
+  double sizeMultiplier = 1;
   double lastMoveRadAngle = 0;
 
   Spaceship({@required this.game}) {
@@ -22,7 +24,7 @@ class Spaceship {
 
   void initialize() {
     // Obtain Spaceship size from device's Tile Size * Spaceship's Aspect Ratio
-    size = game.tileSize * aspectRatio;
+    size = game.tileSize * sizeMultiplier;
 
     // Create Rect at Screen Center to contain Spaceship
     rect = Rect.fromLTWH(
@@ -36,26 +38,7 @@ class Spaceship {
     sprite = Sprite("spaceship.png");
   }
 
-  void update(double t) {
-    // If Joystick sets Spaceship to moving (based on dragging)
-    if (move) {
-      // Same as getting Drag Radial Position for Joystick, but (multiplier * speed * t) is our radius
-      var nextPosition = Offset(
-        (multiplier * speed * t) * cos(lastMoveRadAngle),
-        (multiplier * speed * t) * sin(lastMoveRadAngle),
-      );
-
-      // Spaceship's offset from it's next position
-      var difference = Offset(
-            rect.center.dx + nextPosition.dx,
-            rect.center.dy + nextPosition.dy,
-          ) -
-          rect.center;
-
-      // Shift Spaceship to it's next position
-      rect = rect.shift(difference);
-    }
-  }
+  void update(double t) {}
 
   // Honestly, I don't fully understand what's going on here
   void render(Canvas canvas) {

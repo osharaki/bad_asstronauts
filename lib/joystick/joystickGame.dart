@@ -1,14 +1,20 @@
 import 'package:flame/flame.dart';
 import "package:flame/game.dart";
 import 'package:flutter/material.dart';
-import 'package:gameOff2020/joystick/spaceship.dart';
 
+import 'enemy.dart';
+import 'planet.dart';
+import 'world.dart';
+import 'server.dart';
 import 'joystick.dart';
+import 'spaceship.dart';
 
 class JoystickGame extends Game {
   // Instance Variable
   Size screenSize;
   double tileSize;
+
+  Server server;
   Joystick joystick;
   Spaceship spaceship;
 
@@ -21,6 +27,12 @@ class JoystickGame extends Game {
     resize(await Flame.util.initialDimensions());
 
     // Initialize Components
+    server = Server();
+    server.components = [
+      World(game: this),
+      Planet(game: this),
+      Enemy(game: this),
+    ];
     spaceship = Spaceship(game: this);
     joystick = Joystick(game: this);
   }
@@ -28,26 +40,15 @@ class JoystickGame extends Game {
   @override
   void update(double t) {
     // Sync Components' update method with Game's
+    server.update(t);
     spaceship.update(t);
     joystick.update(t);
   }
 
   @override
   void render(Canvas canvas) {
-    //Render Background
-    var bgRect = Rect.fromLTWH(
-      0,
-      0,
-      screenSize.width,
-      screenSize.height,
-    );
-
-    var bgPaint = Paint();
-    bgPaint.color = Colors.cyan[900];
-
-    canvas.drawRect(bgRect, bgPaint);
-
     // Sync Components' render method with Game's
+    server.render(canvas);
     spaceship.render(canvas);
     joystick.render(canvas);
   }
@@ -58,7 +59,7 @@ class JoystickGame extends Game {
     screenSize = size;
 
     // Get Tile Size to maintain uniform component size on all devices
-    tileSize = size.height / 9;
+    tileSize = screenSize.height / 9; // 16:9
   }
 
   // Sync Gestures with Components' Gesture methods
