@@ -10,28 +10,59 @@ import "package:vibration/vibration.dart";
 class Box {
   Rect rect;
   Paint paint;
+  Offset position;
   double size = 50;
   final BoxGame game;
   var random = Random();
 
-  Box(this.game, {bool spawn = false}) {
+  Box({@required this.game}) {
+    updatePosition(reset: true);
+
+    rect = Rect.fromLTWH(
+      position.dx,
+      position.dy,
+      size,
+      size,
+    );
+
     paint = Paint();
 
-    if (spawn) {
-      rect = Rect.fromLTWH(
+    paint.color = Colors.white;
+
+    // FirebaseFirestore.instance
+    //     .collection('game/position')
+    //     .snapshots()
+    //     .listen((data) => updateRectPos(data));
+
+    paint.color = Color.fromARGB(
+      255,
+      random.nextInt(255),
+      random.nextInt(255),
+      random.nextInt(255),
+    );
+  }
+
+  void render(Canvas canvas) {
+    canvas.drawRect(rect, paint);
+  }
+
+  void update(double t) {
+    rect = Rect.fromLTWH(
+      position.dx,
+      position.dy,
+      size,
+      size,
+    );
+  }
+
+  void updatePosition({bool reset = false}) {
+    if (reset) {
+      position = Offset(
         (game.screenSize.width / 2) - (size / 2),
         (game.screenSize.height / 2) - (size / 2),
-        size,
-        size,
       );
-
-      paint.color = Colors.white;
     } else {
-      FirebaseFirestore.instance
-          .collection('game/position')
-          .snapshots()
-          .listen((data) => updateRectPos(data));
-      /* rect = Rect.fromLTWH(
+      position = Offset(
         getRandomValueInRange(
           min: 0,
           max: (game.screenSize.width - size).toInt(),
@@ -40,24 +71,9 @@ class Box {
           min: 0,
           max: (game.screenSize.height - size).toInt(),
         ).toDouble(),
-        size,
-        size,
-      ); */
-
-      paint.color = Color.fromARGB(
-        255,
-        random.nextInt(255),
-        random.nextInt(255),
-        random.nextInt(255),
       );
     }
   }
-
-  void render(Canvas canvas) {
-    canvas.drawRect(rect, paint);
-  }
-
-  void update(double t) {}
 
   void onTapDown(TapDownDetails details) async {
     // TODO: Update firestore position field every time player taps box
@@ -65,7 +81,6 @@ class Box {
     //     screenHeight: (game.screenSize.height).toInt(),
     //     screenWidth: (game.screenSize.width).toInt());
     if (!game.playing) {
-
       // Start Playing
       game.playing = true;
 
@@ -88,6 +103,8 @@ class Box {
     } else if (await Vibration.hasVibrator()) {
       Vibration.vibrate(duration: 25);
     }
+
+    updatePosition();
   }
 
   void updateRectPos(newPos) {

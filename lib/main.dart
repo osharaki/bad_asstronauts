@@ -15,5 +15,5 @@ void main() async {
   var tapper = TapGestureRecognizer();
   tapper.onTapDown = boxGame.onTapDown;
 
-  runApp(FirebaseInit(boxGame));
+  runApp(boxGame.widget);
 }

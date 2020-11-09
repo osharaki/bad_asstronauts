@@ -1,17 +1,17 @@
 import "dart:ui";
+import 'box.dart';
 import "dart:math";
+import 'package:flame/time.dart';
+import "package:flame/game.dart";
 import "package:flame/flame.dart";
 import 'package:flame/anchor.dart';
-import "package:flame/game.dart";
 import 'package:flame/gestures.dart';
 import 'package:flame/position.dart';
-import 'package:flame/text_config.dart';
-import 'package:flame/time.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
-import 'package:gameOff2020/utils/math.dart';
+import 'package:flame/text_config.dart';
 import 'package:vibration/vibration.dart';
-import 'box.dart';
+import 'package:gameOff2020/utils/math.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BoxGame extends Game with TapDetector {
@@ -49,8 +49,7 @@ class BoxGame extends Game with TapDetector {
     resize(await Flame.util.initialDimensions());
     // TODO: add box to a stream builder that subscribes to a position field in the database
     box = Box(
-      this,
-      spawn: true,
+      game: this,
     );
 
     interval = Timer(
@@ -127,7 +126,7 @@ class BoxGame extends Game with TapDetector {
         // Stop Playing
         playing = false;
 
-        box = Box(this, spawn: true);
+        box.updatePosition(reset: true);
       }
 
       // Retry
@@ -198,13 +197,10 @@ class BoxGame extends Game with TapDetector {
       // Box On Tap Down
       box.onTapDown(details);
 
-      // Create New Box
-      box = Box(this);
-
       // testing Firebase request
-      Firestore.instance.collection('test').snapshots().listen((data) {
-        print(data.documents[0]['msg']);
-      });
+      // Firestore.instance.collection('test').snapshots().listen((data) {
+      //   print(data.documents[0]['msg']);
+      // });
     } else {
       if (playing) {
         // Vibration
@@ -218,7 +214,7 @@ class BoxGame extends Game with TapDetector {
         }
 
         // Spawn Box
-        box = Box(this, spawn: true);
+        box.updatePosition(reset: true);
 
         // Stop Playing
         playing = false;
