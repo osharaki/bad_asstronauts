@@ -50,8 +50,8 @@ class Box {
     // Set Default Paint Color
     paint.color = Colors.white;
 
-    /* FirebaseFirestore.instance
-        .collection('game')
+    FirebaseFirestore.instance
+        .collection('box')
         .doc('position')
         .snapshots()
         .listen((documentSnapshot) {
@@ -61,9 +61,9 @@ class Box {
         updatePosition(positionFromServer: documentSnapshot.data());
       } else {
         print('❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗');
-        print('Document does not exits');
+        print('Document does not exit');
       }
-    }); */
+    });
   }
 
   void render(Canvas canvas) {
@@ -122,27 +122,19 @@ class Box {
     return position;
   }
 
-  void updatePosition({bool reset = false, dynamic positionFromServer}) {
-    if (reset) {
-      // Reset to default center position
-      position = center;
-    } else {
-      // Get Screen position from Percent position
-      var positionPercent = getPositionPercent();
-      position = convertPercentToPosition(positionPercent);
-    }
+  void updatePosition({dynamic positionFromServer}) {
+    // Get Screen position from Percent position
+    /* var positionPercent = getPositionPercent();
+      position = convertPercentToPosition(positionPercent); */
+    position = convertPercentToPosition(
+        Offset(positionFromServer['posX'].toDouble(), positionFromServer['posY'].toDouble()));
   }
 
   void onTapDown(TapDownDetails details) async {
-    // Update firestore position field every time player taps box
-    triggerBoxPosUpdate(
-      screenHeight: (game.screenSize.height).toInt(),
-      screenWidth: (game.screenSize.width).toInt(),
-    );
     if (!game.playing) {
       // Start Playing
       game.playing = true;
-
+      triggerGameStart();
       // Score
       game.score = 0;
 
@@ -164,7 +156,12 @@ class Box {
     }
 
     // Randomize Position
-    updatePosition();
+    // updatePosition();
+    // Update firestore position field every time player taps box
+    triggerBoxPosUpdate(
+      screenHeight: (game.screenSize.height).toInt(),
+      screenWidth: (game.screenSize.width).toInt(),
+    );
 
     // Randomize Paint Color
     paint.color = Color.fromARGB(
@@ -172,15 +169,6 @@ class Box {
       random.nextInt(255),
       random.nextInt(255),
       random.nextInt(255),
-    );
-  }
-
-  void updateRectPos(newPos) {
-    rect = Rect.fromLTWH(
-      newPos.data['posX'],
-      newPos.data['posY'],
-      newPos.data['size'],
-      newPos.data['size'],
     );
   }
 }

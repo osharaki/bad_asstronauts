@@ -10,6 +10,19 @@ Future<HttpsCallableResult<dynamic>> triggerBoxPosUpdate(
   HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('updateBoxPosition');
   return callable({"screenWidth": screenWidth, "screenHeight": screenHeight});
 }
+
+Future<HttpsCallableResult<dynamic>> triggerGameStart() async {
+  print('Starting game..');
+  HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('startGame');
+  return callable();
+}
+
+Future<HttpsCallableResult<dynamic>> triggerGameEnd() async {
+  print('End game..');
+  HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('endGame');
+  return callable();
+}
+
 /* 
 Future<void> updateUser() {
   return game

@@ -1,4 +1,6 @@
 import "dart:ui";
+import 'package:gameOff2020/boxGame/services/services.dart';
+
 import 'box.dart';
 import "dart:math";
 import 'package:flame/time.dart';
@@ -126,8 +128,8 @@ class BoxGame extends Game with TapDetector {
       } else {
         // Stop Playing
         playing = false;
-
-        box.updatePosition(reset: true);
+        triggerGameEnd();
+        // box.updatePosition(reset: true);
       }
 
       // Retry
@@ -216,11 +218,12 @@ class BoxGame extends Game with TapDetector {
         }
 
         // Reset Box Position & Color
-        box.updatePosition(reset: true);
+        // box.updatePosition(reset: true);
         box.paint.color = Colors.white;
 
         // Stop Playing
         playing = false;
+        triggerGameEnd();
       }
     }
   }
