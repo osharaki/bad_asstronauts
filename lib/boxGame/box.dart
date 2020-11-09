@@ -50,16 +50,20 @@ class Box {
     // Set Default Paint Color
     paint.color = Colors.white;
 
-    FirebaseFirestore.instance.collection('game').doc('position').snapshots().listen((documentSnapshot) {
+    /* FirebaseFirestore.instance
+        .collection('game')
+        .doc('position')
+        .snapshots()
+        .listen((documentSnapshot) {
       if (documentSnapshot.exists) {
         print('✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️');
-        print(documentSnapshot);
+        print(documentSnapshot.data());
+        updatePosition(positionFromServer: documentSnapshot.data());
       } else {
         print('❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗❗');
         print('Document does not exits');
       }
-      // updatePosition(positionFromServer: data);
-    });
+    }); */
   }
 
   void render(Canvas canvas) {
