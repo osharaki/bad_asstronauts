@@ -25,7 +25,6 @@ class Box {
   Box({@required this.game}) {
     // Derive box size from screen tile size
     size = game.tileSize * sizeMultiplier;
-
     // Get box center position (default)
     center = Offset(
       (game.screenSize.width / 2) - (size / 2),
@@ -71,12 +70,7 @@ class Box {
   }
 
   void update(double t) {
-    rect = Rect.fromLTWH(
-      position.dx,
-      position.dy,
-      size,
-      size,
-    );
+    rect = Rect.fromLTWH(position.dx, position.dy, size, size);
   }
 
   Offset getPositionPercent() {
@@ -91,7 +85,7 @@ class Box {
       max: 100,
     ).toDouble();
 
-    // Ensure Box bounds will not be outide of screen
+    // Ensure Box bounds will not be outside of screen
     if ((randomWidthPercent + widthRatio) > 100) randomWidthPercent -= widthRatio;
 
     if ((randomHeightPercent + heightRatio) > 100) randomHeightPercent -= heightRatio;
@@ -116,6 +110,11 @@ class Box {
       percent: positionPercent.dy,
     );
 
+    // Ensure Box bounds will not be outside of screen
+    if ((xPosition + size) > 100) xPosition -= size;
+
+    if ((yPosition + size) > 100) yPosition -= size;
+
     // Set final screen position
     Offset position = Offset(xPosition, yPosition);
 
@@ -126,8 +125,11 @@ class Box {
     // Get Screen position from Percent position
     /* var positionPercent = getPositionPercent();
       position = convertPercentToPosition(positionPercent); */
-    position = convertPercentToPosition(
-        Offset(positionFromServer['posX'].toDouble(), positionFromServer['posY'].toDouble()));
+    if (positionFromServer['posX'].toDouble() == 50 && positionFromServer['posY'].toDouble() == 50)
+      position = center;
+    else
+      position = convertPercentToPosition(
+          Offset(positionFromServer['posX'].toDouble(), positionFromServer['posY'].toDouble()));
   }
 
   void onTapDown(TapDownDetails details) async {
