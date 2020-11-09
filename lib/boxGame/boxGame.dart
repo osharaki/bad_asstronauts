@@ -17,17 +17,29 @@ import 'package:gameOff2020/utils/math.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BoxGame extends Game with TapDetector {
+  // UI
   Box box;
-  Size screenSize;
-  double tileSize;
-  String mode = "game";
-  String level = "easy";
+
+  // Gameplay
   int score = 0;
+  int opponentScore = 0;
   Timer interval;
   double timeLimit = 30;
-  bool started = false;
   bool playing = false;
+  bool started = false;
+
+  // Modes
+  String mode = "game";
+  String level = "easy";
+
+  // Spacial
+  Size screenSize;
+  double tileSize;
+
+  // Variables
   var random = Random();
+
+  // Text Configs
   var textConfig = TextConfig(
     color: Colors.white,
     textAlign: TextAlign.center,
@@ -39,7 +51,13 @@ class BoxGame extends Game with TapDetector {
   );
 
   var scoreTextConfig = TextConfig(
-    color: Colors.white,
+    color: Colors.blue[900],
+    fontSize: 20,
+    textAlign: TextAlign.center,
+  );
+
+  var opponentScoreTextConfig = TextConfig(
+    color: Colors.red[900],
     fontSize: 20,
     textAlign: TextAlign.center,
   );
@@ -77,9 +95,7 @@ class BoxGame extends Game with TapDetector {
 
     canvas.drawRect(bgRect, bgPaint);
 
-    if(box != null)
-      box.render(canvas);
-
+    if (box != null) box.render(canvas);
 
     // Start
     if (!started) {
@@ -93,40 +109,57 @@ class BoxGame extends Game with TapDetector {
         anchor: Anchor.center,
       );
 
-      scoreTextConfig.render(
-        canvas,
-        score.toString(),
-        Position(
-          50,
-          screenSize.height - 50,
-        ),
-      );
-
       // Playing
     } else if (playing) {
       // If Time
       if (timeLimit > 0) {
+        // Your Score
         scoreTextConfig.render(
           canvas,
           score.toString(),
           Position(
-            50,
+            (screenSize.width / 2) - 25,
             screenSize.height - 50,
           ),
+          anchor: Anchor.bottomRight,
+        );
+
+        // Separator
+        textConfig.render(
+          canvas,
+          "|",
+          Position(
+            screenSize.width / 2,
+            screenSize.height,
+          ),
+          anchor: Anchor.center,
+        );
+
+        // Opponent Score
+        opponentScoreTextConfig.render(
+          canvas,
+          opponentScore.toString(),
+          Position(
+            (screenSize.width / 2) + 25,
+            screenSize.height - 50,
+          ),
+          anchor: Anchor.bottomLeft,
         );
 
         textConfig.render(
           canvas,
           timeLimit.toStringAsFixed(0),
           Position(
-            screenSize.width - 50,
-            screenSize.height - 50,
+            screenSize.width / 2,
+            50,
           ),
-          anchor: Anchor.center,
+          anchor: Anchor.topCenter,
         );
 
         // If Time's Up
       } else {
+        // TODO: MOVE TO update()
+
         // Stop Playing
         playing = false;
         triggerGameEnd();
@@ -157,12 +190,35 @@ class BoxGame extends Game with TapDetector {
         );
       }
 
+      // Your Score
       scoreTextConfig.render(
         canvas,
-        "Your Score: $score",
+        score.toString(),
+        Position(
+          (screenSize.width / 2) - 50,
+          (screenSize.height / 2) - 90,
+        ),
+        anchor: Anchor.center,
+      );
+
+      // Separator
+      textConfig.render(
+        canvas,
+        "|",
         Position(
           screenSize.width / 2,
-          screenSize.height / 2 - 90,
+          screenSize.height,
+        ),
+        anchor: Anchor.center,
+      );
+
+      // Opponent Score
+      opponentScoreTextConfig.render(
+        canvas,
+        opponentScore.toString(),
+        Position(
+          (screenSize.width / 2) + 50,
+          (screenSize.height / 2) - 90,
         ),
         anchor: Anchor.center,
       );
