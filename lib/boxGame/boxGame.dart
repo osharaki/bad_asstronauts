@@ -71,7 +71,9 @@ class BoxGame extends Game with TapDetector {
 
   DocumentReference playerInstance;
 
-  QueryDocumentSnapshot activeSession;
+  UserCredential userCred;
+
+  // QueryDocumentSnapshot activeSession;
 
   BoxGame() {
     initialize();
@@ -318,7 +320,7 @@ class BoxGame extends Game with TapDetector {
     if (box.rect.contains(details.globalPosition)) {
       if (!signedIn) {
         print('USER TAPPED TO SIGN IN 🤏🤏🤏🤏🤏🤏🤏🤏');
-        UserCredential userCred = await anonymousSignIn();
+        userCred = await anonymousSignIn();
         CollectionReference sessions = FirebaseFirestore.instance.collection('sessions');
         sessions.get().then(
           (sessionsQuerySnapshot) async {
@@ -330,15 +332,17 @@ class BoxGame extends Game with TapDetector {
                 // found vacant session
                 print('Found vacant session');
                 playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
-                print(activeSession);
-                activeSession = session;
+                // print(activeSession);
+                // activeSession = session;
                 sessionId = session.id;
                 return;
               }
             }
             print('No vacant session found!!!!!!!!');
-            sessions.add({}).then((DocumentReference session) {
-              session.collection('players').add({'uid': userCred.user.uid, 'score': 0});
+            sessions.add({}).then((DocumentReference session) async {
+              playerInstance =
+                  await session.collection('players').add({'uid': userCred.user.uid, 'score': 0});
+              sessionId = sessionId;
             });
           },
         );
@@ -372,7 +376,9 @@ class BoxGame extends Game with TapDetector {
         } else {
           // sign out if tapped outside box while not playing
           // remove player from session
-
+          // FirebaseFirestore.instance.collection('sessions').doc(sessionId).collection('players').doc(userCred.user.uid).delete().then((value)=> print('Deleted player document!!!!!!!!!'));
+          playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
+          // sessionId = null;
           await FirebaseAuth.instance.signOut();
           started = false;
         }
