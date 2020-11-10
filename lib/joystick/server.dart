@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 class Server {
-  List<dynamic> components;
+  Map<String, List<dynamic>> components = Map();
 
   void update(double t) {
-    components.forEach((item) {
-      item.update(t);
+    components.forEach((category, items) {
+      items.forEach((item) {
+        item.update(t);
+      });
     });
   }
 
   void render(Canvas canvas) {
-    components.forEach((item) {
-      item.render(canvas);
+    components.forEach((category, items) {
+      items.forEach((item) {
+        item.render(canvas);
+      });
     });
   }
 }

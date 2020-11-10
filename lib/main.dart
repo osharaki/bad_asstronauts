@@ -25,8 +25,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // final JoystickGame game = JoystickGame();
-  final BoxGame game = BoxGame();
+  final JoystickGame game = JoystickGame();
+  // final BoxGame game = BoxGame();
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +35,10 @@ class MyApp extends StatelessWidget {
       home: Container(
         color: Colors.white,
         child: GestureDetector(
-          // onPanStart: game.onPanStart,
-          // onPanUpdate: game.onPanUpdate,
-          // onPanEnd: game.onPanEnd,
-          onTapDown: game.onTapDown,
+          onPanStart: game.onPanStart,
+          onPanUpdate: game.onPanUpdate,
+          onPanEnd: game.onPanEnd,
+          // onTapDown: game.onTapDown,
           child: game.widget,
         ),
       ),

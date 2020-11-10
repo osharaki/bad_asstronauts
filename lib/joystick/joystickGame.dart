@@ -2,9 +2,10 @@ import 'package:flame/flame.dart';
 import "package:flame/game.dart";
 import 'package:flutter/material.dart';
 
-import 'enemy.dart';
-import 'planet.dart';
 import 'world.dart';
+import 'enemy.dart';
+import 'debris.dart';
+import 'planet.dart';
 import 'server.dart';
 import 'joystick.dart';
 import 'spaceship.dart';
@@ -28,11 +29,15 @@ class JoystickGame extends Game {
 
     // Initialize Components
     server = Server();
-    server.components = [
-      World(game: this),
-      Planet(game: this),
-      Enemy(game: this),
-    ];
+    server.components["world"] = [World(game: this)];
+    server.components["planets"] = [Planet(game: this)];
+    server.components["enemies"] = [Enemy(game: this)];
+    server.components["debris"] = List.empty(growable: true);
+
+    for (var i = 0; i < 250; i++) {
+      server.components["debris"].add(Debris(game: this));
+    }
+
     spaceship = Spaceship(game: this);
     joystick = Joystick(game: this);
   }

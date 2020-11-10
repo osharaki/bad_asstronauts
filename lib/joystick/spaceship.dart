@@ -38,7 +38,12 @@ class Spaceship {
     sprite = Sprite("spaceship.png");
   }
 
-  void update(double t) {}
+  void update(double t) {
+    if (game.server.components["debris"] != null) {
+      game.server.components["debris"]
+          .removeWhere((debris) => rect.overlaps(debris.rect));
+    }
+  }
 
   // Honestly, I don't fully understand what's going on here
   void render(Canvas canvas) {
