@@ -343,6 +343,7 @@ class BoxGame extends Game with TapDetector {
         } else {
           // sign out if tapped outside box while not playing
           await FirebaseAuth.instance.signOut();
+          started = false;
         }
       }
     }
