@@ -71,6 +71,8 @@ class BoxGame extends Game with TapDetector {
 
   DocumentReference playerInstance;
 
+  QueryDocumentSnapshot activeSession;
+
   BoxGame() {
     initialize();
   }
@@ -318,27 +320,28 @@ class BoxGame extends Game with TapDetector {
         print('USER TAPPED TO SIGN IN 🤏🤏🤏🤏🤏🤏🤏🤏');
         UserCredential userCred = await anonymousSignIn();
         CollectionReference sessions = FirebaseFirestore.instance.collection('sessions');
-        QuerySnapshot sessionsQuerySnapshot = await sessions.get();
-        print('Printing sessions ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
-        for (final session in sessionsQuerySnapshot.docs) {
-          print('found a session!!!!!!!!!!');
-          CollectionReference players = session.reference.collection('players');
-          QuerySnapshot playersQuerySnapshot = await players.get();
-          if (playersQuerySnapshot.size < 2) {
-            // found vacant session
-            print('Found vacant session');
-            playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
-            sessionId = session.id;
-            print('Printing players ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
-            playersQuerySnapshot.docs.forEach(
-              (player) {
-                print('found a player!!!!!!!!!!');
-                print(player.data());
-              },
-            );
-            break;
-          }
-        }
+        sessions.get().then(
+          (sessionsQuerySnapshot) async {
+            print('Printing sessions ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
+            for (final session in sessionsQuerySnapshot.docs) {
+              CollectionReference players = session.reference.collection('players');
+              QuerySnapshot playersQuerySnapshot = await players.get();
+              if (playersQuerySnapshot.size < 2) {
+                // found vacant session
+                print('Found vacant session');
+                playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
+                print(activeSession);
+                activeSession = session;
+                sessionId = session.id;
+                return;
+              }
+            }
+            print('No vacant session found!!!!!!!!');
+            sessions.add({}).then((DocumentReference session) {
+              session.collection('players').add({'uid': userCred.user.uid, 'score': 0});
+            });
+          },
+        );
       } else {
         // Start Game
         if (!started) started = true;
