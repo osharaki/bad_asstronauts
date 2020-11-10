@@ -1,7 +1,7 @@
 import "dart:ui";
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gameOff2020/auth.dart';
-import 'package:gameOff2020/boxGame/services/services.dart';
+import 'package:gameOff2020/boxGame/services/functions.dart';
 
 import 'box.dart';
 import "dart:math";
@@ -66,6 +66,10 @@ class BoxGame extends Game with TapDetector {
     fontSize: 20,
     textAlign: TextAlign.center,
   );
+
+  String sessionId;
+
+  DocumentReference playerInstance;
 
   BoxGame() {
     initialize();
@@ -313,6 +317,35 @@ class BoxGame extends Game with TapDetector {
       if (!signedIn) {
         print('USER TAPPED TO SIGN IN 🤏🤏🤏🤏🤏🤏🤏🤏');
         UserCredential userCred = await anonymousSignIn();
+        CollectionReference sessions = FirebaseFirestore.instance.collection('sessions');
+        sessions.get().then(
+          (QuerySnapshot querySnapshot) {
+            print('Printing sessions ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
+            querySnapshot.docs.forEach(
+              (session) {
+                print('found a session!!!!!!!!!!');
+                CollectionReference players = session.reference.collection('players');
+                players.get().then(
+                  (QuerySnapshot querySnapshot) async {
+                    if (querySnapshot.size < 2) {
+                      // found vacant session
+                      print('Found vacant session');
+                      playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
+                      sessionId = session.id;
+                      print('Printing players ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
+                      querySnapshot.docs.forEach(
+                        (player) {
+                          print('found a player!!!!!!!!!!');
+                          print(player.data());
+                        },
+                      );
+                    }
+                  },
+                );
+              },
+            );
+          },
+        );
       } else {
         // Start Game
         if (!started) started = true;
@@ -342,6 +375,8 @@ class BoxGame extends Game with TapDetector {
           triggerGameEnd();
         } else {
           // sign out if tapped outside box while not playing
+          // remove player from session
+
           await FirebaseAuth.instance.signOut();
           started = false;
         }
