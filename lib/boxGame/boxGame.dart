@@ -324,25 +324,27 @@ class BoxGame extends Game with TapDetector {
         CollectionReference sessions = FirebaseFirestore.instance.collection('sessions');
         sessions.get().then(
           (sessionsQuerySnapshot) async {
-            print('Printing sessions ⏱⏱⏱⏱⏱⏱⏱⏱⏱');
+            if (sessionsQuerySnapshot.docs.isNotEmpty) print('*' * 20);
             for (final session in sessionsQuerySnapshot.docs) {
-              CollectionReference players = session.reference.collection('players');
-              QuerySnapshot playersQuerySnapshot = await players.get();
-              if (playersQuerySnapshot.size < 2) {
-                // found vacant session
-                print('Found vacant session');
-                playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
-                print(playerInstance.toString());
-                // print(activeSession);
-                // activeSession = session;
+              print('Found session. Checking availability...');
+              CollectionReference playersCollection = session.reference.collection('players');
+              QuerySnapshot playersQuerySnapshot = await playersCollection.get();
+              if (playersQuerySnapshot.docs.length == 1) {
+                print('*' * 20);
+                print('Session available');
+                print('Joining...');
+                await playersCollection.add({'uid': userCred.user.uid, 'score': 0});
                 sessionId = session.id;
+                print('Joined session $sessionId');
                 return;
               }
+              print('Session full.');
             }
-            print('No vacant session found!!!!!!!!');
-
+            print('*' * 20);
+            print('No sessions available');
+            print('Creating session and joining..');
             sessions.add({}).then((DocumentReference session) async {
-              // await session.set({'boxColor': 'red'});
+              sessionId = await session.get().then((value) => value.id);
               await session.set(
                 {
                   'boxColor': 'red',
@@ -351,14 +353,13 @@ class BoxGame extends Game with TapDetector {
                   'started': false,
                 },
               );
-              // await session.set({'boxPosY': 50});
-              // await session.set({'started': false});
               playerInstance =
                   await session.collection('players').add({'uid': userCred.user.uid, 'score': 0});
-              sessionId = sessionId;
+              print('Joined newly created session with id ' + sessionId);
             });
           },
         );
+        return;
       } else {
         // Start Game
         if (!started) started = true;
@@ -389,7 +390,6 @@ class BoxGame extends Game with TapDetector {
         } else {
           // sign out if tapped outside box while not playing
           // remove player from session
-          // FirebaseFirestore.instance.collection('sessions').doc(sessionId).collection('players').doc(userCred.user.uid).delete().then((value)=> print('Deleted player document!!!!!!!!!'));
           playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
           // sessionId = null;
           FirebaseAuth.instance.currentUser.delete();
