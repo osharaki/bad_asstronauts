@@ -332,6 +332,7 @@ class BoxGame extends Game with TapDetector {
                 // found vacant session
                 print('Found vacant session');
                 playerInstance = await players.add({'uid': userCred.user.uid, 'score': 0});
+                print(playerInstance.toString());
                 // print(activeSession);
                 // activeSession = session;
                 sessionId = session.id;
@@ -379,7 +380,8 @@ class BoxGame extends Game with TapDetector {
           // FirebaseFirestore.instance.collection('sessions').doc(sessionId).collection('players').doc(userCred.user.uid).delete().then((value)=> print('Deleted player document!!!!!!!!!'));
           playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
           // sessionId = null;
-          await FirebaseAuth.instance.signOut();
+
+          userCred.user.delete();
           started = false;
         }
       }
