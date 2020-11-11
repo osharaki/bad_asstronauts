@@ -25,6 +25,7 @@ class Joystick {
   Offset dragPosition;
 
   Offset nextOffset = Offset(0, 0);
+  Offset spaceshipOffset = Offset(0, 0);
 
   Joystick({@required this.game}) {
     initialize();
@@ -89,8 +90,26 @@ class Joystick {
         (multiplier * game.spaceship.speed * t) * sin(radAngle),
       );
 
+      Offset oldOffset = nextOffset;
+
       // Limit to World Boundaries
       nextOffset = limitToWorldBoundaries(nextOffset);
+
+      // Get Spaceship Offset
+      spaceshipOffset = getSpaceshipOffset(
+        oldOffset: oldOffset,
+        newOffset: nextOffset,
+      );
+
+      Offset oldSpaceshipOffset = spaceshipOffset;
+
+      spaceshipOffset = limitToScreenBoundaries(spaceshipOffset);
+
+      // print("OLD WORLD OFFSET: $oldOffset");
+      // print("NEW WORLD OFFSET: $nextOffset");
+      // print("OLD SPACESHIP OFFSET: $oldSpaceshipOffset");
+      // print("NEW SPACESHIP OFFSET: $spaceshipOffset");
+      print(game.spaceship.rect.center);
 
       // Position on Joystick circle, to prevent knob from going outside bounds
       var knobRadialPosition = Offset(
@@ -112,7 +131,36 @@ class Joystick {
       Offset difference = dragPosition - knobRect.center;
       knobRect = knobRect.shift(difference);
       nextOffset = Offset(0, 0);
+      spaceshipOffset = Offset(0, 0);
     }
+  }
+
+  Offset getSpaceshipOffset({
+    @required Offset oldOffset,
+    @required Offset newOffset,
+  }) {
+    double xOffset = 0;
+    double yOffset = 0;
+
+    if (newOffset.dx == 0) xOffset = oldOffset.dx;
+    if (newOffset.dy == 0) yOffset = oldOffset.dy;
+
+    Offset spaceshipOffset = Offset(xOffset, yOffset);
+
+    return spaceshipOffset;
+  }
+
+  Offset limitToScreenBoundaries(Offset offset) {
+    // Limit to Screen Boundaries
+    if (game.spaceship.exceedsTop(offset.dy)) offset = Offset(offset.dx, 0);
+
+    if (game.spaceship.exceedsBottom(offset.dy)) offset = Offset(offset.dx, 0);
+
+    if (game.spaceship.exceedsLeft(offset.dx)) offset = Offset(0, offset.dy);
+
+    if (game.spaceship.exceedsRight(offset.dx)) offset = Offset(0, offset.dy);
+
+    return offset;
   }
 
   Offset limitToWorldBoundaries(Offset offset) {

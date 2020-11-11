@@ -34,7 +34,7 @@ class JoystickGame extends Game {
     server.planets.add(Planet(game: this));
     server.spaceships.add(Enemy(game: this));
 
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 250; i++) {
       server.debris.add(Debris(game: this));
     }
 

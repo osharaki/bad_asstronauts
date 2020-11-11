@@ -43,6 +43,16 @@ class Spaceship {
     if (game.server.debris != null) {
       game.server.debris.removeWhere((debris) => rect.overlaps(debris.rect));
     }
+
+    // Spaceship's offset from it's next position
+    var difference = Offset(
+          rect.center.dx + game.joystick.spaceshipOffset.dx,
+          rect.center.dy + game.joystick.spaceshipOffset.dy,
+        ) -
+        rect.center;
+
+    // Shift Spaceship to it's next position
+    rect = rect.shift(difference);
   }
 
   // Honestly, I don't fully understand what's going on here
@@ -72,5 +82,48 @@ class Spaceship {
 
     // Restore Original Rect
     canvas.restore();
+  }
+
+  Offset getOffsetFromScreenCenter() {
+    Offset screenCenter = Offset(
+      game.screenSize.width / 2,
+      game.screenSize.height / 2,
+    );
+
+    Offset offset = rect.center - screenCenter;
+
+    return offset;
+  }
+
+  bool exceedsTop(double offset) {
+    if ((rect.top + offset) < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsBottom(double offset) {
+    if ((rect.bottom + offset) > (game.screenSize.height)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsLeft(double offset) {
+    if ((rect.left + offset) < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsRight(double offset) {
+    if ((rect.right + offset) > (game.screenSize.width)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
