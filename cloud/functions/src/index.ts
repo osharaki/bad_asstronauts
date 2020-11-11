@@ -44,3 +44,32 @@ exports.updateBoxPosition = functions.https.onCall(async (data) => {
     await admin.firestore().collection('box').doc('position').set({ posX: Math.floor(posX), posY: Math.floor(posY), size: size });
     console.log('Position updated successfully');
 });
+
+exports.getUser = functions.https.onRequest(async (req, res) => {
+    admin.auth().getUser(req.query.uid as string).then((userRecord) => {
+        res.json(userRecord);
+    }).catch(() => console.log('Error'));
+});
+
+exports.onPlayerDelete = functions.firestore.document('sessions/{sessionId}/{players}/{playerId}').onDelete((snapshot, context) => {
+    const playerId = context.params.playerId;
+    const sessionId = context.params.sessionId;
+    console.log(`Player ${playerId} left session ${sessionId}`);
+    console.log(snapshot.data());
+    const player = snapshot.ref;
+    const players = player.parent;
+    console.log('Checking session status...');
+    return players.listDocuments().then((resolve) => {
+        if (resolve.length == 0) {
+            console.log('Session empty. Deleting...');
+            players.parent?.delete().then(() => console.log('Session deleted')); // delete empty session
+        }
+        else { console.log('Session not empty'); console.log(resolve); }
+        return resolve;
+    }).catch((reject) => reject);
+});
+
+export const testAddToEmptyDB = functions.https.onRequest(async (req, res) => {
+    await admin.firestore().collection('sessions').doc().set({ a: Math.random() * 100, b: Math.random() * 100 });
+    res.json('done');
+});
