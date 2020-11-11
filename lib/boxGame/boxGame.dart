@@ -359,7 +359,6 @@ class BoxGame extends Game with TapDetector {
             });
           },
         );
-        return;
       } else {
         // Start Game
         if (!started) started = true;
@@ -390,13 +389,18 @@ class BoxGame extends Game with TapDetector {
         } else {
           // sign out if tapped outside box while not playing
           // remove player from session
-          playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
-          // sessionId = null;
+          if (playerInstance != null)
+            playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
+          //
           FirebaseAuth.instance.currentUser.delete();
-          // userCred.user.delete();
+          playerInstance = null;
+          sessionId = null;
           started = false;
         }
       }
     }
+    print(sessionId);
+    print(playerInstance);
+    print(started);
   }
 }
