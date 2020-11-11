@@ -9,8 +9,14 @@ class World {
   Rect rect;
   Paint paint = Paint();
 
+  // Limits
+  double topLimit = 0;
+  double bottomLimit = 2500;
+  double leftLimit = 0;
+  double rightLimit = 2500;
+
   World({this.game}) {
-    rect = Rect.fromLTWH(0, 0, 2500, 2500);
+    rect = Rect.fromLTWH(leftLimit, topLimit, rightLimit, bottomLimit);
 
     paint.color = Colors.indigo[900];
   }
@@ -30,5 +36,37 @@ class World {
   void render(Canvas canvas) {
     // Render Rect
     canvas.drawRect(rect, paint);
+  }
+
+  bool exceedsTop(double offset) {
+    if ((rect.top - offset) > topLimit) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsBottom(double offset) {
+    if ((rect.bottom - offset) < (game.screenSize.height)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsLeft(double offset) {
+    if ((rect.left - offset) > leftLimit) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool exceedsRight(double offset) {
+    if ((rect.right - offset) < (game.screenSize.width)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

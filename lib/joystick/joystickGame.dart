@@ -29,13 +29,13 @@ class JoystickGame extends Game {
 
     // Initialize Components
     server = Server();
-    server.components["world"] = [World(game: this)];
-    server.components["planets"] = [Planet(game: this)];
-    server.components["enemies"] = [Enemy(game: this)];
-    server.components["debris"] = List.empty(growable: true);
 
-    for (var i = 0; i < 250; i++) {
-      server.components["debris"].add(Debris(game: this));
+    server.world = World(game: this);
+    server.planets.add(Planet(game: this));
+    server.spaceships.add(Enemy(game: this));
+
+    for (var i = 0; i < 100; i++) {
+      server.debris.add(Debris(game: this));
     }
 
     spaceship = Spaceship(game: this);

@@ -89,6 +89,9 @@ class Joystick {
         (multiplier * game.spaceship.speed * t) * sin(radAngle),
       );
 
+      // Limit to World Boundaries
+      nextOffset = limitToWorldBoundaries(nextOffset);
+
       // Position on Joystick circle, to prevent knob from going outside bounds
       var knobRadialPosition = Offset(
         distance * cos(radAngle),
@@ -110,6 +113,21 @@ class Joystick {
       knobRect = knobRect.shift(difference);
       nextOffset = Offset(0, 0);
     }
+  }
+
+  Offset limitToWorldBoundaries(Offset offset) {
+    // Limit to World Boundaries
+    if (game.server.world.exceedsTop(offset.dy)) offset = Offset(offset.dx, 0);
+
+    if (game.server.world.exceedsBottom(offset.dy))
+      offset = Offset(offset.dx, 0);
+
+    if (game.server.world.exceedsLeft(offset.dx)) offset = Offset(0, offset.dy);
+
+    if (game.server.world.exceedsRight(offset.dx))
+      offset = Offset(0, offset.dy);
+
+    return offset;
   }
 
   void render(Canvas canvas) {

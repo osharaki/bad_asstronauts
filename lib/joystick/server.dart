@@ -1,21 +1,50 @@
 import 'package:flutter/material.dart';
 
+import 'asteroid.dart';
+import 'debris.dart';
+import 'planet.dart';
+import 'spaceship.dart';
+import 'world.dart';
+import "enemy.dart";
+
 class Server {
-  Map<String, List<dynamic>> components = Map();
+  World world;
+  List<dynamic> spaceships = List.empty(growable: true);
+  List<Debris> debris = List.empty(growable: true);
+  List<Planet> planets = List.empty(growable: true);
+  List<Asteroid> asteroids = List.empty(growable: true);
 
   void update(double t) {
-    components.forEach((category, items) {
-      items.forEach((item) {
-        item.update(t);
-      });
-    });
+    // World
+    world.update(t);
+
+    // Spaceships
+    spaceships.forEach((s) => (s.update(t)));
+
+    // Debris
+    debris.forEach((d) => (d.update(t)));
+
+    // Asteroids
+    asteroids.forEach((a) => (a.update(t)));
+
+    // Planets
+    planets.forEach((p) => (p.update(t)));
   }
 
   void render(Canvas canvas) {
-    components.forEach((category, items) {
-      items.forEach((item) {
-        item.render(canvas);
-      });
-    });
+    // World
+    world.render(canvas);
+
+    // Spaceships
+    spaceships.forEach((s) => (s.render(canvas)));
+
+    // Debris
+    debris.forEach((d) => (d.render(canvas)));
+
+    // Asteroids
+    asteroids.forEach((a) => (a.render(canvas)));
+
+    // Planets
+    planets.forEach((p) => (p.render(canvas)));
   }
 }

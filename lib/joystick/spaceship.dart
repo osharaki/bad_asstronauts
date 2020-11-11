@@ -39,9 +39,9 @@ class Spaceship {
   }
 
   void update(double t) {
-    if (game.server.components["debris"] != null) {
-      game.server.components["debris"]
-          .removeWhere((debris) => rect.overlaps(debris.rect));
+    // Debris Impact
+    if (game.server.debris != null) {
+      game.server.debris.removeWhere((debris) => rect.overlaps(debris.rect));
     }
   }
 
