@@ -340,7 +340,19 @@ class BoxGame extends Game with TapDetector {
               }
             }
             print('No vacant session found!!!!!!!!');
+
             sessions.add({}).then((DocumentReference session) async {
+              // await session.set({'boxColor': 'red'});
+              await session.set(
+                {
+                  'boxColor': 'red',
+                  'boxPosX': 50,
+                  'boxPosY': 50,
+                  'started': false,
+                },
+              );
+              // await session.set({'boxPosY': 50});
+              // await session.set({'started': false});
               playerInstance =
                   await session.collection('players').add({'uid': userCred.user.uid, 'score': 0});
               sessionId = sessionId;
@@ -380,8 +392,8 @@ class BoxGame extends Game with TapDetector {
           // FirebaseFirestore.instance.collection('sessions').doc(sessionId).collection('players').doc(userCred.user.uid).delete().then((value)=> print('Deleted player document!!!!!!!!!'));
           playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
           // sessionId = null;
-
-          userCred.user.delete();
+          FirebaseAuth.instance.currentUser.delete();
+          // userCred.user.delete();
           started = false;
         }
       }
