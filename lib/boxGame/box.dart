@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gameOff2020/boxGame/services/services.dart';
+import 'package:gameOff2020/boxGame/services/functions.dart';
 
 import "boxGame.dart";
 import "../utils/math.dart";
@@ -49,13 +49,13 @@ class Box {
     // Set Default Paint Color
     paint.color = Colors.white;
 
-    FirebaseFirestore.instance
+    /* FirebaseFirestore.instance
         .collection('box')
         .doc('position')
         .snapshots()
         .listen((documentSnapshot) {
       if (documentSnapshot.exists) updatePosition(positionFromServer: documentSnapshot.data());
-    });
+    }); */
   }
 
   void render(Canvas canvas) {
@@ -128,16 +128,15 @@ class Box {
   void onTapDown(TapDownDetails details) async {
     if (!game.playing) {
       // Start Playing
-      game.playing = true;
-      triggerGameStart();
+      // game.playing = true;
       // Score
-      game.score = 0;
+      // game.score = 0;
 
       // Time
-      game.timeLimit = 30;
+      // game.timeLimit = 30;
     } else {
       // Score
-      game.score += 1;
+      // game.score += 1;
     }
 
     // Vibration
@@ -150,20 +149,12 @@ class Box {
       Vibration.vibrate(duration: 25);
     }
 
-    // Randomize Position
-    // updatePosition();
-    // Update firestore position field every time player taps box
-    triggerBoxPosUpdate(
-      screenHeight: (game.screenSize.height).toInt(),
-      screenWidth: (game.screenSize.width).toInt(),
-    );
-
     // Randomize Paint Color
     paint.color = Color.fromARGB(
       255,
-      random.nextInt(255),
-      random.nextInt(255),
-      random.nextInt(255),
+      255,
+      255,
+      255,
     );
   }
 }
