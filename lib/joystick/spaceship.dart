@@ -29,7 +29,7 @@ class Spaceship {
     // Create Rect at Screen Center to contain Spaceship
     rect = Rect.fromLTWH(
       (game.screenSize.width / 2) - (size / 2),
-      (game.screenSize.height / 2) - (size / 2),
+      (game.screenSize.height / 2) - (size),
       size,
       size * 2,
     );

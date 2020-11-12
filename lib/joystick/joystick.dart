@@ -101,15 +101,16 @@ class Joystick {
         newOffset: nextOffset,
       );
 
-      Offset oldSpaceshipOffset = spaceshipOffset;
-
       spaceshipOffset = limitToScreenBoundaries(spaceshipOffset);
 
-      // print("OLD WORLD OFFSET: $oldOffset");
-      // print("NEW WORLD OFFSET: $nextOffset");
-      // print("OLD SPACESHIP OFFSET: $oldSpaceshipOffset");
-      // print("NEW SPACESHIP OFFSET: $spaceshipOffset");
-      print(game.spaceship.rect.center);
+      // Ensure Spaceship returns to Screen Center
+      Map<String, bool> isSpaceshipOffset = isSpaceshipOffsetFromCenter();
+      Offset spaceshipCenterOffset = getSpaceshipCenterAlignmentOffset();
+
+      if (isSpaceshipOffset["x"])
+        spaceshipOffset = Offset(spaceshipCenterOffset.dx, spaceshipOffset.dy);
+      if (isSpaceshipOffset["y"])
+        spaceshipOffset = Offset(spaceshipOffset.dx, spaceshipCenterOffset.dy);
 
       // Position on Joystick circle, to prevent knob from going outside bounds
       var knobRadialPosition = Offset(
@@ -133,6 +134,47 @@ class Joystick {
       nextOffset = Offset(0, 0);
       spaceshipOffset = Offset(0, 0);
     }
+  }
+
+  Map<String, bool> isSpaceshipOffsetFromCenter() {
+    Offset spaceshipScreenCenterOffset =
+        game.spaceship.getOffsetFromScreenCenter();
+
+    Map<String, bool> offsetValues = {"x": false, "y": false};
+
+    // X
+    if ((spaceshipScreenCenterOffset.dx != 0) && (nextOffset.dx != 0)) {
+      offsetValues["x"] = true;
+    }
+
+    // Y
+    if ((spaceshipScreenCenterOffset.dy != 0) && (nextOffset.dy != 0)) {
+      offsetValues["y"] = true;
+    }
+
+    return offsetValues;
+  }
+
+  Offset getSpaceshipCenterAlignmentOffset() {
+    Offset spaceshipScreenCenterOffset =
+        game.spaceship.getOffsetFromScreenCenter();
+
+    double xOffsetIncrement = 0;
+    double yOffsetIncrement = 0;
+
+    // X
+    if ((spaceshipScreenCenterOffset.dx != 0) && (nextOffset.dx != 0)) {
+      xOffsetIncrement = spaceshipScreenCenterOffset.dx * -0.1;
+    }
+
+    // Y
+    if ((spaceshipScreenCenterOffset.dy != 0) && (nextOffset.dy != 0)) {
+      yOffsetIncrement = spaceshipScreenCenterOffset.dy * -0.1;
+    }
+
+    Offset offsetIncrement = Offset(xOffsetIncrement, yOffsetIncrement);
+
+    return offsetIncrement;
   }
 
   Offset getSpaceshipOffset({
