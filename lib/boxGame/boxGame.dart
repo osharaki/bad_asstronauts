@@ -447,7 +447,7 @@ class BoxGame extends Game with TapDetector {
                   playing = sessionData['started'];
                   winnerId = sessionData['winner'];
                   ready = sessionData['ready'];
-                  gameStartCountdown = sessionData['startCountdown'];
+                  gameStartCountdown = sessionData['startCountdown'].toString();
                 } else {
                   box.updatePosition(positionFromServer: {'posX': 50, 'posY': 50});
                   playing = false;
