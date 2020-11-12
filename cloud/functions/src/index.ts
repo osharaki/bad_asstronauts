@@ -23,25 +23,25 @@ exports.addMessage = functions.https.onRequest(async (req, res) => {
 });
 
 exports.startGame = functions.https.onCall(async (data) => {
-    start(data['sessionId']);
+    await start(data['sessionId']);
 })
 
 exports.endGame = functions.https.onCall(async (data) => {
-    end(data['sessionId'], data['culprit']);
+    await end(data['sessionId'], data['culprit']);
 })
 
 const start = async (sessionId: string) => {
     let sec = 30;
     setInterval(async () => {
         sec--;
-        admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
-        if (sec == 0) {
-            end(sessionId, null!);
+        await admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
+        if (sec === 0) {
+            await end(sessionId, null!);
         }
     }, 1000);
     const posX = Math.random() * 100;
     const posY = Math.random() * 100;
-    await admin.firestore().collection('sessions').doc(sessionId).update({ started: true, 'boxPosition': { posX: Math.floor(posX), posY: Math.floor(posY), } });
+    await admin.firestore().collection('sessions').doc(sessionId).update({ started: true, 'boxPosition': { posX: Math.floor(posX), posY: Math.floor(posY) } });
     console.log('Started game successfully');
 }
 
@@ -60,7 +60,7 @@ const end = async (sessionId: string, culprit: string) => {
         else
             winnerId = p2
     }
-    else if (culprit == p1.id)
+    else if (culprit === p1.id)
         winnerId = p2.id;
     else
         winnerId = p1.id;
@@ -74,12 +74,11 @@ const end = async (sessionId: string, culprit: string) => {
 exports.updateBoxPosition = functions.https.onCall(async (data) => {
     // const screenHeight = data.screenHeight;
     // const screenWidth = data.screenWidth;
-    const size = 10; //as percentage of height
 
     const posX = Math.random() * 100;
     const posY = Math.random() * 100;
     console.log(data['sessionId']);
-    await admin.firestore().collection('sessions').doc(data['sessionId']).update({ 'boxPosition': { posX: Math.floor(posX), posY: Math.floor(posY), } });
+    await admin.firestore().collection('sessions').doc(data['sessionId']).update({ 'boxPosition': { posX: Math.floor(posX), posY: Math.floor(posY) } });
     console.log('Position updated successfully');
 });
 
@@ -93,11 +92,10 @@ exports.incrementScore = functions.https.onCall(async (data) => {
         if (doc.exists) {
             const player = await admin.firestore().collection('sessions').doc(data['sessionId']).collection('players').doc(data['playerId']);
             if (doc.data()) {
-                player.update({ score: doc.data()!['score'] + 1 });
+                await player.update({ score: doc.data()!['score'] + 1 });
             }
             console.log('Incremented score successfully');
         }
-
     });
 })
 
@@ -116,17 +114,17 @@ exports.onPlayerJoin = functions.firestore.document('sessions/{sessionId}/{playe
     const player = snapshot.ref;
     const players = player.parent;
     console.log('Checking session status...');
-    return players.listDocuments().then((resolve) => {
-        if (resolve.length == 2) {
+    return players.listDocuments().then(async (resolve) => {
+        if (resolve.length === 2) {
             console.log('Session ready. Starting count down...');
-            admin.firestore().collection('sessions').doc(sessionId).update({ ready: true });
+            await admin.firestore().collection('sessions').doc(sessionId).update({ ready: true });
             let sec = 5;
             setInterval(async () => {
                 sec--;
-                admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec });
-                if (sec == 0) {
+                await admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec });
+                if (sec === 0) {
                     // start game
-
+                    await start(sessionId);
                 }
             }, 1000);
         }
@@ -144,9 +142,9 @@ exports.onPlayerDelete = functions.firestore.document('sessions/{sessionId}/{pla
     const players = player.parent;
     console.log('Checking session status...');
     return players.listDocuments().then(async (resolve) => {
-        if (resolve.length == 0) {
+        if (resolve.length === 0) {
             console.log('Session empty. Deleting...');
-            players.parent?.delete().then(() => console.log('Session deleted')); // delete empty session
+            await players.parent?.delete(); // delete empty session
         }
         else {
             console.log('Session not empty');
