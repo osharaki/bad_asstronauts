@@ -364,23 +364,10 @@ class BoxGame extends Game with TapDetector {
 
         textConfig.render(
           canvas,
-          "TAP BOX TO REPLAY",
+          "TAP OUTSIDE BOX TO REPLAY",
           Position(
             screenSize.width / 2,
             screenSize.height / 2 + 100,
-          ),
-          anchor: Anchor.center,
-        );
-        TextConfig(
-          fontSize: 20,
-          color: Colors.white,
-          textAlign: TextAlign.center,
-        ).render(
-          (canvas),
-          "tap outside to sign out",
-          Position(
-            screenSize.width / 2,
-            screenSize.height / 2 + 130,
           ),
           anchor: Anchor.center,
         );
