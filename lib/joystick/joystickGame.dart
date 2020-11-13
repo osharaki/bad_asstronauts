@@ -1,6 +1,7 @@
 import 'package:flame/flame.dart';
 import "package:flame/game.dart";
 import 'package:flutter/material.dart';
+import 'package:gameOff2020/joystick/trigger.dart';
 
 import 'bullet.dart';
 import 'world.dart';
@@ -18,6 +19,7 @@ class JoystickGame extends Game {
   double tileSize;
 
   Server server;
+  Trigger trigger;
   Joystick joystick;
   Spaceship spaceship;
 
@@ -42,8 +44,9 @@ class JoystickGame extends Game {
       server.debris.add(Debris(game: this));
     }
 
-    spaceship = Spaceship(game: this);
+    trigger = Trigger(game: this);
     joystick = Joystick(game: this);
+    spaceship = Spaceship(game: this);
   }
 
   @override
@@ -51,6 +54,7 @@ class JoystickGame extends Game {
     // Sync Components' update method with Game's
     server.update(t);
     spaceship.update(t);
+    trigger.update(t);
     joystick.update(t);
   }
 
@@ -59,6 +63,7 @@ class JoystickGame extends Game {
     // Sync Components' render method with Game's
     server.render(canvas);
     spaceship.render(canvas);
+    trigger.render(canvas);
     joystick.render(canvas);
   }
 
@@ -77,7 +82,7 @@ class JoystickGame extends Game {
 
     if (joystick.baseRect.contains(touch.offset)) joystick.onTap(touch);
 
-    if (touch.touchId != joystick.touchId) {
+    if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
         angle: spaceship.lastMoveRadAngle,

@@ -17,11 +17,15 @@ class Joystick {
   Rect baseRect;
   double baseRadius;
   Sprite baseSprite;
+  double baseOpacity = 0.8;
+  Paint basePaint = Paint();
   double baseAspectRatio = 1.4;
 
   Rect knobRect;
   double knobRadius;
   Sprite knobSprite;
+  double knobOpacity = 0.6;
+  Paint knobPaint = Paint();
   double knobAspectRatio = 1;
 
   bool dragging = false;
@@ -62,6 +66,21 @@ class Joystick {
 
     // Rest Position
     dragPosition = joystickCenter;
+
+    // Paint
+    basePaint.color = Color.fromRGBO(
+      255,
+      255,
+      255,
+      baseOpacity,
+    );
+
+    knobPaint.color = Color.fromRGBO(
+      255,
+      255,
+      255,
+      knobOpacity,
+    );
   }
 
   void update(double t) {
@@ -224,8 +243,8 @@ class Joystick {
   }
 
   void render(Canvas canvas) {
-    baseSprite.renderRect(canvas, baseRect);
-    knobSprite.renderRect(canvas, knobRect);
+    baseSprite.renderRect(canvas, baseRect, overridePaint: basePaint);
+    knobSprite.renderRect(canvas, knobRect, overridePaint: knobPaint);
   }
 
   void onTap(TouchData touch) {
