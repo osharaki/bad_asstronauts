@@ -63,7 +63,7 @@ const end = async (sessionId: string, culprit: string) => {
         // time ran out
         if (p1.data()['score'] > p2.data()['score'])
             winnerId = p1.id
-        else if (p1.data()['score'] > p2.data()['score'])
+        else if (p1.data()['score'] < p2.data()['score'])
             winnerId = p2.id
         else
             winnerId = 'tie';
@@ -73,7 +73,7 @@ const end = async (sessionId: string, culprit: string) => {
     else
         winnerId = p1.id;
 
-    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 10, started: false, boxPosition: { posX: 50, posY: 50 }, winner: winnerId , ready: false}).then((res) => {
+    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 10, boxPosition: { posX: 50, posY: 50 }, winner: winnerId , ready: false}).then((res) => {
         if (res)
             console.log('Ended game successfully');
         else
