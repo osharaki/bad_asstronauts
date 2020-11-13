@@ -2,11 +2,14 @@ import 'dart:math';
 
 import 'package:flame/sprite.dart';
 import "package:flutter/material.dart";
+import 'package:gameOff2020/joystick/touchData.dart';
 import "joystickGame.dart";
 
 class Joystick {
   // Instance Variables
   final JoystickGame game;
+
+  int touchId;
 
   Offset joystickCenter;
   double offset = 20;
@@ -225,22 +228,20 @@ class Joystick {
     knobSprite.renderRect(canvas, knobRect);
   }
 
-  void onPanStart(DragStartDetails details) {
-    // If drag starts on Knob
-    if (knobRect.contains(details.globalPosition)) {
-      dragging = true;
-    }
+  void onTap(TouchData touch) {
+    dragging = true;
+
+    if (touchId == null) touchId = touch.touchId;
   }
 
-  void onPanUpdate(DragUpdateDetails details) {
+  void onDrag(TouchData touch) {
     // Update drag position
-    if (dragging) {
-      dragPosition = details.globalPosition;
-    }
+    dragPosition = touch.offset;
   }
 
-  void onPanEnd(DragEndDetails details) {
+  void onRelease() {
     // Stop moving Spaceship and return Joystick to center
+    touchId = null;
     dragging = false;
     dragPosition = joystickCenter;
   }

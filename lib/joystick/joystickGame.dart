@@ -9,6 +9,7 @@ import 'planet.dart';
 import 'server.dart';
 import 'joystick.dart';
 import 'spaceship.dart';
+import "touchData.dart";
 
 class JoystickGame extends Game {
   // Instance Variable
@@ -18,6 +19,8 @@ class JoystickGame extends Game {
   Server server;
   Joystick joystick;
   Spaceship spaceship;
+
+  List<TouchData> taps = [];
 
   JoystickGame() {
     initialize();
@@ -68,15 +71,33 @@ class JoystickGame extends Game {
   }
 
   // Sync Gestures with Components' Gesture methods
-  void onPanStart(DragStartDetails details) {
-    joystick.onPanStart(details);
+  void onTap(TouchData touch) {
+    taps.add(touch);
+
+    if (joystick.baseRect.contains(touch.offset)) joystick.onTap(touch);
+
+    if (touch.touchId != joystick.touchId) print("PEW!");
   }
 
-  void onPanUpdate(DragUpdateDetails details) {
-    joystick.onPanUpdate(details);
+  void onDrag(TouchData touch) {
+    for (int i = 0; i < taps.length; i++) {
+      if (taps[i].touchId == touch.touchId) {
+        taps[i] = touch;
+
+        break;
+      }
+    }
+
+    if (touch.touchId == joystick.touchId) joystick.onDrag(touch);
   }
 
-  void onPanEnd(DragEndDetails details) {
-    joystick.onPanEnd(details);
+  void onRelease(TouchData touch) {
+    taps.removeWhere((tap) => tap.touchId == touch.touchId);
+
+    if (touch.touchId == joystick.touchId) joystick.onRelease();
+  }
+
+  void onCancel(TouchData touch) {
+    taps.removeWhere((tap) => tap.touchId == touch.touchId);
   }
 }

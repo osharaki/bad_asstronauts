@@ -7,6 +7,9 @@ import 'package:gameOff2020/firebaseInit.dart';
 import 'package:gameOff2020/boxGame/boxGame.dart';
 import 'package:gameOff2020/joystick/joystickGame.dart';
 
+import 'joystick/itemDrag.dart';
+import 'joystick/touchData.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -25,23 +28,34 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  int touchCounter = 0;
   final JoystickGame game = JoystickGame();
   // final BoxGame game = BoxGame();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Container(
-        color: Colors.white,
-        child: GestureDetector(
-          onPanStart: game.onPanStart,
-          onPanUpdate: game.onPanUpdate,
-          onPanEnd: game.onPanEnd,
-          // onTapDown: game.onTapDown,
-          child: game.widget,
-        ),
-      ),
+    return RawGestureDetector(
+      child: game.widget,
+      gestures: <Type, GestureRecognizerFactory>{
+        ImmediateMultiDragGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+                ImmediateMultiDragGestureRecognizer>(
+          () => ImmediateMultiDragGestureRecognizer(),
+          (ImmediateMultiDragGestureRecognizer instance) {
+            instance.onStart = (Offset offset) {
+              touchCounter++;
+              game.onTap(TouchData(touchCounter, offset));
+              return ItemDrag((details, tId) {
+                game.onDrag(TouchData(tId, details.globalPosition));
+              }, (details, tId) {
+                game.onRelease(TouchData(tId, Offset(0, 0)));
+              }, (tId) {
+                game.onCancel(TouchData(tId, Offset(0, 0)));
+              }, touchCounter);
+            };
+          },
+        )
+      },
     );
   }
 }
