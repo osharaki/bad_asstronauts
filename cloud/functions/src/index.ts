@@ -32,12 +32,14 @@ exports.endGame = functions.https.onCall(async (data) => {
 
 const start = async (sessionId: string) => {
     let sec = 10;
-    admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
-    let endTimer = setInterval(async () => {
-        admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
+    admin.firestore().collection('sessions').doc(sessionId).update({ time: sec }).then((res) => {
+        return res;
+    }).catch((rej) => rej);
+    const endTimer = setInterval(async () => {
+        admin.firestore().collection('sessions').doc(sessionId).update({ time: sec }).catch((rej) => rej);
         if (sec === 0) {
             clearInterval(endTimer);
-            end(sessionId, null!);
+            end(sessionId, null!).then(res => res).catch(rej => rej);
         }
         sec--;
     }, 1000);
@@ -116,7 +118,7 @@ exports.incrementScore = functions.https.onCall(async (data) => {
             else
                 console.log('Something went wrong while incrementing score');
             return res;
-        });
+        }).catch(rej => rej);
     });
 });
 
@@ -136,17 +138,17 @@ exports.onPlayerJoin = functions.firestore.document('sessions/{sessionId}/{playe
     if (players.length === 2) {
         console.log('Session ready. Starting count down...');
         let sec = 5;
-        admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec });
-        let startTimer = setInterval(() => {
-            admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec });
+        admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec }).then(res => res).catch(rej => rej);
+        const startTimer = setInterval(() => {
+            admin.firestore().collection('sessions').doc(sessionId).update({ startCountdown: sec }).then(res => res).catch(rej => rej);
             if (sec === 0) {
                 clearInterval(startTimer)
                 // start game
-                start(sessionId);
+                start(sessionId).then(res => res).catch(rej => rej);
             }
             sec--
         }, 1000);
-        admin.firestore().collection('sessions').doc(sessionId).update({ ready: true });
+        admin.firestore().collection('sessions').doc(sessionId).update({ ready: true }).then(res => res).catch(rej => rej);
     }
     else {
         console.log('Session not ready. Awaiting second player.');
