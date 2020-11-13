@@ -423,7 +423,8 @@ class BoxGame extends Game with TapDetector {
                 print('Joining...');
                 opponentInstance = playersQuerySnapshot.docs[0].reference;
                 opponentScore = playersQuerySnapshot.docs[0].data()['score'];
-                await playersCollection.doc(userCred.user.uid).set({'score': 0});
+                playerInstance = playersCollection.doc(userCred.user.uid);
+                await playerInstance.set({'score': 0});
                 print('Joined session ${session.reference.id}');
                 joinedSession = true;
                 sessionId = session.reference.id;
@@ -483,6 +484,7 @@ class BoxGame extends Game with TapDetector {
                 } else {
                   box.updatePosition(positionFromServer: {'posX': 50, 'posY': 50});
                   playing = false;
+                  print('setting player instance to null');
                   playerInstance = null;
                   opponentInstance = null;
                   sessionId = null;
@@ -497,6 +499,7 @@ class BoxGame extends Game with TapDetector {
           },
         );
       } else if (playing) {
+        // 101
         // Randomize Position
         // updatePosition();
         // increment score
@@ -517,10 +520,6 @@ class BoxGame extends Game with TapDetector {
             // Box On Tap Down
             box.onTapDown(details);
           }
-        } else {
-          // 101
-          // according to control flow chart, need to set playing to false here to get to 'waiting for rival' screen
-          playing = false; // violates single source of truth principle and server isn't informed!!!
         }
       }
     } else {
@@ -546,24 +545,27 @@ class BoxGame extends Game with TapDetector {
             // Stop Playing
             // playing = false;
             triggerGameEnd(sessionId: sessionId, culpritId: userCred.user.uid);
+            return;
           }
-        } else {
-          // 100 OR 110
-          // sign out if tapped outside box while not playing
-          // remove player from session
-          if (playerInstance != null) {
-            playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
-          }
-
-          //
-          FirebaseAuth.instance.currentUser.delete();
-          opponentInstance = null;
-          playerInstance = null;
-          sessionId = null;
-          winnerId = null;
-          ready = false;
-          // started = false;
         }
+        print('removing player');
+        print(playerInstance);
+        // 100 OR 110 OR 101
+        // sign out if tapped outside box while not playing
+        // remove player from session
+        if (playerInstance != null) {
+          playerInstance.delete().then((value) => print('Deleted player document!!!!!!!!!'));
+        }
+
+        //
+        await FirebaseAuth.instance.currentUser.delete();
+        opponentInstance = null;
+        playerInstance = null;
+        sessionId = null;
+        winnerId = null;
+        ready = false;
+        // started = false;
+
       }
     }
 /*     print(sessionId);

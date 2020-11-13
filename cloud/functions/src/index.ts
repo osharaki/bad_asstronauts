@@ -27,7 +27,7 @@ exports.startGame = functions.https.onCall(async (data) => {
 })
 
 exports.endGame = functions.https.onCall(async (data) => {
-    return end(data['sessionId'], data['culprit']);
+    return end(data['sessionId'], data['culpritId']);
 })
 
 const start = async (sessionId: string) => {
@@ -52,14 +52,15 @@ const start = async (sessionId: string) => {
     });
 }
 
-const end = async (sessionId: string, culprit: string) => {
+const end = async (sessionId: string, culpritId: string) => {
 
     // check winner
     const players = await admin.firestore().collection('sessions').doc(sessionId).collection('players').get();
     const p1 = players.docs[0];
     const p2 = players.docs[1];
     let winnerId: string;
-    if (!culprit) {
+    console.log(culpritId);
+    if (!culpritId) {
         // time ran out
         if (p1.data()['score'] > p2.data()['score'])
             winnerId = p1.id
@@ -68,12 +69,12 @@ const end = async (sessionId: string, culprit: string) => {
         else
             winnerId = 'tie';
     }
-    else if (culprit === p1.id)
+    else if (culpritId === p1.id)
         winnerId = p2.id;
     else
         winnerId = p1.id;
 
-    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 10, boxPosition: { posX: 50, posY: 50 }, winner: winnerId , ready: false}).then((res) => {
+    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 10, boxPosition: { posX: 50, posY: 50 }, winner: winnerId, ready: false }).then((res) => {
         if (res)
             console.log('Ended game successfully');
         else
@@ -166,7 +167,7 @@ exports.onPlayerDelete = functions.firestore.document('sessions/{sessionId}/{pla
         }
         else {
             console.log('Session not empty');
-            return admin.firestore().collection('sessions').doc(sessionId).update({ ready: false, startCountdown: 5 });
+            return admin.firestore().collection('sessions').doc(sessionId).update({ ready: false, startCountdown: 5 }).then((updateRes) => updateRes).catch((reject => reject));
         }
     }).then((res) => {
         return res;

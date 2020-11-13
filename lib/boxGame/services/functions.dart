@@ -31,5 +31,5 @@ Future<HttpsCallableResult<dynamic>> triggerGameEnd(
     {@required String sessionId, @required String culpritId}) async {
   print('End game..');
   HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('endGame');
-  return callable({"sessionId": sessionId});
+  return callable({"sessionId": sessionId, "culpritId": culpritId});
 }
