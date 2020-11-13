@@ -130,8 +130,13 @@ class BoxGame extends Game with TapDetector {
     canvas.drawRect(bgRect, bgPaint);
 
     if (box != null) box.render(canvas);
-
+    /*
+    The digits in the binary state representations below are mapped to the following boolean variables:
+       1st  |  2nd  | 3rd
+    signedIn|playing|ready
+    */
     if (!signedIn) {
+      // 000
       textConfig.render(
         canvas,
         "TAP TO JOIN A GAME",
@@ -142,9 +147,12 @@ class BoxGame extends Game with TapDetector {
         anchor: Anchor.center,
       );
     } else {
+      // 100
       // Start
       if (!playing) {
+        // 100
         if (!ready) {
+          // 100
           textConfig.render(
             canvas,
             "WAITING FOR RIVAL",
@@ -168,6 +176,7 @@ class BoxGame extends Game with TapDetector {
             anchor: Anchor.center,
           );
         } else {
+          // 110
           TextConfig(
             fontSize: 50,
             color: Colors.white,
@@ -196,54 +205,53 @@ class BoxGame extends Game with TapDetector {
           );
         }
         // Playing
-      } else if (playing) {
+      } else if (ready) {
+        // 111
         // If Time
-        if (timeLimit > 0) {
-          // Your Score
-          scoreTextConfig.render(
-            canvas,
-            score.toString(),
-            Position(
-              (screenSize.width / 2) - 25,
-              screenSize.height - 50,
-            ),
-            anchor: Anchor.bottomRight,
-          );
+        // Your Score
+        scoreTextConfig.render(
+          canvas,
+          score.toString(),
+          Position(
+            (screenSize.width / 2) - 25,
+            screenSize.height - 50,
+          ),
+          anchor: Anchor.bottomRight,
+        );
 
-          // Separator
-          textConfig.render(
-            canvas,
-            "|",
-            Position(
-              screenSize.width / 2,
-              screenSize.height,
-            ),
-            anchor: Anchor.center,
-          );
+        // Separator
+        textConfig.render(
+          canvas,
+          "|",
+          Position(
+            screenSize.width / 2,
+            screenSize.height,
+          ),
+          anchor: Anchor.center,
+        );
 
-          // Opponent Score
-          opponentScoreTextConfig.render(
-            canvas,
-            opponentScore.toString(),
-            Position(
-              (screenSize.width / 2) + 25,
-              screenSize.height - 50,
-            ),
-            anchor: Anchor.bottomLeft,
-          );
+        // Opponent Score
+        opponentScoreTextConfig.render(
+          canvas,
+          opponentScore.toString(),
+          Position(
+            (screenSize.width / 2) + 25,
+            screenSize.height - 50,
+          ),
+          anchor: Anchor.bottomLeft,
+        );
 
-          textConfig.render(
-            canvas,
-            timeLimit.toStringAsFixed(0),
-            Position(
-              screenSize.width / 2,
-              50,
-            ),
-            anchor: Anchor.topCenter,
-          );
+        textConfig.render(
+          canvas,
+          timeLimit.toStringAsFixed(0),
+          Position(
+            screenSize.width / 2,
+            50,
+          ),
+          anchor: Anchor.topCenter,
+        );
 
-          // If Time's Up
-        }
+        // If Time's Up
         /* else {
           // TODO: MOVE TO update()
 
@@ -256,6 +264,7 @@ class BoxGame extends Game with TapDetector {
  */
         // Retry
       } else {
+        // 101
         /* if (timeLimit > 0) {
           loseTextConfig.render(
             canvas,
@@ -291,8 +300,7 @@ class BoxGame extends Game with TapDetector {
             ),
             anchor: Anchor.center,
           );
-        }
-        else if (winnerId == userCred.user.uid) {
+        } else if (winnerId == userCred.user.uid) {
           TextConfig(
             color: Colors.green,
             fontSize: 50,
@@ -488,49 +496,59 @@ class BoxGame extends Game with TapDetector {
             });
           },
         );
-      } else if(playing){
-        
+      } else if (playing) {
         // Randomize Position
         // updatePosition();
         // increment score
         // Update firestore position field every time player taps box
-        if (sessionId != null) {
-          if (sessionId == null) print('😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱');
-          // triggerGameStart(sessionId: sessionId);
-          triggerBoxPosUpdate(sessionId: sessionId);
-          triggerScoreIncrement(sessionId: sessionId, playerId: userCred.user.uid);
-          // Start Game
-          // if (!playing) {
-          //   // started = true;
-          //   triggerGameStart(sessionId: sessionId);
-          // }
+        if (ready) {
+          // 111
+          if (sessionId != null) {
+            if (sessionId == null) print('😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱');
+            // triggerGameStart(sessionId: sessionId);
+            triggerBoxPosUpdate(sessionId: sessionId);
+            triggerScoreIncrement(sessionId: sessionId, playerId: userCred.user.uid);
+            // Start Game
+            // if (!playing) {
+            //   // started = true;
+            //   triggerGameStart(sessionId: sessionId);
+            // }
 
-          // Box On Tap Down
-          box.onTapDown(details);
+            // Box On Tap Down
+            box.onTapDown(details);
+          }
+        } else {
+          // 101
+          // according to control flow chart, need to set playing to false here to get to 'waiting for rival' screen
+          playing = false; // violates single source of truth principle and server isn't informed!!!
         }
       }
     } else {
       // clicked outside box
       if (signedIn) {
         if (playing) {
-          // Vibration
-          if (await Vibration.hasAmplitudeControl()) {
-            Vibration.vibrate(
-              duration: 1000,
-              amplitude: 125,
-            );
-          } else if (await Vibration.hasVibrator()) {
-            Vibration.vibrate(duration: 1000);
+          if (ready) {
+            // 111
+            // Vibration
+            if (await Vibration.hasAmplitudeControl()) {
+              Vibration.vibrate(
+                duration: 1000,
+                amplitude: 125,
+              );
+            } else if (await Vibration.hasVibrator()) {
+              Vibration.vibrate(duration: 1000);
+            }
+
+            // Reset Box Position & Color
+            // box.updatePosition(reset: true);
+            box.paint.color = Colors.white;
+
+            // Stop Playing
+            // playing = false;
+            triggerGameEnd(sessionId: sessionId, culpritId: userCred.user.uid);
           }
-
-          // Reset Box Position & Color
-          // box.updatePosition(reset: true);
-          box.paint.color = Colors.white;
-
-          // Stop Playing
-          // playing = false;
-          triggerGameEnd(sessionId: sessionId, culpritId: userCred.user.uid);
         } else {
+          // 100 OR 110
           // sign out if tapped outside box while not playing
           // remove player from session
           if (playerInstance != null) {

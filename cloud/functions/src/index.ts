@@ -31,7 +31,7 @@ exports.endGame = functions.https.onCall(async (data) => {
 })
 
 const start = async (sessionId: string) => {
-    let sec = 30;
+    let sec = 10;
     admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
     let endTimer = setInterval(async () => {
         admin.firestore().collection('sessions').doc(sessionId).update({ time: sec });
@@ -58,7 +58,6 @@ const end = async (sessionId: string, culprit: string) => {
     const players = await admin.firestore().collection('sessions').doc(sessionId).collection('players').get();
     const p1 = players.docs[0];
     const p2 = players.docs[1];
-    p1.data
     let winnerId: string;
     if (!culprit) {
         // time ran out
@@ -74,7 +73,7 @@ const end = async (sessionId: string, culprit: string) => {
     else
         winnerId = p1.id;
 
-    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 30, started: false, boxPosition: { posX: 50, posY: 50 }, winner: winnerId }).then((res) => {
+    return admin.firestore().collection('sessions').doc(sessionId).update({ time: 10, started: false, boxPosition: { posX: 50, posY: 50 }, winner: winnerId , ready: false}).then((res) => {
         if (res)
             console.log('Ended game successfully');
         else
@@ -97,7 +96,7 @@ exports.updateBoxPosition = functions.https.onCall(async (data) => {
 });
 
 exports.initializeSession = functions.https.onCall(async (data) => {
-    return admin.firestore().collection('sessions').doc(data['sessionId']).set({ started: false, boxPosition: { posX: 50, posY: 50 }, time: 30, ready: false, startCountdown: 5 }).then((res) => {
+    return admin.firestore().collection('sessions').doc(data['sessionId']).set({ started: false, boxPosition: { posX: 50, posY: 50 }, time: 10, ready: false, startCountdown: 5 }).then((res) => {
         if (res)
             console.log('Initialized session successfully');
         else
