@@ -488,7 +488,8 @@ class BoxGame extends Game with TapDetector {
             });
           },
         );
-      } else {
+      } else if(playing){
+        
         // Randomize Position
         // updatePosition();
         // increment score
@@ -509,6 +510,7 @@ class BoxGame extends Game with TapDetector {
         }
       }
     } else {
+      // clicked outside box
       if (signedIn) {
         if (playing) {
           // Vibration
