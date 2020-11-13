@@ -2,6 +2,7 @@ import 'package:flame/flame.dart';
 import "package:flame/game.dart";
 import 'package:flutter/material.dart';
 
+import 'bullet.dart';
 import 'world.dart';
 import 'enemy.dart';
 import 'debris.dart';
@@ -76,7 +77,15 @@ class JoystickGame extends Game {
 
     if (joystick.baseRect.contains(touch.offset)) joystick.onTap(touch);
 
-    if (touch.touchId != joystick.touchId) print("PEW!");
+    if (touch.touchId != joystick.touchId) {
+      Bullet bullet = Bullet(
+        game: this,
+        angle: spaceship.lastMoveRadAngle,
+        startPosition: spaceship.rect.center,
+      );
+
+      server.bullets.add(bullet);
+    }
   }
 
   void onDrag(TouchData touch) {
