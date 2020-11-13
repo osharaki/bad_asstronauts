@@ -68,7 +68,7 @@ class BoxGame extends Game with TapDetector {
     textAlign: TextAlign.center,
   );
 
-  Future<String> sessionId;
+  String sessionId;
 
   DocumentReference playerInstance;
   DocumentReference opponentInstance;
@@ -173,7 +173,7 @@ class BoxGame extends Game with TapDetector {
             gameStartCountdown,
             Position(
               screenSize.width / 2,
-              screenSize.height / 2 - 100,
+              screenSize.height / 2 - 90,
             ),
             anchor: Anchor.center,
           );
@@ -273,7 +273,22 @@ class BoxGame extends Game with TapDetector {
             anchor: Anchor.center,
           );
         } */
-        if (winnerId == userCred.user.uid) {
+        if (winnerId == 'tie') {
+          TextConfig(
+            color: Colors.white,
+            fontSize: 50,
+            textAlign: TextAlign.center,
+          ).render(
+            canvas,
+            "TIE!",
+            Position(
+              screenSize.width / 2,
+              screenSize.height / 2 - 125,
+            ),
+            anchor: Anchor.center,
+          );
+        }
+        else if (winnerId == userCred.user.uid) {
           TextConfig(
             color: Colors.green,
             fontSize: 50,
@@ -379,6 +394,7 @@ class BoxGame extends Game with TapDetector {
   void onTapDown(TapDownDetails details) async {
     if (box.rect.contains(details.globalPosition)) {
       if (!signedIn) {
+        bool joinedSession = false;
         print('USER TAPPED TO SIGN IN 🤏🤏🤏🤏🤏🤏🤏🤏');
         userCred = await anonymousSignIn();
         CollectionReference sessions = FirebaseFirestore.instance.collection('sessions');
@@ -396,26 +412,31 @@ class BoxGame extends Game with TapDetector {
                 opponentInstance = playersQuerySnapshot.docs[0].reference;
                 opponentScore = playersQuerySnapshot.docs[0].data()['score'];
                 await playersCollection.doc(userCred.user.uid).set({'score': 0});
-                print('Joined session $sessionId');
-                return;
+                print('Joined session ${session.reference.id}');
+                joinedSession = true;
+                sessionId = session.reference.id;
+                break;
               }
               print('Session full.');
             }
-            print('*' * 20);
-            print('No sessions available');
-            print('Creating session and joining..');
-            sessionId = sessions.add({}).then((DocumentReference session) async {
-              await triggerSessionInitialization(sessionId: session.id);
-              QuerySnapshot sessions =
-                  await FirebaseFirestore.instance.collection('sessions').get();
-              for (final sessionQuery in sessions.docs) {
-                if (session.id == sessionQuery.id) timeLimit = sessionQuery.data()['time'];
-              }
-              playerInstance = session.collection('players').doc(userCred.user.uid);
-              playerInstance.set({'score': 0});
-              print('Joined newly created session with id ' + session.id);
-              return session.id;
-            });
+            if (!joinedSession) {
+              print('*' * 20);
+              print('No sessions available');
+              print('Creating session and joining..');
+              sessionId = await sessions.add({}).then((DocumentReference session) async {
+                await triggerSessionInitialization(sessionId: session.id);
+                QuerySnapshot sessions =
+                    await FirebaseFirestore.instance.collection('sessions').get();
+                for (final sessionQuery in sessions.docs) {
+                  if (session.id == sessionQuery.id) timeLimit = sessionQuery.data()['time'];
+                }
+                playerInstance = session.collection('players').doc(userCred.user.uid);
+                playerInstance.set({'score': 0});
+                print('Joined newly created session with id ' + session.id);
+                return session.id;
+              });
+            }
+
             String activeSessionId = await sessionId;
             FirebaseFirestore.instance
                 .collection('sessions')
@@ -423,7 +444,6 @@ class BoxGame extends Game with TapDetector {
                 .snapshots()
                 .listen((activeSession) async {
               // print('Position change detected!!!!!!');
-
               if (activeSession.exists) {
                 Map<String, dynamic> sessionData = activeSession.data();
                 if (sessionData != null) {
@@ -470,17 +490,15 @@ class BoxGame extends Game with TapDetector {
         // increment score
         // Update firestore position field every time player taps box
         if (sessionId != null) {
-          sessionId.then((sessionId) {
-            if (sessionId == null) print('😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱');
-            // triggerGameStart(sessionId: sessionId);
-            triggerBoxPosUpdate(sessionId: sessionId);
-            triggerScoreIncrement(sessionId: sessionId, playerId: userCred.user.uid);
-            // Start Game
-            // if (!playing) {
-            //   // started = true;
-            //   triggerGameStart(sessionId: sessionId);
-            // }
-          });
+          if (sessionId == null) print('😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱');
+          // triggerGameStart(sessionId: sessionId);
+          triggerBoxPosUpdate(sessionId: sessionId);
+          triggerScoreIncrement(sessionId: sessionId, playerId: userCred.user.uid);
+          // Start Game
+          // if (!playing) {
+          //   // started = true;
+          //   triggerGameStart(sessionId: sessionId);
+          // }
 
           // Box On Tap Down
           box.onTapDown(details);
@@ -505,8 +523,7 @@ class BoxGame extends Game with TapDetector {
 
           // Stop Playing
           // playing = false;
-          sessionId.then(
-              (sessionId) => triggerGameEnd(sessionId: sessionId, culpritId: userCred.user.uid));
+          triggerGameEnd(sessionId: sessionId, culpritId: userCred.user.uid);
         } else {
           // sign out if tapped outside box while not playing
           // remove player from session
