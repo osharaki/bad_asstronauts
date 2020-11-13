@@ -168,12 +168,16 @@ class BoxGame extends Game with TapDetector {
             anchor: Anchor.center,
           );
         } else {
-          textConfig.render(
+          TextConfig(
+            fontSize: 50,
+            color: Colors.white,
+            textAlign: TextAlign.center,
+          ).render(
             canvas,
             gameStartCountdown,
             Position(
               screenSize.width / 2,
-              screenSize.height / 2 - 90,
+              screenSize.height / 2 - 70,
             ),
             anchor: Anchor.center,
           );
