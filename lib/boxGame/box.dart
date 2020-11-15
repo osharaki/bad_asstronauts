@@ -1,11 +1,8 @@
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gameOff2020/boxGame/services/functions.dart';
 
 import "boxGame.dart";
 import "../utils/math.dart";
 import "package:flutter/material.dart";
-import "package:vibration/vibration.dart";
 
 class Box {
   final BoxGame game;
@@ -48,14 +45,6 @@ class Box {
 
     // Set Default Paint Color
     paint.color = Colors.white;
-
-    /* FirebaseFirestore.instance
-        .collection('box')
-        .doc('position')
-        .snapshots()
-        .listen((documentSnapshot) {
-      if (documentSnapshot.exists) updatePosition(positionFromServer: documentSnapshot.data());
-    }); */
   }
 
   void render(Canvas canvas) {
@@ -64,29 +53,6 @@ class Box {
 
   void update(double t) {
     rect = Rect.fromLTWH(position.dx, position.dy, size, size);
-  }
-
-  Offset getPositionPercent() {
-    // Get Random Width & Height between 0% - 100%
-    var randomWidthPercent = getRandomValueInRange(
-      min: 0,
-      max: 100,
-    ).toDouble();
-
-    var randomHeightPercent = getRandomValueInRange(
-      min: 0,
-      max: 100,
-    ).toDouble();
-
-    // Ensure Box bounds will not be outside of screen
-    if ((randomWidthPercent + widthRatio) > 100) randomWidthPercent -= widthRatio;
-
-    if ((randomHeightPercent + heightRatio) > 100) randomHeightPercent -= heightRatio;
-
-    // Set final percent position
-    Offset positionPercent = Offset(randomWidthPercent, randomHeightPercent);
-
-    return positionPercent;
   }
 
   Offset convertPercentToPosition(Offset positionPercent) {
@@ -114,47 +80,12 @@ class Box {
     return position;
   }
 
-  void updatePosition({dynamic positionFromServer}) {
+  void updatePosition(dynamic newPosition) {
     // Get Screen position from Percent position
-    /* var positionPercent = getPositionPercent();
-      position = convertPercentToPosition(positionPercent); */
-    if (positionFromServer['posX'].toDouble() == 50 && positionFromServer['posY'].toDouble() == 50)
+    if (newPosition['posX'].toDouble() == 50 && newPosition['posY'].toDouble() == 50)
       position = center;
     else
       position = convertPercentToPosition(
-          Offset(positionFromServer['posX'].toDouble(), positionFromServer['posY'].toDouble()));
-  }
-
-  void onTapDown(TapDownDetails details) async {
-    if (!game.playing) {
-      // Start Playing
-      // game.playing = true;
-      // Score
-      // game.score = 0;
-
-      // Time
-      // game.timeLimit = 30;
-    } else {
-      // Score
-      // game.score += 1;
-    }
-
-    // Vibration
-    if (await Vibration.hasAmplitudeControl()) {
-      Vibration.vibrate(
-        duration: 25,
-        amplitude: 50,
-      );
-    } else if (await Vibration.hasVibrator()) {
-      Vibration.vibrate(duration: 25);
-    }
-
-    // Randomize Paint Color
-    paint.color = Color.fromARGB(
-      255,
-      255,
-      255,
-      255,
-    );
+          Offset(newPosition['posX'].toDouble(), newPosition['posY'].toDouble()));
   }
 }
