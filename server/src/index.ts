@@ -1,27 +1,25 @@
 import express = require('express');
 const path = require('path');
 import http = require('http');
-import { Socket } from 'socket.io';
-
+// import { Socket } from 'socket.io';
+let webSocketServer = require('websocket').server;
 
 // Create a new express application instance
 const app = express();
 const server = http.createServer(app);
-const socketio = require('socket.io')(server);
+// const socket = require('socket.io')(server);
 
 app.get('/', (req, res) => {
-  res.send("Node Server is running. Yay!!")
+  res.send("Node Server is running");
 });
 
 server.listen(3000, function () {
   console.log('Example app listening on port 3000!');
 });
+let wsServer = new webSocketServer({ httpServer: server });
 
-socketio.on("connection", (socket: Socket) => {
-  console.log(`connect ${socket.id}`);
-  console.log(`connect ${socket.handshake.url}`);
-  
-  socket.on("disconnect", () => {
-    console.log(`disconnect ${socket.id}`);
-  });
+wsServer.on('request', (request: any) => {
+  console.log('Connection received!');
+  let connection = request.accept(null, request.origin);
+  console.log(request.key);
 });
