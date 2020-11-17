@@ -1,6 +1,6 @@
 import "package:flame/util.dart";
 import 'package:flutter/material.dart';
-import 'package:gameOff2020/firebaseInit.dart';
+import 'package:web_socket_channel/io.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,7 +8,8 @@ void main() async {
   var flameUtil = Util();
   await flameUtil.fullScreen();
   await flameUtil.setLandscape();
+  IOWebSocketChannel channel = new IOWebSocketChannel.connect("ws://10.0.2.2:3000");
 
-  runApp(FirebaseInit());
+  // runApp(FirebaseInit());
   // runApp(boxGame.widget);
 }
