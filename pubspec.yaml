@@ -34,6 +34,7 @@ dependencies:
   cloud_firestore: ^0.14.3
   cloud_functions: ^0.7.0+1
   vibration: ^1.7.1
+  web_socket_channel: ^1.1.0
 
 dev_dependencies:
   flutter_test:
