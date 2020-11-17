@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flame/sprite.dart';
 import "package:flutter/material.dart";
+import 'package:gameOff2020/joystick/debris.dart';
 import "joystickGame.dart";
 
 class Spaceship {
@@ -9,6 +10,7 @@ class Spaceship {
   final JoystickGame game;
 
   Rect rect;
+  int fuelLeft = 10;
   double size;
   Sprite sprite;
   bool move = false;
@@ -40,16 +42,24 @@ class Spaceship {
 
   void update(double t) {
     // Debris Impact
-    if (game.server.debris != null) {
-      game.server.debris.removeWhere((debris) => rect.overlaps(debris.rect));
+    List<int> removeDebris = [];
+
+    for (int i = 0; i < game.server.debris.length; i++) {
+      if (rect.overlaps(game.server.debris[i].rect)) {
+        fuelLeft -= 1;
+        removeDebris.add(i);
+      }
     }
+
+    removeDebris.forEach((i) {
+      game.server.debris.removeAt(i);
+    });
 
     // Spaceship's offset from it's next position
     var difference = Offset(
-          rect.center.dx + game.joystick.spaceshipOffset.dx,
-          rect.center.dy + game.joystick.spaceshipOffset.dy,
-        ) -
-        rect.center;
+      game.joystick.spaceshipOffset.dx,
+      game.joystick.spaceshipOffset.dy,
+    );
 
     // Shift Spaceship to it's next position
     rect = rect.shift(difference);

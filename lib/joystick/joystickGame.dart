@@ -19,6 +19,7 @@ class JoystickGame extends Game {
   double tileSize;
 
   Server server;
+
   Trigger trigger;
   Joystick joystick;
   Spaceship spaceship;
@@ -34,15 +35,7 @@ class JoystickGame extends Game {
     resize(await Flame.util.initialDimensions());
 
     // Initialize Components
-    server = Server();
-
-    server.world = World(game: this);
-    server.planets.add(Planet(game: this));
-    server.spaceships.add(Enemy(game: this));
-
-    for (var i = 0; i < 250; i++) {
-      server.debris.add(Debris(game: this));
-    }
+    server = Server(game: this);
 
     trigger = Trigger(game: this);
     joystick = Joystick(game: this);
@@ -53,6 +46,7 @@ class JoystickGame extends Game {
   void update(double t) {
     // Sync Components' update method with Game's
     server.update(t);
+
     spaceship.update(t);
     trigger.update(t);
     joystick.update(t);
@@ -62,6 +56,7 @@ class JoystickGame extends Game {
   void render(Canvas canvas) {
     // Sync Components' render method with Game's
     server.render(canvas);
+
     spaceship.render(canvas);
     trigger.render(canvas);
     joystick.render(canvas);
