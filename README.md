@@ -9,6 +9,6 @@ The game relies on a Node.js WebSocket server located at [/server](/server). Her
 
 1. In the terminal, navigate to [/server](/server).
 2. Run `npm install` to install dependencies.
-3. Run `npm run build`. This compiles the .ts files to .js and places the output in [/server/build](/server/build)
+3. Run `npm run build`. This compiles the .ts files to .js and places the output in */server/build* (untracked)
     - Alternatively, run `npm run build -- --watch` to trigger automatic rebuilds in response to changes.
 4. To start the server, run `npm run dev`.
