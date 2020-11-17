@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "typescript",
+            "tsconfig": "cloud/functions/tsconfig.json",
+            "option": "watch",
+            "options": {
+                "shell": {
+                    "executable": "powershell.exe"
+                }
+            },
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "group": "build",
+            "label": "tsc: watch - cloud/functions/tsconfig.json"
+        },
+        {
+            "type": "typescript",
+            "tsconfig": "server/tsconfig.json",
+            "option": "watch",
+            "options": {
+                "shell": {
+                    "executable": "powershell.exe"
+                }
+            },
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "group": "build",
+            "label": "tsc: watch - server/tsconfig.json"
+        }
+    ]
+}
