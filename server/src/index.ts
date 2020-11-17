@@ -1,11 +1,9 @@
 import WebSocket from 'ws';
-// const { v4: uuidv4 } = require('uuid'); // this import method disregards the type definitions installed from @types/uuid
 import { v4 as uuidv4 } from 'uuid';
 
 const boxPos = { posX: 50, posY: 50 };
 
 const wss = new WebSocket.Server({ port: 3000 });
-// const clients = [];
 wss.addListener("listening", () => {
   console.log('WebSocket server running...');
 });
@@ -17,12 +15,7 @@ wss.on('connection', ws => {
   }
   else { console.log(`Connection number ${wss.clients.values.length} received!`); }
   ws.send(JSON.stringify(boxPos));
-  // const uuid = uuidv4();
-  // clients.push({ uuid: ws });
-  // console.log(`Client ${uuid} added to list of clients!`);
-  // ws.send(uuid);
   ws.on('message', (msg: string) => {
-    // console.log(`Client  ${uuid} said: ${msg}`);
     console.log(`Client said: ${msg}`);
     const data = JSON.parse(msg);
     if (data.action == 'New pos') {
