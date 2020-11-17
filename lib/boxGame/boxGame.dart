@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:ffi';
 import "dart:ui";
 import 'package:flame/anchor.dart';
 import 'package:flame/position.dart';
 import 'package:flame/text_config.dart';
 import 'package:gameOff2020/boxGame/services/functions.dart';
+import 'package:web_socket_channel/io.dart';
 
 import 'box.dart';
 import "package:flame/game.dart";
@@ -10,11 +13,13 @@ import "package:flame/flame.dart";
 import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BoxGame extends Game with TapDetector {
   //Auth
   bool signedIn = false;
+
+  // WebSocket channel
+  IOWebSocketChannel webSocketChannel;
 
   // UI
   Box box;
@@ -23,24 +28,25 @@ class BoxGame extends Game with TapDetector {
   Size screenSize;
   double tileSize;
 
+  Map<String, dynamic> position;
+
   // QueryDocumentSnapshot activeSession;
 
-  BoxGame() {
+  BoxGame({@required this.webSocketChannel}) {
     initialize();
   }
 
   void initialize() async {
     resize(await Flame.util.initialDimensions());
+    if (webSocketChannel != null) {
+      if (webSocketChannel.sink != null) {
+        webSocketChannel.stream.listen((message) {
+          position = json.decode(message);
+          if (box != null) box.updatePosition({'posX': position['posX'], 'posY': position['posY']});
+        });
+      }
+    }
 
-    DocumentSnapshot position =
-        await FirebaseFirestore.instance.collection('game').doc('position').get();
-    if (!position.exists)
-      // prompt server to calculate the initial box position if no position document exists
-      triggerBoxPosUpdate();
-    position.reference.snapshots().listen((event) {
-      if (box != null)
-        box.updatePosition({'posX': event.data()['posX'], 'posY': event.data()['posY']});
-    });
     box = Box(
       game: this,
     );
@@ -88,5 +94,9 @@ class BoxGame extends Game with TapDetector {
         triggerBoxPosUpdate();
       }
     }
+  }
+
+  triggerBoxPosUpdate() {
+    webSocketChannel.sink.add(json.encode({'action': 'New pos'}));
   }
 }

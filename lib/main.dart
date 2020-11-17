@@ -1,7 +1,10 @@
 import "package:flame/util.dart";
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart';
+
+import 'boxGame/boxGame.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,15 +16,9 @@ void main() async {
   // WebSocket stuff
   IOWebSocketChannel channel = new IOWebSocketChannel.connect("ws://192.168.1.106:3000");
 
-  if (channel != null) {
-    if (channel.sink != null) {
-      channel.sink.add('hi server!');
-      channel.stream.listen((message) {
-        channel.sink.add('received message!');
-        print('Msg from server: $message');
-      });
-    }
-  }
   // runApp(FirebaseInit());
-  // runApp(boxGame.widget);
+  var boxGame = BoxGame(webSocketChannel: channel);
+  var tapper = TapGestureRecognizer();
+  tapper.onTapDown = boxGame.onTapDown;
+  runApp(boxGame.widget);
 }
