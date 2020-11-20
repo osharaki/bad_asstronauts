@@ -9,9 +9,11 @@ module.exports = {
     "plugin:import/warnings",
     "plugin:import/typescript",
   ],
+  "ignorePatterns": [
+    ".eslintrc.js",
+  ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: "tsconfig.json",
     sourceType: "module",
   },
   plugins: [

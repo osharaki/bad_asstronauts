@@ -1,65 +1,57 @@
+import 'dart:convert';
+import 'dart:ffi';
 import "dart:ui";
+import 'package:flame/anchor.dart';
+import 'package:flame/position.dart';
+import 'package:flame/text_config.dart';
+import 'package:gameOff2020/boxGame/services/functions.dart';
+import 'package:web_socket_channel/io.dart';
+
 import 'box.dart';
-import "dart:math";
-import 'package:flame/time.dart';
 import "package:flame/game.dart";
 import "package:flame/flame.dart";
-import 'package:flame/anchor.dart';
 import 'package:flame/gestures.dart';
-import 'package:flame/position.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
-import 'package:flame/text_config.dart';
-import 'package:vibration/vibration.dart';
-import 'package:gameOff2020/utils/math.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BoxGame extends Game with TapDetector {
+  //Auth
+  bool signedIn = false;
+
+  // WebSocket channel
+  IOWebSocketChannel webSocketChannel;
+
+  // UI
   Box box;
+
+  // Spacial
   Size screenSize;
   double tileSize;
-  String mode = "game";
-  String level = "easy";
-  int score = 0;
-  Timer interval;
-  double timeLimit = 30;
-  bool started = false;
-  bool playing = false;
-  var random = Random();
-  var textConfig = TextConfig(
-    color: Colors.white,
-    textAlign: TextAlign.center,
-  );
-  var loseTextConfig = TextConfig(
-    color: Colors.red,
-    fontSize: 50,
-    textAlign: TextAlign.center,
-  );
 
-  var scoreTextConfig = TextConfig(
-    color: Colors.white,
-    fontSize: 20,
-    textAlign: TextAlign.center,
-  );
+  Map<String, dynamic> position;
 
-  BoxGame() {
+  // QueryDocumentSnapshot activeSession;
+
+  BoxGame({@required this.webSocketChannel}) {
     initialize();
   }
 
   void initialize() async {
     resize(await Flame.util.initialDimensions());
-    // TODO: add box to a stream builder that subscribes to a position field in the database
+    if (webSocketChannel != null) {
+      if (webSocketChannel.sink != null) {
+        webSocketChannel.stream.listen((message) {
+          position = json.decode(message);
+          if (box != null)
+            box.updatePosition(
+                {'posX': position['posX'], 'posY': position['posY']});
+        });
+      }
+    }
+
     box = Box(
       game: this,
     );
-
-    interval = Timer(
-      1,
-      repeat: true,
-      callback: () => timeLimit -= 1,
-    );
-
-    interval.start();
   }
 
   @override
@@ -76,113 +68,22 @@ class BoxGame extends Game with TapDetector {
 
     canvas.drawRect(bgRect, bgPaint);
 
-    box.render(canvas);
-
-    // Start
-    if (!started) {
-      textConfig.render(
-        canvas,
-        "TAP TO PLAY",
-        Position(
-          screenSize.width / 2,
-          screenSize.height / 2 - 100,
-        ),
-        anchor: Anchor.center,
-      );
-
-      scoreTextConfig.render(
-        canvas,
-        score.toString(),
-        Position(
-          50,
-          screenSize.height - 50,
-        ),
-      );
-
-      // Playing
-    } else if (playing) {
-      // If Time
-      if (timeLimit > 0) {
-        scoreTextConfig.render(
-          canvas,
-          score.toString(),
-          Position(
-            50,
-            screenSize.height - 50,
-          ),
-        );
-
-        textConfig.render(
-          canvas,
-          timeLimit.toStringAsFixed(0),
-          Position(
-            screenSize.width - 50,
-            screenSize.height - 50,
-          ),
-          anchor: Anchor.center,
-        );
-
-        // If Time's Up
-      } else {
-        // Stop Playing
-        playing = false;
-
-        box.updatePosition(reset: true);
-      }
-
-      // Retry
-    } else if (!playing) {
-      if (timeLimit > 0) {
-        loseTextConfig.render(
-          canvas,
-          "YOU LOST!",
-          Position(
-            screenSize.width / 2,
-            screenSize.height / 2 - 125,
-          ),
-          anchor: Anchor.center,
-        );
-      } else {
-        loseTextConfig.render(
-          canvas,
-          "TIME'S UP!",
-          Position(
-            screenSize.width / 2,
-            screenSize.height / 2 - 125,
-          ),
-          anchor: Anchor.center,
-        );
-      }
-
-      scoreTextConfig.render(
-        canvas,
-        "Your Score: $score",
-        Position(
-          screenSize.width / 2,
-          screenSize.height / 2 - 90,
-        ),
-        anchor: Anchor.center,
-      );
-
-      textConfig.render(
-        canvas,
-        "TAP TO REPLAY",
-        Position(
-          screenSize.width / 2,
-          screenSize.height / 2 + 100,
-        ),
-        anchor: Anchor.center,
-      );
+    if (box != null)
+      box.render(canvas);
+    else {
+      TextConfig(fontSize: 20, color: Colors.white, textAlign: TextAlign.center)
+          .render(
+              canvas,
+              'loading box...',
+              Position.fromOffset(
+                  Offset(screenSize.width / 2, screenSize.height / 2)),
+              anchor: Anchor.center);
     }
   }
 
   @override
   void update(double t) {
-    box.update(t);
-
-    if (playing) {
-      interval.update(t);
-    }
+    if (box != null) box.update(t);
   }
 
   @override
@@ -192,36 +93,14 @@ class BoxGame extends Game with TapDetector {
   }
 
   void onTapDown(TapDownDetails details) async {
-    if (box.rect.contains(details.globalPosition)) {
-      // Start Game
-      if (!started) started = true;
-
-      // Box On Tap Down
-      box.onTapDown(details);
-
-      // testing Firebase request
-      // Firestore.instance.collection('test').snapshots().listen((data) {
-      //   print(data.documents[0]['msg']);
-      // });
-    } else {
-      if (playing) {
-        // Vibration
-        if (await Vibration.hasAmplitudeControl()) {
-          Vibration.vibrate(
-            duration: 1000,
-            amplitude: 125,
-          );
-        } else if (await Vibration.hasVibrator()) {
-          Vibration.vibrate(duration: 1000);
-        }
-
-        // Reset Box Position & Color
-        box.updatePosition(reset: true);
-        box.paint.color = Colors.white;
-
-        // Stop Playing
-        playing = false;
+    if (box != null) {
+      if (box.rect.contains(details.globalPosition)) {
+        triggerBoxPosUpdate();
       }
     }
+  }
+
+  triggerBoxPosUpdate() {
+    webSocketChannel.sink.add(json.encode({'action': 'New pos'}));
   }
 }

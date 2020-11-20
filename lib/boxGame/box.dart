@@ -1,11 +1,8 @@
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gameOff2020/boxGame/services/services.dart';
 
 import "boxGame.dart";
 import "../utils/math.dart";
 import "package:flutter/material.dart";
-import "package:vibration/vibration.dart";
 
 class Box {
   final BoxGame game;
@@ -25,7 +22,6 @@ class Box {
   Box({@required this.game}) {
     // Derive box size from screen tile size
     size = game.tileSize * sizeMultiplier;
-
     // Get box center position (default)
     center = Offset(
       (game.screenSize.width / 2) - (size / 2),
@@ -49,11 +45,6 @@ class Box {
 
     // Set Default Paint Color
     paint.color = Colors.white;
-
-    // FirebaseFirestore.instance
-    //     .collection('game/position')
-    //     .snapshots()
-    //     .listen((data) => updateRectPos(data));
   }
 
   void render(Canvas canvas) {
@@ -61,37 +52,7 @@ class Box {
   }
 
   void update(double t) {
-    rect = Rect.fromLTWH(
-      position.dx,
-      position.dy,
-      size,
-      size,
-    );
-  }
-
-  Offset getPositionPercent() {
-    // Get Random Width & Height between 0% - 100%
-    var randomWidthPercent = getRandomValueInRange(
-      min: 0,
-      max: 100,
-    ).toDouble();
-
-    var randomHeightPercent = getRandomValueInRange(
-      min: 0,
-      max: 100,
-    ).toDouble();
-
-    // Ensure Box bounds will not be outide of screen
-    if ((randomWidthPercent + widthRatio) > 100)
-      randomWidthPercent -= widthRatio;
-
-    if ((randomHeightPercent + heightRatio) > 100)
-      randomHeightPercent -= heightRatio;
-
-    // Set final percent position
-    Offset positionPercent = Offset(randomWidthPercent, randomHeightPercent);
-
-    return positionPercent;
+    rect = Rect.fromLTWH(position.dx, position.dy, size, size);
   }
 
   Offset convertPercentToPosition(Offset positionPercent) {
@@ -108,90 +69,23 @@ class Box {
       percent: positionPercent.dy,
     );
 
+    // Ensure Box bounds will not be outside of screen
+    if ((xPosition + size) > 100) xPosition -= size;
+
+    if ((yPosition + size) > 100) yPosition -= size;
+
     // Set final screen position
     Offset position = Offset(xPosition, yPosition);
 
     return position;
   }
 
-  // void updatePosition({bool reset = false}) {
-  //   if (reset) {
-  //     position = Offset(
-  //       (game.screenSize.width / 2) - (size / 2),
-  //       (game.screenSize.height / 2) - (size / 2),
-  //     );
-  //   } else {
-  //     position = Offset(
-  //       getRandomValueInRange(
-  //         min: 0,
-  //         max: (game.screenSize.width - size).toInt(),
-  //       ).toDouble(),
-  //       getRandomValueInRange(
-  //         min: 0,
-  //         max: (game.screenSize.height - size).toInt(),
-  //       ).toDouble(),
-  //     );
-  //   }
-  // }
-
-  void updatePosition({bool reset = false}) {
-    if (reset) {
-      // Reset to default center position
+  void updatePosition(dynamic newPosition) {
+    // Get Screen position from Percent position
+    if (newPosition['posX'].toDouble() == 50 && newPosition['posY'].toDouble() == 50)
       position = center;
-    } else {
-      // Get Screen position from Percent position
-      var positionPercent = getPositionPercent();
-      position = convertPercentToPosition(positionPercent);
-    }
-  }
-
-  void onTapDown(TapDownDetails details) async {
-    // TODO: Update firestore position field every time player taps box
-    // updateBoxPos(
-    //     screenHeight: (game.screenSize.height).toInt(),
-    //     screenWidth: (game.screenSize.width).toInt());
-    if (!game.playing) {
-      // Start Playing
-      game.playing = true;
-
-      // Score
-      game.score = 0;
-
-      // Time
-      game.timeLimit = 30;
-    } else {
-      // Score
-      game.score += 1;
-    }
-
-    // Vibration
-    if (await Vibration.hasAmplitudeControl()) {
-      Vibration.vibrate(
-        duration: 25,
-        amplitude: 50,
-      );
-    } else if (await Vibration.hasVibrator()) {
-      Vibration.vibrate(duration: 25);
-    }
-
-    // Randomize Position
-    updatePosition();
-
-    // Randomize Paint Color
-    paint.color = Color.fromARGB(
-      255,
-      random.nextInt(255),
-      random.nextInt(255),
-      random.nextInt(255),
-    );
-  }
-
-  void updateRectPos(newPos) {
-    rect = Rect.fromLTWH(
-      newPos.data['posX'],
-      newPos.data['posY'],
-      newPos.data[size],
-      newPos.data[size],
-    );
+    else
+      position = convertPercentToPosition(
+          Offset(newPosition['posX'].toDouble(), newPosition['posY'].toDouble()));
   }
 }

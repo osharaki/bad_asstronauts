@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import "package:flutter/gestures.dart";
 import 'package:flutter/services.dart';
 import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/status.dart';
 
 import 'joystick/itemDrag.dart';
 import 'joystick/touchData.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // WebSocket stuff
+  IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
 
   var flameUtil = Util();
   await flameUtil.fullScreen();
@@ -36,8 +41,7 @@ class MyApp extends StatelessWidget {
       child: game.widget,
       gestures: <Type, GestureRecognizerFactory>{
         ImmediateMultiDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-                ImmediateMultiDragGestureRecognizer>(
+            GestureRecognizerFactoryWithHandlers<ImmediateMultiDragGestureRecognizer>(
           () => ImmediateMultiDragGestureRecognizer(),
           (ImmediateMultiDragGestureRecognizer instance) {
             instance.onStart = (Offset offset) {
