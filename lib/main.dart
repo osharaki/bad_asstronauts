@@ -14,11 +14,13 @@ void main() async {
   await flameUtil.setLandscape();
 
   // WebSocket stuff
-  IOWebSocketChannel channel = new IOWebSocketChannel.connect("ws://192.168.1.106:3000");
+  IOWebSocketChannel channel =
+      new IOWebSocketChannel.connect("ws://10.0.2.2:3000");
 
   // runApp(FirebaseInit());
   var boxGame = BoxGame(webSocketChannel: channel);
   var tapper = TapGestureRecognizer();
+
   tapper.onTapDown = boxGame.onTapDown;
   runApp(boxGame.widget);
 }

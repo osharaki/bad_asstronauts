@@ -42,7 +42,9 @@ class BoxGame extends Game with TapDetector {
       if (webSocketChannel.sink != null) {
         webSocketChannel.stream.listen((message) {
           position = json.decode(message);
-          if (box != null) box.updatePosition({'posX': position['posX'], 'posY': position['posY']});
+          if (box != null)
+            box.updatePosition(
+                {'posX': position['posX'], 'posY': position['posY']});
         });
       }
     }
@@ -69,11 +71,13 @@ class BoxGame extends Game with TapDetector {
     if (box != null)
       box.render(canvas);
     else {
-      TextConfig(fontSize: 20, color: Colors.white, textAlign: TextAlign.center).render(
-          canvas,
-          'loading box...',
-          Position.fromOffset(Offset(screenSize.width / 2, screenSize.height / 2)),
-          anchor: Anchor.center);
+      TextConfig(fontSize: 20, color: Colors.white, textAlign: TextAlign.center)
+          .render(
+              canvas,
+              'loading box...',
+              Position.fromOffset(
+                  Offset(screenSize.width / 2, screenSize.height / 2)),
+              anchor: Anchor.center);
     }
   }
 
