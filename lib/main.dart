@@ -1,19 +1,14 @@
 import "package:flame/util.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
-import "package:flutter/gestures.dart";
 import 'package:flutter/services.dart';
-import 'package:gameOff2020/joystick/joystickGame.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart';
-
-import 'joystick/itemDrag.dart';
-import 'joystick/touchData.dart';
+import 'package:gameOff2020/joystick/gameLauncher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // WebSocket stuff
+  // WebSocket Channel
   IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
 
   var flameUtil = Util();
@@ -27,37 +22,5 @@ void main() async {
     "joystickBase.png",
   ]);
 
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  int touchCounter = 0;
-  final JoystickGame game = JoystickGame();
-  // final BoxGame game = BoxGame();
-
-  @override
-  Widget build(BuildContext context) {
-    return RawGestureDetector(
-      child: game.widget,
-      gestures: <Type, GestureRecognizerFactory>{
-        ImmediateMultiDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<ImmediateMultiDragGestureRecognizer>(
-          () => ImmediateMultiDragGestureRecognizer(),
-          (ImmediateMultiDragGestureRecognizer instance) {
-            instance.onStart = (Offset offset) {
-              touchCounter++;
-              game.onTap(TouchData(touchCounter, offset));
-              return ItemDrag((details, tId) {
-                game.onDrag(TouchData(tId, details.globalPosition));
-              }, (details, tId) {
-                game.onRelease(TouchData(tId, Offset(0, 0)));
-              }, (tId) {
-                game.onCancel(TouchData(tId, Offset(0, 0)));
-              }, touchCounter);
-            };
-          },
-        )
-      },
-    );
-  }
+  runApp(GameLauncher(channel: channel));
 }

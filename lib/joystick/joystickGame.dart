@@ -1,13 +1,16 @@
-import 'package:flame/flame.dart';
+import 'dart:convert';
+
 import "package:flame/game.dart";
+import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/joystick/trigger.dart';
 
-import 'bullet.dart';
 import 'world.dart';
 import 'enemy.dart';
 import 'debris.dart';
 import 'planet.dart';
+import 'bullet.dart';
 import 'server.dart';
 import 'joystick.dart';
 import 'spaceship.dart';
@@ -18,6 +21,9 @@ class JoystickGame extends Game {
   Size screenSize;
   double tileSize;
 
+  IOWebSocketChannel channel;
+
+  String id;
   Server server;
 
   Trigger trigger;
@@ -26,8 +32,10 @@ class JoystickGame extends Game {
 
   List<TouchData> taps = [];
 
-  JoystickGame() {
+  JoystickGame({@required this.channel}) {
     initialize();
+
+    channel.stream.listen((data) => onReceiveData(data));
   }
 
   void initialize() async {
@@ -108,5 +116,27 @@ class JoystickGame extends Game {
 
   void onCancel(TouchData touch) {
     taps.removeWhere((tap) => tap.touchId == touch.touchId);
+  }
+
+  void onReceiveData(String rawMessage) {
+    Map message = jsonDecode(rawMessage);
+    String action = message["action"];
+    Map data = message["data"];
+
+    // ACTIONS
+    // Connect
+    if (action == "connect") {
+      // Store ID
+      id = data["id"];
+      print("MY ID: $id");
+
+      // Join
+    } else if (action == "join") {
+      print("JOINED SESSION");
+
+      // Update
+    } else if (action == "update") {
+      print("UPDATED SESSION");
+    }
   }
 }
