@@ -149,6 +149,9 @@ class Joystick {
 
       // Shift Knob by offset
       knobRect = knobRect.shift(difference);
+
+      // Send new world position to server
+      game.spaceship.updateSpaceshipWorldPosition();
     } else {
       // Shift Knob to Joystick center
       Offset difference = dragPosition - knobRect.center;

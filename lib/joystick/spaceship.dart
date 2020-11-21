@@ -10,9 +10,9 @@ class Spaceship {
   final JoystickGame game;
 
   Rect rect;
-  int fuelLeft = 10;
   double size;
   Sprite sprite;
+  int fuelLeft = 10;
   bool move = false;
   double speed = 500;
   Offset worldPosition;
@@ -92,6 +92,35 @@ class Spaceship {
 
     // Restore Original Rect
     canvas.restore();
+  }
+
+  Offset updateSpaceshipWorldPosition() {
+    // Get Spaceship World Position
+    worldPosition = game.server.world.rect.topLeft + rect.center;
+
+    // Replace position
+    game.serverData["players"][game.id]["spaceship"]["position"] = [
+      worldPosition.dx,
+      worldPosition.dy,
+    ];
+
+    game.sendMessageToServer(
+      action: "update",
+      data: game.serverData,
+    );
+
+    print("WORLD POS: $worldPosition");
+  }
+
+  void setSpaceshipWorldPosition(Offset position) {
+    worldPosition = position;
+
+    rect = Rect.fromLTWH(
+      position.dx,
+      position.dy,
+      size,
+      size * 2,
+    );
   }
 
   Offset getOffsetFromScreenCenter() {

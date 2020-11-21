@@ -25,6 +25,7 @@ class JoystickGame extends Game {
 
   String id;
   Server server;
+  Map<String, dynamic> serverData;
 
   Trigger trigger;
   Joystick joystick;
@@ -83,9 +84,12 @@ class JoystickGame extends Game {
   void onTap(TouchData touch) {
     taps.add(touch);
 
-    if (joystick.baseRect.contains(touch.offset)) joystick.onTap(touch);
+    // Joystick
+    if (joystick.baseRect.contains(touch.offset)) {
+      joystick.onTap(touch);
 
-    if (trigger.rect.contains(touch.offset)) {
+      // Trigger
+    } else if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
         angle: spaceship.lastMoveRadAngle,
@@ -93,6 +97,17 @@ class JoystickGame extends Game {
       );
 
       server.bullets.add(bullet);
+
+      // Empty
+    } else {
+      Map<String, dynamic> joinData = {
+        "action": "join",
+        "data": {
+          "session": "test",
+        },
+      };
+
+      channel.sink.add(json.encode(joinData));
     }
   }
 
@@ -118,10 +133,18 @@ class JoystickGame extends Game {
     taps.removeWhere((tap) => tap.touchId == touch.touchId);
   }
 
+  void sendMessageToServer({
+    @required String action,
+    @required Map<String, dynamic> data,
+  }) {
+    String message = jsonEncode({"action": action, "data": data});
+    channel.sink.add(message);
+  }
+
   void onReceiveData(String rawMessage) {
     Map message = jsonDecode(rawMessage);
     String action = message["action"];
-    Map data = message["data"];
+    Map<String, dynamic> data = message["data"];
 
     // ACTIONS
     // Connect
@@ -129,14 +152,20 @@ class JoystickGame extends Game {
       // Store ID
       id = data["id"];
       print("MY ID: $id");
+      print(data);
 
       // Join
     } else if (action == "join") {
+      serverData = data;
       print("JOINED SESSION");
+      print(data);
 
       // Update
     } else if (action == "update") {
+      serverData = data;
+      server.updateSpaceships();
       print("UPDATED SESSION");
+      print(data);
     }
   }
 }
