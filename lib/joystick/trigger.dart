@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:gameOff2020/joystick/mainGame.dart';
 
 class Trigger {
-  final JoystickGame game;
+  final MainGame game;
 
   Rect rect;
   double size;

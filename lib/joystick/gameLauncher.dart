@@ -3,17 +3,17 @@ import "package:flutter/material.dart";
 import "package:web_socket_channel/io.dart";
 import 'package:gameOff2020/joystick/itemDrag.dart';
 import 'package:gameOff2020/joystick/touchData.dart';
-import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:gameOff2020/joystick/mainGame.dart';
 
 class GameLauncher extends StatelessWidget {
   // WebSocket Channel
   IOWebSocketChannel channel;
 
-  JoystickGame game;
+  MainGame game;
   int touchCounter = 0;
 
   GameLauncher({@required this.channel}) {
-    game = JoystickGame(channel: channel);
+    game = MainGame(channel: channel);
   }
 
   @override

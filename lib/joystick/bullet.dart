@@ -1,10 +1,9 @@
 import 'dart:math';
-
+import "mainGame.dart";
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/joystickGame.dart';
 
 class Bullet {
-  final JoystickGame game;
+  final MainGame game;
 
   final double angle;
   final Offset startPosition;
@@ -13,6 +12,7 @@ class Bullet {
   double size;
   double life = 3;
   Offset position;
+  Offset offsetPosition;
   double speed = 1000;
   Paint paint = Paint();
   double sizeMultiplier = 0.1;
@@ -23,6 +23,7 @@ class Bullet {
     @required this.startPosition,
   }) {
     position = startPosition;
+    offsetPosition = position;
     paint.color = Colors.amber;
     size = game.tileSize * sizeMultiplier;
   }
@@ -36,7 +37,8 @@ class Bullet {
       speed * t * sin(angle),
     );
 
-    position += nextOffset;
+    offsetPosition += nextOffset;
+    position = offsetPosition + game.serverHandler.arena.rect.topLeft;
   }
 
   void render(Canvas canvas) {

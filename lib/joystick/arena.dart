@@ -1,10 +1,10 @@
 import "package:flutter/material.dart";
 
-import 'joystickGame.dart';
+import 'mainGame.dart';
 
-class World {
+class Arena {
   // Instance Variables
-  JoystickGame game;
+  MainGame game;
 
   Rect rect;
   Paint paint = Paint();
@@ -13,7 +13,7 @@ class World {
   Size size;
   double sizeMultiplier = 4;
 
-  World({this.game}) {
+  Arena({this.game}) {
     size = Size(
       game.screenSize.width * sizeMultiplier,
       game.screenSize.height * sizeMultiplier,
@@ -49,7 +49,9 @@ class World {
   bool exceedsTop(double offset) {
     if ((rect.top -
             offset -
-            game.server.spaceships[game.id].getOffsetFromScreenCenter().dy) >
+            game.serverHandler.spaceships[game.id]
+                .getOffsetFromScreenCenter()
+                .dy) >
         0) {
       return true;
     } else {
@@ -60,7 +62,9 @@ class World {
   bool exceedsBottom(double offset) {
     if ((rect.bottom -
             offset -
-            game.server.spaceships[game.id].getOffsetFromScreenCenter().dy) <
+            game.serverHandler.spaceships[game.id]
+                .getOffsetFromScreenCenter()
+                .dy) <
         (game.screenSize.height)) {
       return true;
     } else {
@@ -71,7 +75,9 @@ class World {
   bool exceedsLeft(double offset) {
     if ((rect.left -
             offset -
-            game.server.spaceships[game.id].getOffsetFromScreenCenter().dx) >
+            game.serverHandler.spaceships[game.id]
+                .getOffsetFromScreenCenter()
+                .dx) >
         0) {
       return true;
     } else {
@@ -82,7 +88,9 @@ class World {
   bool exceedsRight(double offset) {
     if ((rect.right -
             offset -
-            game.server.spaceships[game.id].getOffsetFromScreenCenter().dx) <
+            game.serverHandler.spaceships[game.id]
+                .getOffsetFromScreenCenter()
+                .dx) <
         (game.screenSize.width)) {
       return true;
     } else {

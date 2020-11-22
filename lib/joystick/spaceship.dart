@@ -1,11 +1,11 @@
 import 'dart:math';
-import "joystickGame.dart";
+import 'mainGame.dart';
 import 'package:flame/sprite.dart';
 import "package:flutter/material.dart";
 
 class Spaceship {
   // Instance Variables
-  final JoystickGame game;
+  final MainGame game;
   final bool centered;
 
   Rect rect;
@@ -13,7 +13,7 @@ class Spaceship {
   Sprite sprite;
   int fuelLeft = 10;
   bool move = false;
-  double speed = 500;
+  double speed = 350;
   double multiplier = 1;
   double sizeMultiplier = 0.8;
   double lastMoveRadAngle = 0;
@@ -35,7 +35,7 @@ class Spaceship {
       size * 2,
     );
 
-    // Get World Position
+    // Get Arena Position
     worldPosition = getWorldPosition();
 
     // Create Spaceship Sprite from Images
@@ -46,25 +46,25 @@ class Spaceship {
     // Debris Impact
     List<int> removeDebris = [];
 
-    for (int i = 0; i < game.server.debris.length; i++) {
-      if (rect.overlaps(game.server.debris[i].rect)) {
+    for (int i = 0; i < game.serverHandler.debris.length; i++) {
+      if (rect.overlaps(game.serverHandler.debris[i].rect)) {
         fuelLeft -= 1;
         removeDebris.add(i);
       }
     }
 
     removeDebris.forEach((i) {
-      game.server.debris.removeAt(i);
+      game.serverHandler.debris.removeAt(i);
     });
 
     if (centered) {
       // Shift Spaceship to it's next position
       rect = rect.shift(game.joystick.spaceshipOffset);
     } else {
-      // Create Enemy at world position
+      // Create Spaceship at arena position
       rect = Rect.fromLTWH(
-        worldPosition.dx + game.server.world.rect.topLeft.dx,
-        worldPosition.dy + game.server.world.rect.topLeft.dy,
+        worldPosition.dx + game.serverHandler.arena.rect.topLeft.dx,
+        worldPosition.dy + game.serverHandler.arena.rect.topLeft.dy,
         size,
         size * 2,
       );
@@ -101,7 +101,7 @@ class Spaceship {
   }
 
   void sendToServer() {
-    // Send World Position to Server
+    // Send Arena Position to Server
     game.sendMessageToServer(
       action: "updateSpaceship",
       data: {
@@ -112,8 +112,9 @@ class Spaceship {
   }
 
   Offset getWorldPosition() {
-    // Get Spaceship World Position
-    var worldPosition = (game.server.world.rect.topLeft - rect.topLeft) * -1;
+    // Get Spaceship Arena Position
+    var worldPosition =
+        (game.serverHandler.arena.rect.topLeft - rect.topLeft) * -1;
 
     return worldPosition;
   }

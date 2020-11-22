@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:gameOff2020/joystick/mainGame.dart';
 import 'package:gameOff2020/utils/math.dart';
 
 class Debris {
-  JoystickGame game;
+  MainGame game;
   Rect rect;
   double size;
   Offset position;
@@ -34,15 +34,11 @@ class Debris {
   }
 
   void update(double t) {
-    // Debris' offset from it's next position
-    var difference = Offset(
-          rect.center.dx - game.joystick.nextOffset.dx,
-          rect.center.dy - game.joystick.nextOffset.dy,
-        ) -
-        rect.center;
-
-    // Shift Debris to it's next position
-    rect = rect.shift(difference);
+    // Create Debris at arena position
+    rect = Rect.fromCircle(
+      center: position + game.serverHandler.arena.rect.topLeft,
+      radius: size,
+    );
   }
 
   void render(Canvas canvas) {

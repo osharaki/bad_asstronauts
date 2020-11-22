@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 
-import 'world.dart';
+import 'arena.dart';
 import 'bullet.dart';
 import 'debris.dart';
 import 'planet.dart';
 import 'asteroid.dart';
+import 'mainGame.dart';
 import 'spaceship.dart';
-import 'joystickGame.dart';
 
-class Server {
-  JoystickGame game;
+class ServerHandler {
+  MainGame game;
 
-  World world;
+  Arena arena;
+
   Map<String, Spaceship> spaceships = {};
+
   List<Debris> debris = List.empty(growable: true);
   List<Planet> planets = List.empty(growable: true);
-  List<Asteroid> asteroids = List.empty(growable: true);
   List<Bullet> bullets = List.empty(growable: true);
+  List<Asteroid> asteroids = List.empty(growable: true);
 
-  Server({@required this.game}) {
-    world = World(game: game);
+  ServerHandler({@required this.game}) {
+    arena = Arena(game: game);
     planets.add(Planet(game: game));
 
     for (var i = 0; i < 250; i++) {
@@ -32,7 +34,7 @@ class Server {
     spaceships.removeWhere((spaceship, value) =>
         !game.serverData["players"].keys.contains(spaceship));
 
-    // For each player in server data
+    // For each player in serverHandler data
     game.serverData["players"].keys.forEach((player) {
       // Create Spaceship
       if (player == game.id) {
@@ -59,8 +61,8 @@ class Server {
   }
 
   void update(double t) {
-    // World
-    world.update(t);
+    // Arena
+    arena.update(t);
 
     // Spaceships
     spaceships.keys.forEach((s) {
@@ -83,8 +85,8 @@ class Server {
   }
 
   void render(Canvas canvas) {
-    // World
-    world.render(canvas);
+    // Arena
+    arena.render(canvas);
 
     // Spaceships
     spaceships.keys.forEach((s) {

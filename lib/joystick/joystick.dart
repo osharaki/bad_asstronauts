@@ -1,12 +1,12 @@
 import 'dart:math';
-import "joystickGame.dart";
+import 'mainGame.dart';
 import 'package:flame/sprite.dart';
 import "package:flutter/material.dart";
 import 'package:gameOff2020/joystick/touchData.dart';
 
 class Joystick {
   // Instance Variables
-  final JoystickGame game;
+  final MainGame game;
 
   int touchId;
 
@@ -103,20 +103,20 @@ class Joystick {
       double multiplier = distance / baseRadius;
 
       // Use angle to orient spaceship
-      game.server.spaceships[game.id].lastMoveRadAngle = radAngle;
+      game.serverHandler.spaceships[game.id].lastMoveRadAngle = radAngle;
 
       // Next Frame's Offset
       // Same as getting Drag Radial Position, but (multiplier * speed * t) is our radius
       nextOffset = Offset(
-        (multiplier * game.server.spaceships[game.id].speed * t) *
+        (multiplier * game.serverHandler.spaceships[game.id].speed * t) *
             cos(radAngle),
-        (multiplier * game.server.spaceships[game.id].speed * t) *
+        (multiplier * game.serverHandler.spaceships[game.id].speed * t) *
             sin(radAngle),
       );
 
       Offset oldOffset = nextOffset;
 
-      // Limit to World Boundaries
+      // Limit to Arena Boundaries
       nextOffset = limitToWorldBoundaries(nextOffset);
 
       // Get Spaceship Offset
@@ -153,20 +153,18 @@ class Joystick {
       // Shift Knob by offset
       knobRect = knobRect.shift(difference);
 
-      // Obtain Spaceship World Position
-      game.server.spaceships[game.id].worldPosition =
-          game.server.spaceships[game.id].getWorldPosition();
+      // Obtain Spaceship Arena Position
+      game.serverHandler.spaceships[game.id].worldPosition =
+          game.serverHandler.spaceships[game.id].getWorldPosition();
 
-      // Send spaceship world position to server
-      game.server.spaceships[game.id].sendToServer();
-
-      // Release knob
+      // Send spaceship arena position to serverHandler
+      game.serverHandler.spaceships[game.id].sendToServer();
     }
   }
 
   Map<String, bool> isSpaceshipOffsetFromCenter() {
     Offset spaceshipScreenCenterOffset =
-        game.server.spaceships[game.id].getOffsetFromScreenCenter();
+        game.serverHandler.spaceships[game.id].getOffsetFromScreenCenter();
 
     Map<String, bool> offsetValues = {"x": false, "y": false};
 
@@ -185,7 +183,7 @@ class Joystick {
 
   Offset getSpaceshipCenterAlignmentOffset() {
     Offset spaceshipScreenCenterOffset =
-        game.server.spaceships[game.id].getOffsetFromScreenCenter();
+        game.serverHandler.spaceships[game.id].getOffsetFromScreenCenter();
 
     double xOffsetIncrement = 0;
     double yOffsetIncrement = 0;
@@ -222,31 +220,33 @@ class Joystick {
 
   Offset limitToScreenBoundaries(Offset offset) {
     // Limit to Screen Boundaries
-    if (game.server.spaceships[game.id].exceedsTop(offset.dy))
+    if (game.serverHandler.spaceships[game.id].exceedsTop(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.server.spaceships[game.id].exceedsBottom(offset.dy))
+    if (game.serverHandler.spaceships[game.id].exceedsBottom(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.server.spaceships[game.id].exceedsLeft(offset.dx))
+    if (game.serverHandler.spaceships[game.id].exceedsLeft(offset.dx))
       offset = Offset(0, offset.dy);
 
-    if (game.server.spaceships[game.id].exceedsRight(offset.dx))
+    if (game.serverHandler.spaceships[game.id].exceedsRight(offset.dx))
       offset = Offset(0, offset.dy);
 
     return offset;
   }
 
   Offset limitToWorldBoundaries(Offset offset) {
-    // Limit to World Boundaries
-    if (game.server.world.exceedsTop(offset.dy)) offset = Offset(offset.dx, 0);
-
-    if (game.server.world.exceedsBottom(offset.dy))
+    // Limit to Arena Boundaries
+    if (game.serverHandler.arena.exceedsTop(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.server.world.exceedsLeft(offset.dx)) offset = Offset(0, offset.dy);
+    if (game.serverHandler.arena.exceedsBottom(offset.dy))
+      offset = Offset(offset.dx, 0);
 
-    if (game.server.world.exceedsRight(offset.dx))
+    if (game.serverHandler.arena.exceedsLeft(offset.dx))
+      offset = Offset(0, offset.dy);
+
+    if (game.serverHandler.arena.exceedsRight(offset.dx))
       offset = Offset(0, offset.dy);
 
     return offset;

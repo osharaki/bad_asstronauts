@@ -1,12 +1,14 @@
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/joystickGame.dart';
+import 'package:gameOff2020/joystick/mainGame.dart';
 
 class Planet {
   // Instance Variables
-  JoystickGame game;
+  MainGame game;
 
   Rect rect;
   Paint paint = Paint();
+
+  Offset position;
 
   double size;
   double sizeMultiplier = 2.5;
@@ -18,8 +20,10 @@ class Planet {
   void initialize() {
     size = game.tileSize * sizeMultiplier;
 
+    position = Offset(750, 300);
+
     rect = Rect.fromCircle(
-      center: Offset(750, 300),
+      center: position,
       radius: size,
     );
 
@@ -27,15 +31,11 @@ class Planet {
   }
 
   void update(double t) {
-    // Spaceship's offset from it's next position
-    var difference = Offset(
-          rect.center.dx - game.joystick.nextOffset.dx,
-          rect.center.dy - game.joystick.nextOffset.dy,
-        ) -
-        rect.center;
-
-    // Shift Spaceship to it's next position
-    rect = rect.shift(difference);
+    // Create Planet at arena position
+    rect = Rect.fromCircle(
+      center: position + game.serverHandler.arena.rect.topLeft,
+      radius: size,
+    );
   }
 
   void render(Canvas canvas) {

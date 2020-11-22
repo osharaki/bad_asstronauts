@@ -1,18 +1,17 @@
 import 'dart:convert';
-
 import "package:flame/game.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
-import 'package:gameOff2020/utils/math.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:gameOff2020/joystick/trigger.dart';
+import 'package:gameOff2020/utils/math.dart';
 
 import 'bullet.dart';
-import 'server.dart';
+import 'trigger.dart';
 import 'joystick.dart';
-import "touchData.dart";
+import 'touchData.dart';
+import 'serverHandler.dart';
 
-class JoystickGame extends Game {
+class MainGame extends Game {
   // Instance Variable
   Size screenSize;
   double tileSize;
@@ -20,7 +19,7 @@ class JoystickGame extends Game {
   IOWebSocketChannel channel;
 
   String id;
-  Server server;
+  ServerHandler serverHandler;
   Map<String, dynamic> serverData = {};
 
   Trigger trigger;
@@ -28,7 +27,7 @@ class JoystickGame extends Game {
 
   List<TouchData> taps = [];
 
-  JoystickGame({@required this.channel}) {
+  MainGame({@required this.channel}) {
     initialize();
 
     channel.stream.listen((rawMessage) => onReceiveMessage(rawMessage));
@@ -39,7 +38,7 @@ class JoystickGame extends Game {
     resize(await Flame.util.initialDimensions());
 
     // Initialize Components
-    server = Server(game: this);
+    serverHandler = ServerHandler(game: this);
 
     trigger = Trigger(game: this);
     joystick = Joystick(game: this);
@@ -49,7 +48,7 @@ class JoystickGame extends Game {
   void update(double t) {
     // Sync Components' update method with Game's
     if (serverData.isNotEmpty) {
-      server.update(t);
+      serverHandler.update(t);
       trigger.update(t);
       joystick.update(t);
     }
@@ -59,7 +58,7 @@ class JoystickGame extends Game {
   void render(Canvas canvas) {
     // Sync Components' render method with Game's
     if (serverData.isNotEmpty) {
-      server.render(canvas);
+      serverHandler.render(canvas);
       trigger.render(canvas);
       joystick.render(canvas);
     }
@@ -86,11 +85,15 @@ class JoystickGame extends Game {
     } else if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
-        angle: server.spaceships[id].lastMoveRadAngle,
-        startPosition: server.spaceships[id].rect.center,
+        angle: serverHandler.spaceships[id].lastMoveRadAngle,
+        startPosition: serverHandler.spaceships[id].worldPosition +
+            Offset(
+              serverHandler.spaceships[id].size / 2,
+              serverHandler.spaceships[id].size / 4,
+            ),
       );
 
-      server.bullets.add(bullet);
+      serverHandler.bullets.add(bullet);
 
       // Empty
     } else {
@@ -140,13 +143,13 @@ class JoystickGame extends Game {
 
   Offset getWorldPositionFromPercent(List<dynamic> percent) {
     var x = mapValue(
-      aValue: server.world.size.width,
+      aValue: serverHandler.arena.size.width,
       bValue: 100,
       bMatch: percent[0],
     );
 
     var y = mapValue(
-      aValue: server.world.size.height,
+      aValue: serverHandler.arena.size.height,
       bValue: 100,
       bMatch: percent[1],
     );
@@ -159,13 +162,13 @@ class JoystickGame extends Game {
   List<dynamic> getPercentFromWorldPosition(Offset position) {
     var x = mapValue(
       aValue: 100,
-      bValue: server.world.size.width,
+      bValue: serverHandler.arena.size.width,
       bMatch: position.dx,
     );
 
     var y = mapValue(
       aValue: 100,
-      bValue: server.world.size.height,
+      bValue: serverHandler.arena.size.height,
       bMatch: position.dy,
     );
 
@@ -204,7 +207,7 @@ class JoystickGame extends Game {
       // Update
     } else if (action == "update") {
       serverData = data;
-      server.updateSpaceships();
+      serverHandler.updateSpaceships();
       print("UPDATED SESSION");
       print(data);
     }
