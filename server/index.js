@@ -107,7 +107,7 @@ function addPlayerToSpecificSession( player, session ) {
     // Initial Data to assign player
     var initData = {
       'spaceship': {
-        'position': [ 0, 0 ],
+        'position': [ 50, 50 ],
         'angle': 0
       }
     };

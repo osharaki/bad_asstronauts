@@ -11,10 +11,10 @@ class Enemy {
   Sprite sprite;
 
   double size;
-  double sizeMultiplier = 0.7;
+  double sizeMultiplier = 0.8;
 
   double angle = 0;
-  List<dynamic> position = [0, 0];
+  Offset position = Offset(0, 0);
 
   Enemy({@required this.game}) {
     initialize();
@@ -26,8 +26,8 @@ class Enemy {
 
     // Create Rect at Screen Center to contain Spaceship
     rect = Rect.fromLTWH(
-      position[0] - (size / 2),
-      position[1] - (size),
+      position.dx - (size / 2),
+      position.dy - (size),
       size,
       size * 2,
     );
@@ -39,8 +39,8 @@ class Enemy {
   void update(double t) {
     // Create Enemy at world position
     rect = Rect.fromLTWH(
-      position[0] - (size / 2) + game.server.world.rect.topLeft.dx,
-      position[1] - (size) + game.server.world.rect.topLeft.dy,
+      position.dx + game.server.world.rect.topLeft.dx,
+      position.dy + game.server.world.rect.topLeft.dy,
       size,
       size * 2,
     );

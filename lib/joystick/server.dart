@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'enemy.dart';
 import 'world.dart';
 import 'bullet.dart';
 import 'debris.dart';
@@ -13,8 +12,7 @@ class Server {
   JoystickGame game;
 
   World world;
-  Spaceship spaceship;
-  Map<String, Enemy> enemies = {};
+  Map<String, Spaceship> spaceships = {};
   List<Debris> debris = List.empty(growable: true);
   List<Planet> planets = List.empty(growable: true);
   List<Asteroid> asteroids = List.empty(growable: true);
@@ -23,38 +21,39 @@ class Server {
   Server({@required this.game}) {
     world = World(game: game);
     planets.add(Planet(game: game));
-    spaceship = Spaceship(game: game);
 
     for (var i = 0; i < 250; i++) {
       debris.add(Debris(game: game));
     }
   }
 
-  void updateEnemies() {
-    // Remove disconnected enemies
-    enemies.removeWhere(
-        (enemy, value) => !game.serverData["players"].keys.contains(enemy));
+  void updateSpaceships() {
+    // Remove disconnected spaceships
+    spaceships.removeWhere((spaceship, value) =>
+        !game.serverData["players"].keys.contains(spaceship));
 
     // For each player in server data
     game.serverData["players"].keys.forEach((player) {
-      // Other players are Enemies
-      if (player != game.id) {
+      // Create Spaceship
+      if (player == game.id) {
+        if (!spaceships.containsKey(player)) {
+          spaceships[player] = Spaceship(game: game);
+        }
+      } else {
+        if (!spaceships.containsKey(player)) {
+          spaceships[player] = Spaceship(game: game, centered: false);
+        }
+
+        // Get other spaceships' info
         dynamic angle =
             game.serverData["players"][player]["spaceship"]["angle"];
 
-        List<dynamic> position =
-            game.serverData["players"][player]["spaceship"]["position"];
+        Offset position = game.getWorldPositionFromPercent(
+            game.serverData["players"][player]["spaceship"]["position"]);
 
-        // Create Enemy
-        if (!enemies.containsKey(player)) {
-          enemies[player] = Enemy(game: game);
-        }
-
-        // Update Position
-        enemies[player].position = position;
-
-        // Update Angle
-        enemies[player].angle = angle.toDouble();
+        // Update info
+        spaceships[player].worldPosition = position;
+        spaceships[player].lastMoveRadAngle = angle.toDouble();
       }
     });
   }
@@ -63,12 +62,9 @@ class Server {
     // World
     world.update(t);
 
-    // Spaceship
-    spaceship.update(t);
-
-    // Enemies
-    enemies.keys.forEach((s) {
-      enemies[s].update(t);
+    // Spaceships
+    spaceships.keys.forEach((s) {
+      spaceships[s].update(t);
     });
 
     // Debris
@@ -90,12 +86,9 @@ class Server {
     // World
     world.render(canvas);
 
-    // Spaceship
-    spaceship.render(canvas);
-
-    // Enemies
-    enemies.keys.forEach((s) {
-      enemies[s].render(canvas);
+    // Spaceships
+    spaceships.keys.forEach((s) {
+      spaceships[s].render(canvas);
     });
 
     // Debris

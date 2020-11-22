@@ -3,6 +3,7 @@ import 'dart:convert';
 import "package:flame/game.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
+import 'package:gameOff2020/utils/math.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/joystick/trigger.dart';
 
@@ -85,8 +86,8 @@ class JoystickGame extends Game {
     } else if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
-        angle: server.spaceship.lastMoveRadAngle,
-        startPosition: server.spaceship.rect.center,
+        angle: server.spaceships[id].lastMoveRadAngle,
+        startPosition: server.spaceships[id].rect.center,
       );
 
       server.bullets.add(bullet);
@@ -137,6 +138,42 @@ class JoystickGame extends Game {
     taps.removeWhere((tap) => tap.touchId == touch.touchId);
   }
 
+  Offset getWorldPositionFromPercent(List<dynamic> percent) {
+    var x = mapValue(
+      aValue: server.world.size.width,
+      bValue: 100,
+      bMatch: percent[0],
+    );
+
+    var y = mapValue(
+      aValue: server.world.size.height,
+      bValue: 100,
+      bMatch: percent[1],
+    );
+
+    var worldPosition = Offset(x, y);
+
+    return worldPosition;
+  }
+
+  List<dynamic> getPercentFromWorldPosition(Offset position) {
+    var x = mapValue(
+      aValue: 100,
+      bValue: server.world.size.width,
+      bMatch: position.dx,
+    );
+
+    var y = mapValue(
+      aValue: 100,
+      bValue: server.world.size.height,
+      bMatch: position.dy,
+    );
+
+    List<dynamic> percent = [x, y];
+
+    return percent;
+  }
+
   void sendMessageToServer({
     @required String action,
     @required Map<String, dynamic> data,
@@ -167,7 +204,7 @@ class JoystickGame extends Game {
       // Update
     } else if (action == "update") {
       serverData = data;
-      server.updateEnemies();
+      server.updateSpaceships();
       print("UPDATED SESSION");
       print(data);
     }

@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 class Spaceship {
   // Instance Variables
   final JoystickGame game;
+  final bool centered;
 
   Rect rect;
   double size;
@@ -14,11 +15,11 @@ class Spaceship {
   bool move = false;
   double speed = 500;
   double multiplier = 1;
-  double sizeMultiplier = 0.7;
+  double sizeMultiplier = 0.8;
   double lastMoveRadAngle = 0;
   Offset worldPosition = Offset(0, 0);
 
-  Spaceship({@required this.game}) {
+  Spaceship({@required this.game, this.centered = true}) {
     initialize();
   }
 
@@ -35,7 +36,7 @@ class Spaceship {
     );
 
     // Get World Position
-    // worldPosition = getWorldPosition();
+    worldPosition = getWorldPosition();
 
     // Create Spaceship Sprite from Images
     sprite = Sprite("spaceship.png");
@@ -56,8 +57,18 @@ class Spaceship {
       game.server.debris.removeAt(i);
     });
 
-    // Shift Spaceship to it's next position
-    rect = rect.shift(game.joystick.spaceshipOffset);
+    if (centered) {
+      // Shift Spaceship to it's next position
+      rect = rect.shift(game.joystick.spaceshipOffset);
+    } else {
+      // Create Enemy at world position
+      rect = Rect.fromLTWH(
+        worldPosition.dx + game.server.world.rect.topLeft.dx,
+        worldPosition.dy + game.server.world.rect.topLeft.dy,
+        size,
+        size * 2,
+      );
+    }
   }
 
   // Honestly, I don't fully understand what's going on here
@@ -94,10 +105,7 @@ class Spaceship {
     game.sendMessageToServer(
       action: "updateSpaceship",
       data: {
-        "position": [
-          worldPosition.dx,
-          worldPosition.dy,
-        ],
+        "position": game.getPercentFromWorldPosition(worldPosition),
         "angle": lastMoveRadAngle,
       },
     );
@@ -105,7 +113,6 @@ class Spaceship {
 
   Offset getWorldPosition() {
     // Get Spaceship World Position
-    print("SERVER: ${game.server}");
     var worldPosition = (game.server.world.rect.topLeft - rect.topLeft) * -1;
 
     return worldPosition;

@@ -9,7 +9,7 @@ class Planet {
   Paint paint = Paint();
 
   double size;
-  double sizeMultiplier = 4;
+  double sizeMultiplier = 2.5;
 
   Planet({this.game}) {
     initialize();

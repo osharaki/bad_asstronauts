@@ -10,13 +10,21 @@ class World {
   Paint paint = Paint();
 
   // Limits
-  double topLimit = 0;
-  double bottomLimit = 2500;
-  double leftLimit = 0;
-  double rightLimit = 2500;
+  Size size;
+  double sizeMultiplier = 4;
 
   World({this.game}) {
-    rect = Rect.fromLTWH(leftLimit, topLimit, rightLimit, bottomLimit);
+    size = Size(
+      game.screenSize.width * sizeMultiplier,
+      game.screenSize.height * sizeMultiplier,
+    );
+
+    rect = Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height,
+    );
 
     paint.color = Colors.indigo[900];
   }
@@ -41,8 +49,8 @@ class World {
   bool exceedsTop(double offset) {
     if ((rect.top -
             offset -
-            game.server.spaceship.getOffsetFromScreenCenter().dy) >
-        topLimit) {
+            game.server.spaceships[game.id].getOffsetFromScreenCenter().dy) >
+        0) {
       return true;
     } else {
       return false;
@@ -52,7 +60,7 @@ class World {
   bool exceedsBottom(double offset) {
     if ((rect.bottom -
             offset -
-            game.server.spaceship.getOffsetFromScreenCenter().dy) <
+            game.server.spaceships[game.id].getOffsetFromScreenCenter().dy) <
         (game.screenSize.height)) {
       return true;
     } else {
@@ -63,8 +71,8 @@ class World {
   bool exceedsLeft(double offset) {
     if ((rect.left -
             offset -
-            game.server.spaceship.getOffsetFromScreenCenter().dx) >
-        leftLimit) {
+            game.server.spaceships[game.id].getOffsetFromScreenCenter().dx) >
+        0) {
       return true;
     } else {
       return false;
@@ -74,7 +82,7 @@ class World {
   bool exceedsRight(double offset) {
     if ((rect.right -
             offset -
-            game.server.spaceship.getOffsetFromScreenCenter().dx) <
+            game.server.spaceships[game.id].getOffsetFromScreenCenter().dx) <
         (game.screenSize.width)) {
       return true;
     } else {
