@@ -91,9 +91,6 @@ class Joystick {
         dragPosition.dx - joystickCenter.dx,
       );
 
-      // Use angle to orient spaceship
-      game.spaceship.lastMoveRadAngle = radAngle;
-
       // Get distance between Joystick center and Drag position
       var centerPoint = Point(joystickCenter.dx, joystickCenter.dy);
       var dragPoint = Point(dragPosition.dx, dragPosition.dy);
@@ -105,11 +102,14 @@ class Joystick {
       // Use distance as multiplier for spaceship speed
       double multiplier = distance / baseRadius;
 
+      // Use angle to orient spaceship
+      game.server.spaceship.lastMoveRadAngle = radAngle;
+
       // Next Frame's Offset
       // Same as getting Drag Radial Position, but (multiplier * speed * t) is our radius
       nextOffset = Offset(
-        (multiplier * game.spaceship.speed * t) * cos(radAngle),
-        (multiplier * game.spaceship.speed * t) * sin(radAngle),
+        (multiplier * game.server.spaceship.speed * t) * cos(radAngle),
+        (multiplier * game.server.spaceship.speed * t) * sin(radAngle),
       );
 
       Offset oldOffset = nextOffset;
@@ -131,6 +131,7 @@ class Joystick {
 
       if (isSpaceshipOffset["x"])
         spaceshipOffset = Offset(spaceshipCenterOffset.dx, spaceshipOffset.dy);
+
       if (isSpaceshipOffset["y"])
         spaceshipOffset = Offset(spaceshipOffset.dx, spaceshipCenterOffset.dy);
 
@@ -150,8 +151,12 @@ class Joystick {
       // Shift Knob by offset
       knobRect = knobRect.shift(difference);
 
-      // Send new world position to server
-      game.spaceship.updateSpaceshipWorldPosition();
+      // Obtain Spaceship World Position
+      game.server.spaceship.worldPosition =
+          game.server.spaceship.getWorldPosition();
+
+      // Send spaceship world position to server
+      game.server.spaceship.sendToServer();
     } else {
       // Shift Knob to Joystick center
       Offset difference = dragPosition - knobRect.center;
@@ -163,7 +168,7 @@ class Joystick {
 
   Map<String, bool> isSpaceshipOffsetFromCenter() {
     Offset spaceshipScreenCenterOffset =
-        game.spaceship.getOffsetFromScreenCenter();
+        game.server.spaceship.getOffsetFromScreenCenter();
 
     Map<String, bool> offsetValues = {"x": false, "y": false};
 
@@ -182,7 +187,7 @@ class Joystick {
 
   Offset getSpaceshipCenterAlignmentOffset() {
     Offset spaceshipScreenCenterOffset =
-        game.spaceship.getOffsetFromScreenCenter();
+        game.server.spaceship.getOffsetFromScreenCenter();
 
     double xOffsetIncrement = 0;
     double yOffsetIncrement = 0;
@@ -219,13 +224,17 @@ class Joystick {
 
   Offset limitToScreenBoundaries(Offset offset) {
     // Limit to Screen Boundaries
-    if (game.spaceship.exceedsTop(offset.dy)) offset = Offset(offset.dx, 0);
+    if (game.server.spaceship.exceedsTop(offset.dy))
+      offset = Offset(offset.dx, 0);
 
-    if (game.spaceship.exceedsBottom(offset.dy)) offset = Offset(offset.dx, 0);
+    if (game.server.spaceship.exceedsBottom(offset.dy))
+      offset = Offset(offset.dx, 0);
 
-    if (game.spaceship.exceedsLeft(offset.dx)) offset = Offset(0, offset.dy);
+    if (game.server.spaceship.exceedsLeft(offset.dx))
+      offset = Offset(0, offset.dy);
 
-    if (game.spaceship.exceedsRight(offset.dx)) offset = Offset(0, offset.dy);
+    if (game.server.spaceship.exceedsRight(offset.dx))
+      offset = Offset(0, offset.dy);
 
     return offset;
   }

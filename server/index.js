@@ -33,29 +33,44 @@ wss.on('connection', ws => {
   connectPlayer( ws, wss );
   
   ws.on('message', ( rawMessage ) => {
-    // Extract data
+    // Get Player info
+    var player = ws[ "id" ];
+    var session = serverData[ "players" ][ player ][ "session" ];
+
+    // Extract data from message
     var message = JSON.parse( rawMessage );
     var action = message[ 'action' ];
     var data = message[ 'data' ];
 
     if ( action == 'join' ) {
       // Add session in player and player in session
-      addPlayerToSpecificSession( ws[ 'id' ], data[ 'session' ] );
+      addPlayerToSpecificSession( player, data[ 'session' ] );
+      
     } else if ( action == 'update' ) {
-      var session = serverData[ 'players' ][ ws[ 'id' ] ];
       serverData[ 'sessions' ][ session ] = data;
+      updateSession( session );
+      
+    } else if ( action == "leave" ) {
+      removePlayerFromSpecificSession( player, data[ "session" ] );
+      
+    } else if ( action == "updateSpaceship" ) {
+      console.log(session);
+      serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ] = data;
       updateSession( session );
     }
   });
 
   ws.on('close', reason => {
     // TODO doesn't detect broken connections. See https://www.npmjs.com/package/ws#how-to-detect-and-close-broken-connections
+
+    // Get player info
+    var player = ws[ "id" ];
         
     // Remove player from session
-    removePlayerFromAnySession( ws[ 'id' ] );
+    removePlayerFromAnySession( player );
 
     // Remove player from server
-    disconnectPlayer( ws[ 'id' ] )
+    disconnectPlayer( player )
     
   });
 });
@@ -101,9 +116,6 @@ function addPlayerToSpecificSession( player, session ) {
     serverData[ 'players' ][ player ][ 'session' ] = session;
     serverData[ 'sessions' ][ session ][ 'players' ][ player ] = initData;
 
-    // Send player join information
-    // sendMessageToPlayer( player, action='join', data=initData );
-
     // Send the updated session information to all players in the session
     updateSession( session );
 
@@ -115,8 +127,9 @@ function addPlayerToSpecificSession( player, session ) {
 function removePlayerFromAnySession( player ) {
   var session = serverData[ 'players' ][ player ][ 'session' ];
 
-  // Remove player from session
   if ( session != null ) {
+    // Remove player from session and session from player
+    serverData[ "players" ][ player ][ "session" ] = null;
     delete serverData[ 'sessions' ][ session ][ 'players' ][ player ];
 
     // Send the updated session information to all players in the session
@@ -130,8 +143,9 @@ function removePlayerFromAnySession( player ) {
 function removePlayerFromSpecificSession( player, session ) {
   var players = serverData[ 'sessions' ][ session ][ 'players' ];
   
-  // Remove player from session
   if ( player in players ) {
+    // Remove player from session and session from player
+    serverData[ "players" ][ player ][ "session" ] = null;
     delete serverData[ 'sessions' ][ session ][ 'players' ][ player ];
     
     // Send the updated session information to all players in the session

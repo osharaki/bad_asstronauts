@@ -9,7 +9,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // WebSocket Channel
-  IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
+  // IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
+
+  // Using Laptop's Local IP Address
+  IOWebSocketChannel channel =
+      IOWebSocketChannel.connect("ws://192.168.1.8:3000");
 
   var flameUtil = Util();
   await flameUtil.fullScreen();

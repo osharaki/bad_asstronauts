@@ -1,9 +1,7 @@
 import 'dart:math';
-
+import "joystickGame.dart";
 import 'package:flame/sprite.dart';
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/debris.dart';
-import "joystickGame.dart";
 
 class Spaceship {
   // Instance Variables
@@ -15,10 +13,10 @@ class Spaceship {
   int fuelLeft = 10;
   bool move = false;
   double speed = 500;
-  Offset worldPosition;
   double multiplier = 1;
-  double sizeMultiplier = 1;
+  double sizeMultiplier = 0.7;
   double lastMoveRadAngle = 0;
+  Offset worldPosition = Offset(0, 0);
 
   Spaceship({@required this.game}) {
     initialize();
@@ -35,6 +33,9 @@ class Spaceship {
       size,
       size * 2,
     );
+
+    // Get World Position
+    // worldPosition = getWorldPosition();
 
     // Create Spaceship Sprite from Images
     sprite = Sprite("spaceship.png");
@@ -55,14 +56,8 @@ class Spaceship {
       game.server.debris.removeAt(i);
     });
 
-    // Spaceship's offset from it's next position
-    var difference = Offset(
-      game.joystick.spaceshipOffset.dx,
-      game.joystick.spaceshipOffset.dy,
-    );
-
     // Shift Spaceship to it's next position
-    rect = rect.shift(difference);
+    rect = rect.shift(game.joystick.spaceshipOffset);
   }
 
   // Honestly, I don't fully understand what's going on here
@@ -94,25 +89,29 @@ class Spaceship {
     canvas.restore();
   }
 
-  Offset updateSpaceshipWorldPosition() {
-    // Get Spaceship World Position
-    worldPosition = game.server.world.rect.topLeft + rect.center;
-
-    // Replace position
-    game.serverData["players"][game.id]["spaceship"]["position"] = [
-      worldPosition.dx,
-      worldPosition.dy,
-    ];
-
+  void sendToServer() {
+    // Send World Position to Server
     game.sendMessageToServer(
-      action: "update",
-      data: game.serverData,
+      action: "updateSpaceship",
+      data: {
+        "position": [
+          worldPosition.dx,
+          worldPosition.dy,
+        ],
+        "angle": lastMoveRadAngle,
+      },
     );
-
-    print("WORLD POS: $worldPosition");
   }
 
-  void setSpaceshipWorldPosition(Offset position) {
+  Offset getWorldPosition() {
+    // Get Spaceship World Position
+    print("SERVER: ${game.server}");
+    var worldPosition = (game.server.world.rect.topLeft - rect.topLeft) * -1;
+
+    return worldPosition;
+  }
+
+  void setWorldPosition(Offset position) {
     worldPosition = position;
 
     rect = Rect.fromLTWH(

@@ -39,7 +39,9 @@ class World {
   }
 
   bool exceedsTop(double offset) {
-    if ((rect.top - offset - game.spaceship.getOffsetFromScreenCenter().dy) >
+    if ((rect.top -
+            offset -
+            game.server.spaceship.getOffsetFromScreenCenter().dy) >
         topLimit) {
       return true;
     } else {
@@ -48,7 +50,9 @@ class World {
   }
 
   bool exceedsBottom(double offset) {
-    if ((rect.bottom - offset - game.spaceship.getOffsetFromScreenCenter().dy) <
+    if ((rect.bottom -
+            offset -
+            game.server.spaceship.getOffsetFromScreenCenter().dy) <
         (game.screenSize.height)) {
       return true;
     } else {
@@ -57,7 +61,9 @@ class World {
   }
 
   bool exceedsLeft(double offset) {
-    if ((rect.left - offset - game.spaceship.getOffsetFromScreenCenter().dx) >
+    if ((rect.left -
+            offset -
+            game.server.spaceship.getOffsetFromScreenCenter().dx) >
         leftLimit) {
       return true;
     } else {
@@ -66,7 +72,9 @@ class World {
   }
 
   bool exceedsRight(double offset) {
-    if ((rect.right - offset - game.spaceship.getOffsetFromScreenCenter().dx) <
+    if ((rect.right -
+            offset -
+            game.server.spaceship.getOffsetFromScreenCenter().dx) <
         (game.screenSize.width)) {
       return true;
     } else {

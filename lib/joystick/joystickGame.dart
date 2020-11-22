@@ -6,14 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/joystick/trigger.dart';
 
-import 'world.dart';
-import 'enemy.dart';
-import 'debris.dart';
-import 'planet.dart';
 import 'bullet.dart';
 import 'server.dart';
 import 'joystick.dart';
-import 'spaceship.dart';
 import "touchData.dart";
 
 class JoystickGame extends Game {
@@ -25,18 +20,17 @@ class JoystickGame extends Game {
 
   String id;
   Server server;
-  Map<String, dynamic> serverData;
+  Map<String, dynamic> serverData = {};
 
   Trigger trigger;
   Joystick joystick;
-  Spaceship spaceship;
 
   List<TouchData> taps = [];
 
   JoystickGame({@required this.channel}) {
     initialize();
 
-    channel.stream.listen((data) => onReceiveData(data));
+    channel.stream.listen((rawMessage) => onReceiveMessage(rawMessage));
   }
 
   void initialize() async {
@@ -48,27 +42,26 @@ class JoystickGame extends Game {
 
     trigger = Trigger(game: this);
     joystick = Joystick(game: this);
-    spaceship = Spaceship(game: this);
   }
 
   @override
   void update(double t) {
     // Sync Components' update method with Game's
-    server.update(t);
-
-    spaceship.update(t);
-    trigger.update(t);
-    joystick.update(t);
+    if (serverData.isNotEmpty) {
+      server.update(t);
+      trigger.update(t);
+      joystick.update(t);
+    }
   }
 
   @override
   void render(Canvas canvas) {
     // Sync Components' render method with Game's
-    server.render(canvas);
-
-    spaceship.render(canvas);
-    trigger.render(canvas);
-    joystick.render(canvas);
+    if (serverData.isNotEmpty) {
+      server.render(canvas);
+      trigger.render(canvas);
+      joystick.render(canvas);
+    }
   }
 
   @override
@@ -92,22 +85,33 @@ class JoystickGame extends Game {
     } else if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
-        angle: spaceship.lastMoveRadAngle,
-        startPosition: spaceship.rect.center,
+        angle: server.spaceship.lastMoveRadAngle,
+        startPosition: server.spaceship.rect.center,
       );
 
       server.bullets.add(bullet);
 
       // Empty
     } else {
-      Map<String, dynamic> joinData = {
-        "action": "join",
-        "data": {
-          "session": "test",
-        },
-      };
+      // Join
+      if (serverData.isEmpty) {
+        Map<String, dynamic> joinData = {
+          "action": "join",
+          "data": {"session": "test"},
+        };
 
-      channel.sink.add(json.encode(joinData));
+        channel.sink.add(json.encode(joinData));
+
+        // Leave
+      } else {
+        Map<String, dynamic> leaveData = {
+          "action": "leave",
+          "data": {"session": "test"},
+        };
+
+        serverData.clear();
+        channel.sink.add(json.encode(leaveData));
+      }
     }
   }
 
@@ -141,7 +145,7 @@ class JoystickGame extends Game {
     channel.sink.add(message);
   }
 
-  void onReceiveData(String rawMessage) {
+  void onReceiveMessage(String rawMessage) {
     Map message = jsonDecode(rawMessage);
     String action = message["action"];
     Map<String, dynamic> data = message["data"];
@@ -163,7 +167,7 @@ class JoystickGame extends Game {
       // Update
     } else if (action == "update") {
       serverData = data;
-      server.updateSpaceships();
+      server.updateEnemies();
       print("UPDATED SESSION");
       print(data);
     }
