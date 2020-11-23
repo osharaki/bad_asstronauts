@@ -109,12 +109,18 @@ function addPlayerToSpecificSession( player, session ) {
       'spaceship': {
         'position': [ 50, 50 ],
         'angle': 0
+      },
+      'planet': {
+        "position": [ 50, 50 ]
       }
     };
 
     // Add session in player and player in session
     serverData[ 'players' ][ player ][ 'session' ] = session;
     serverData[ 'sessions' ][ session ][ 'players' ][ player ] = initData;
+
+    // Inform session that player joined
+    sendMessageToSession( "playerJoined", { "player": player, "info":serverData[ "sessions" ][ session ] }, session );
 
     // Send the updated session information to all players in the session
     updateSession( session );
@@ -147,6 +153,9 @@ function removePlayerFromSpecificSession( player, session ) {
     // Remove player from session and session from player
     serverData[ "players" ][ player ][ "session" ] = null;
     delete serverData[ 'sessions' ][ session ][ 'players' ][ player ];
+
+    // Inform session that player left
+    sendMessageToSession( "playerLeft", { "player": player }, session );
     
     // Send the updated session information to all players in the session
     updateSession( session );

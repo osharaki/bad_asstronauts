@@ -15,6 +15,7 @@ class MainGame extends Game {
   // Instance Variable
   Size screenSize;
   double tileSize;
+  Offset screenCenter;
 
   IOWebSocketChannel channel;
 
@@ -71,6 +72,11 @@ class MainGame extends Game {
 
     // Get Tile Size to maintain uniform component size on all devices
     tileSize = screenSize.height / 9; // 16:9
+
+    screenCenter = Offset(
+      screenSize.width / 2,
+      screenSize.height / 2,
+    );
   }
 
   // Sync Gestures with Components' Gesture methods
@@ -85,11 +91,11 @@ class MainGame extends Game {
     } else if (trigger.rect.contains(touch.offset)) {
       Bullet bullet = Bullet(
         game: this,
-        angle: serverHandler.spaceships[id].lastMoveRadAngle,
-        startPosition: serverHandler.spaceships[id].worldPosition +
+        angle: serverHandler.players[id]["spaceship"].angle,
+        startPosition: serverHandler.players[id]["spaceship"].worldPosition +
             Offset(
-              serverHandler.spaceships[id].size / 2,
-              serverHandler.spaceships[id].size / 4,
+              serverHandler.players[id]["spaceship"].size / 2,
+              serverHandler.players[id]["spaceship"].size / 4,
             ),
       );
 
@@ -177,7 +183,7 @@ class MainGame extends Game {
     return percent;
   }
 
-  void sendMessageToServer({
+  void sendDataToServer({
     @required String action,
     @required Map<String, dynamic> data,
   }) {
@@ -195,21 +201,58 @@ class MainGame extends Game {
     if (action == "connect") {
       // Store ID
       id = data["id"];
-      print("MY ID: $id");
-      print(data);
-
-      // Join
-    } else if (action == "join") {
-      serverData = data;
-      print("JOINED SESSION");
-      print(data);
 
       // Update
     } else if (action == "update") {
       serverData = data;
-      serverHandler.updateSpaceships();
-      print("UPDATED SESSION");
-      print(data);
+      serverHandler.updatePlayers();
+
+      // Player Joined
+    } else if (action == "playerJoined") {
+      serverData = data["info"];
+      String player = data["player"];
+
+      if (player == id) {
+        serverHandler = ServerHandler(game: this);
+        serverHandler.joinSession();
+        moveCameraToPercent(
+            data["info"]["players"][id]["spaceship"]["position"]);
+      } else {
+        serverHandler.addPlayer(player);
+      }
+
+      // Player Left
+    } else if (action == "playerLeft") {
+      serverHandler.removePlayer(data["player"]);
     }
+  }
+
+  void moveCameraToPercent(List<dynamic> percent) {
+    // Position at screen top left corner
+    Offset position = getWorldPositionFromPercent(percent);
+
+    // Move position to screen center
+    position = screenCenter - position;
+
+    // Check if screen exceeds arena boundaries
+    // Left
+    if (position.dx > 0) position = Offset(0, position.dy);
+
+    // Right
+    if (position.dx.abs() + screenCenter.dx > serverHandler.arena.size.width)
+      position = Offset(
+          (serverHandler.arena.size.width * -1) + screenSize.width,
+          position.dy);
+
+    // Top
+    if (position.dy > 0) position = Offset(position.dx, 0);
+
+    // Bottom
+    if (position.dy.abs() + screenCenter.dy > serverHandler.arena.size.height)
+      position = Offset(position.dx,
+          (serverHandler.arena.size.height * -1) + screenSize.height);
+
+    // Assign final position to arena
+    serverHandler.arena.position = position;
   }
 }

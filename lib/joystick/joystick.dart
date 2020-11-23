@@ -86,7 +86,7 @@ class Joystick {
     // Drag knob
     if (dragging) {
       // Get Angle (in radians) from Joystick center to Drag position
-      double radAngle = atan2(
+      double angle = atan2(
         dragPosition.dy - joystickCenter.dy,
         dragPosition.dx - joystickCenter.dx,
       );
@@ -103,15 +103,19 @@ class Joystick {
       double multiplier = distance / baseRadius;
 
       // Use angle to orient spaceship
-      game.serverHandler.spaceships[game.id].lastMoveRadAngle = radAngle;
+      game.serverHandler.players[game.id]["spaceship"].angle = angle;
 
       // Next Frame's Offset
       // Same as getting Drag Radial Position, but (multiplier * speed * t) is our radius
       nextOffset = Offset(
-        (multiplier * game.serverHandler.spaceships[game.id].speed * t) *
-            cos(radAngle),
-        (multiplier * game.serverHandler.spaceships[game.id].speed * t) *
-            sin(radAngle),
+        (multiplier *
+                game.serverHandler.players[game.id]["spaceship"].speed *
+                t) *
+            cos(angle),
+        (multiplier *
+                game.serverHandler.players[game.id]["spaceship"].speed *
+                t) *
+            sin(angle),
       );
 
       Offset oldOffset = nextOffset;
@@ -139,8 +143,8 @@ class Joystick {
 
       // Position on Joystick circle, to prevent knob from going outside bounds
       var knobRadialPosition = Offset(
-        distance * cos(radAngle),
-        distance * sin(radAngle),
+        distance * cos(angle),
+        distance * sin(angle),
       );
 
       // Knob's offset from Joystick center
@@ -154,17 +158,18 @@ class Joystick {
       knobRect = knobRect.shift(difference);
 
       // Obtain Spaceship Arena Position
-      game.serverHandler.spaceships[game.id].worldPosition =
-          game.serverHandler.spaceships[game.id].getWorldPosition();
+      game.serverHandler.players[game.id]["spaceship"].worldPosition =
+          game.serverHandler.players[game.id]["spaceship"].getWorldPosition();
 
       // Send spaceship arena position to serverHandler
-      game.serverHandler.spaceships[game.id].sendToServer();
+      game.serverHandler.players[game.id]["spaceship"].sendToServer();
     }
   }
 
   Map<String, bool> isSpaceshipOffsetFromCenter() {
-    Offset spaceshipScreenCenterOffset =
-        game.serverHandler.spaceships[game.id].getOffsetFromScreenCenter();
+    Offset spaceshipScreenCenterOffset = game
+        .serverHandler.players[game.id]["spaceship"]
+        .getOffsetFromScreenCenter();
 
     Map<String, bool> offsetValues = {"x": false, "y": false};
 
@@ -182,8 +187,9 @@ class Joystick {
   }
 
   Offset getSpaceshipCenterAlignmentOffset() {
-    Offset spaceshipScreenCenterOffset =
-        game.serverHandler.spaceships[game.id].getOffsetFromScreenCenter();
+    Offset spaceshipScreenCenterOffset = game
+        .serverHandler.players[game.id]["spaceship"]
+        .getOffsetFromScreenCenter();
 
     double xOffsetIncrement = 0;
     double yOffsetIncrement = 0;
@@ -220,17 +226,17 @@ class Joystick {
 
   Offset limitToScreenBoundaries(Offset offset) {
     // Limit to Screen Boundaries
-    if (game.serverHandler.spaceships[game.id].exceedsTop(offset.dy))
+    if (game.serverHandler.players[game.id]["spaceship"].exceedsTop(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.spaceships[game.id].exceedsBottom(offset.dy))
-      offset = Offset(offset.dx, 0);
+    if (game.serverHandler.players[game.id]["spaceship"]
+        .exceedsBottom(offset.dy)) offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.spaceships[game.id].exceedsLeft(offset.dx))
+    if (game.serverHandler.players[game.id]["spaceship"].exceedsLeft(offset.dx))
       offset = Offset(0, offset.dy);
 
-    if (game.serverHandler.spaceships[game.id].exceedsRight(offset.dx))
-      offset = Offset(0, offset.dy);
+    if (game.serverHandler.players[game.id]["spaceship"]
+        .exceedsRight(offset.dx)) offset = Offset(0, offset.dy);
 
     return offset;
   }

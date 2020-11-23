@@ -16,7 +16,7 @@ class Spaceship {
   double speed = 350;
   double multiplier = 1;
   double sizeMultiplier = 0.8;
-  double lastMoveRadAngle = 0;
+  double angle = 0;
   Offset worldPosition = Offset(0, 0);
 
   Spaceship({@required this.game, this.centered = true}) {
@@ -63,8 +63,8 @@ class Spaceship {
     } else {
       // Create Spaceship at arena position
       rect = Rect.fromLTWH(
-        worldPosition.dx + game.serverHandler.arena.rect.topLeft.dx,
-        worldPosition.dy + game.serverHandler.arena.rect.topLeft.dy,
+        worldPosition.dx + game.serverHandler.arena.position.dx,
+        worldPosition.dy + game.serverHandler.arena.position.dy,
         size,
         size * 2,
       );
@@ -84,7 +84,7 @@ class Spaceship {
 
     // Rotate by Joystick angle, then offset by 90 degrees (1.57 radians), because radian starts East, and our Image is facing North
     canvas.rotate(
-      (lastMoveRadAngle == 0) ? 0 : lastMoveRadAngle + (pi / 2),
+      (angle == 0) ? 0 : angle + (pi / 2),
     );
 
     // Return Rect to previous position
@@ -102,19 +102,18 @@ class Spaceship {
 
   void sendToServer() {
     // Send Arena Position to Server
-    game.sendMessageToServer(
+    game.sendDataToServer(
       action: "updateSpaceship",
       data: {
         "position": game.getPercentFromWorldPosition(worldPosition),
-        "angle": lastMoveRadAngle,
+        "angle": angle,
       },
     );
   }
 
   Offset getWorldPosition() {
     // Get Spaceship Arena Position
-    var worldPosition =
-        (game.serverHandler.arena.rect.topLeft - rect.topLeft) * -1;
+    var worldPosition = (game.serverHandler.arena.position - rect.topLeft) * -1;
 
     return worldPosition;
   }
@@ -131,12 +130,7 @@ class Spaceship {
   }
 
   Offset getOffsetFromScreenCenter() {
-    Offset screenCenter = Offset(
-      game.screenSize.width / 2,
-      game.screenSize.height / 2,
-    );
-
-    Offset offset = rect.center - screenCenter;
+    Offset offset = rect.center - game.screenCenter;
 
     return offset;
   }

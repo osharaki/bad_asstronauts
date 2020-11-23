@@ -9,6 +9,8 @@ class Arena {
   Rect rect;
   Paint paint = Paint();
 
+  Offset position = Offset(0, 0);
+
   // Limits
   Size size;
   double sizeMultiplier = 4;
@@ -20,8 +22,8 @@ class Arena {
     );
 
     rect = Rect.fromLTWH(
-      0,
-      0,
+      position.dx,
+      position.dy,
       size.width,
       size.height,
     );
@@ -37,8 +39,14 @@ class Arena {
         ) -
         rect.center;
 
-    // Shift Spaceship to it's next position
-    rect = rect.shift(difference);
+    position += difference;
+
+    rect = Rect.fromLTWH(
+      position.dx,
+      position.dy,
+      size.width,
+      size.height,
+    );
   }
 
   void render(Canvas canvas) {
@@ -49,7 +57,7 @@ class Arena {
   bool exceedsTop(double offset) {
     if ((rect.top -
             offset -
-            game.serverHandler.spaceships[game.id]
+            game.serverHandler.players[game.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dy) >
         0) {
@@ -62,7 +70,7 @@ class Arena {
   bool exceedsBottom(double offset) {
     if ((rect.bottom -
             offset -
-            game.serverHandler.spaceships[game.id]
+            game.serverHandler.players[game.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dy) <
         (game.screenSize.height)) {
@@ -75,7 +83,7 @@ class Arena {
   bool exceedsLeft(double offset) {
     if ((rect.left -
             offset -
-            game.serverHandler.spaceships[game.id]
+            game.serverHandler.players[game.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dx) >
         0) {
@@ -88,7 +96,7 @@ class Arena {
   bool exceedsRight(double offset) {
     if ((rect.right -
             offset -
-            game.serverHandler.spaceships[game.id]
+            game.serverHandler.players[game.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dx) <
         (game.screenSize.width)) {

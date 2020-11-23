@@ -38,7 +38,7 @@ class Bullet {
     );
 
     offsetPosition += nextOffset;
-    position = offsetPosition + game.serverHandler.arena.rect.topLeft;
+    position = offsetPosition + game.serverHandler.arena.position;
   }
 
   void render(Canvas canvas) {

@@ -36,7 +36,7 @@ class Debris {
   void update(double t) {
     // Create Debris at arena position
     rect = Rect.fromCircle(
-      center: position + game.serverHandler.arena.rect.topLeft,
+      center: position + game.serverHandler.arena.position,
       radius: size,
     );
   }
