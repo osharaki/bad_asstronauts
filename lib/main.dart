@@ -3,7 +3,7 @@ import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:gameOff2020/joystick/gameLauncher.dart';
+import 'package:gameOff2020/gameLauncher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +13,7 @@ void main() async {
 
   // Using Laptop's Local IP Address
   IOWebSocketChannel channel =
-      IOWebSocketChannel.connect("ws://192.168.1.8:3000");
+      IOWebSocketChannel.connect("ws://192.168.1.106:3000");
 
   var flameUtil = Util();
   await flameUtil.fullScreen();
