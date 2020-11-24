@@ -8,11 +8,14 @@ import 'package:flame/components/position_component.dart';
 import 'package:flame/extensions/vector2.dart';
 import 'package:flame/game/base_game.dart';
 import 'package:flame/gestures.dart';
+import 'package:flame_forge2d/body_component.dart';
+import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
+import 'package:forge2d/forge2d.dart';
 import 'package:gameOff2020/player.dart';
 import 'package:gameOff2020/spaceship.dart';
 
-class MainGame extends BaseGame with MultiTouchDragDetector {
+class MainGame extends Forge2DGame with MultiTouchDragDetector {
   Spaceship spaceship;
   Player player;
 
@@ -43,13 +46,16 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
     ],
   );
 
-  MainGame() {
+  MainGame()
+      : super(
+          gravity: Vector2.zero(),
+        ) {
     player = Player(this);
     joystick.addObserver(player);
     add(player);
     add(joystick);
-    add(MyCircle(
-        this)); // at this point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
+    add(MyCircle(this,
+        10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
   }
 
   /* void initialize() {
@@ -79,13 +85,33 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
   } */
 }
 
-class MyCircle extends PositionComponent {
+class MyCircle extends BodyComponent {
   final MainGame game;
-  MyCircle(this.game);
+  final double radius;
+  Vector2 position;
+
+  MyCircle(this.game, this.radius) {
+    position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
+  }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-    canvas.drawCircle(Offset(game.size.x / 2, game.size.y / 2), 10, Paint()..color = Colors.white);
+  Body createBody() {
+    final CircleShape shape = CircleShape();
+    shape.radius = radius;
+    Vector2 worldPosition = Vector2(position.x, position.y);
+
+    final fixtureDef = FixtureDef()
+      ..shape = shape
+      ..restitution = 0.8
+      ..density = 1.0
+      ..friction = 0.1;
+
+    final bodyDef = BodyDef()
+      // To be able to determine object in collision
+      ..setUserData(this)
+      ..position = worldPosition
+      ..type = BodyType.DYNAMIC;
+
+    return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 }
