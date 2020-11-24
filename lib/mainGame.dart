@@ -7,10 +7,8 @@ import 'package:flame/game/base_game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:gameOff2020/player.dart';
-import 'package:gameOff2020/spaceship.dart';
 
 class MainGame extends BaseGame with MultiTouchDragDetector {
-  Spaceship spaceship;
   final player = Player();
 
   final joystick = JoystickComponent(
@@ -46,12 +44,6 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
     add(joystick);
   }
 
-  /* void initialize() {
-    joystick.addObserver(spaceship);
-    // add(spaceship);
-    add(joystick);
-  } */
-
   @override
   void onReceiveDrag(DragEvent drag) {
     joystick.onReceiveDrag(drag);
@@ -63,12 +55,4 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
     super.render(canvas);
     canvas.drawCircle(Offset(size.x / 2, size.y / 2), 10, Paint()..color = Colors.white);
   }
-
-  /* @override
-  Future<void> onLoad() async {
-    print('called onload');
-    Image spaceshipImage = await images.load('spaceship.png');
-    spaceship = Spaceship(Sprite(spaceshipImage), Vector2(25.4, 51.2));
-    initialize();
-  } */
 }
