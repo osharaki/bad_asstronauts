@@ -5,7 +5,9 @@ import 'package:flame/components/component.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/extensions/vector2.dart';
+import 'package:flame/game/base_game.dart';
 import 'package:flame/palette.dart';
+import 'package:gameOff2020/mainGame.dart';
 
 class Player extends Component implements JoystickListener {
   final _whitePaint = BasicPalette.white.paint;
@@ -19,7 +21,9 @@ class Player extends Component implements JoystickListener {
 
   Rect _rect;
 
-  Player() {
+  final MainGame game;
+
+  Player(this.game) {
     _paint = _whitePaint;
   }
 
@@ -84,6 +88,10 @@ class Player extends Component implements JoystickListener {
           _rect.center.dy + nextY,
         ) -
         _rect.center;
+
+    // this centers camera on this component
+    game.camera.x += nextX;
+    game.camera.y += nextY;
 
     _rect = _rect.shift(diffBase);
   }
