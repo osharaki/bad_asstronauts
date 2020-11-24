@@ -1,8 +1,11 @@
 import 'dart:ui';
 
+import 'package:flame/components/component.dart';
 import 'package:flame/components/joystick/joystick_action.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_directional.dart';
+import 'package:flame/components/position_component.dart';
+import 'package:flame/extensions/vector2.dart';
 import 'package:flame/game/base_game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -11,7 +14,7 @@ import 'package:gameOff2020/spaceship.dart';
 
 class MainGame extends BaseGame with MultiTouchDragDetector {
   Spaceship spaceship;
-  final player = Player();
+  Player player;
 
   final joystick = JoystickComponent(
     directional: JoystickDirectional(),
@@ -41,9 +44,12 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
   );
 
   MainGame() {
+    player = Player(this);
     joystick.addObserver(player);
     add(player);
     add(joystick);
+    add(MyCircle(
+        this)); // at this point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
   }
 
   /* void initialize() {
@@ -61,7 +67,7 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), 10, Paint()..color = Colors.white);
+    // canvas.drawCircle(Offset(size.x / 2, size.y / 2), 10, Paint()..color = Colors.white);
   }
 
   /* @override
@@ -71,4 +77,15 @@ class MainGame extends BaseGame with MultiTouchDragDetector {
     spaceship = Spaceship(Sprite(spaceshipImage), Vector2(25.4, 51.2));
     initialize();
   } */
+}
+
+class MyCircle extends PositionComponent {
+  final MainGame game;
+  MyCircle(this.game);
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    canvas.drawCircle(Offset(game.size.x / 2, game.size.y / 2), 10, Paint()..color = Colors.white);
+  }
 }
