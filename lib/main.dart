@@ -12,12 +12,12 @@ void main() async {
   // IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
 
   // Using Laptop's Local IP Address
-  IOWebSocketChannel channel =
-      IOWebSocketChannel.connect("ws://192.168.1.106:3000");
+  IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://192.168.1.106:3000");
 
   var flameUtil = Util();
   await flameUtil.fullScreen();
   await flameUtil.setLandscape();
+  // Vector2 viewportSize = await flameUtil.initialDimensions();
   await SystemChrome.setEnabledSystemUIOverlays([]);
 
   Flame.images.loadAll([
@@ -26,5 +26,5 @@ void main() async {
     "joystickBase.png",
   ]);
 
-  runApp(GameLauncher(channel: channel));
+  runApp(GameLauncher());
 }
