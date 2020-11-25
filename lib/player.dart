@@ -1,15 +1,15 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flame/components/component.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/extensions/vector2.dart';
-import 'package:flame/game/base_game.dart';
 import 'package:flame/palette.dart';
+import 'package:flame_forge2d/body_component.dart';
+import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:gameOff2020/mainGame.dart';
 
-class Player extends Component implements JoystickListener {
+class Player extends BodyComponent implements JoystickListener {
   final _whitePaint = BasicPalette.white.paint;
   final _bluePaint = Paint()..color = const Color(0xFF0000FF);
   final _greenPaint = Paint()..color = const Color(0xFF00FF00);
@@ -27,17 +27,17 @@ class Player extends Component implements JoystickListener {
     _paint = _whitePaint;
   }
 
-  @override
-  void render(Canvas canvas) {
-    if (_rect != null) {
-      canvas.save();
-      canvas.translate(_rect.center.dx, _rect.center.dy);
-      canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
-      canvas.translate(-_rect.center.dx, -_rect.center.dy);
-      canvas.drawRect(_rect, _paint);
-      canvas.restore();
-    }
-  }
+  // @override
+  // void render(Canvas canvas) {
+  //   if (_rect != null) {
+  //     canvas.save();
+  //     canvas.translate(_rect.center.dx, _rect.center.dy);
+  //     canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
+  //     canvas.translate(-_rect.center.dx, -_rect.center.dy);
+  //     canvas.drawRect(_rect, _paint);
+  //     canvas.restore();
+  //   }
+  // }
 
   @override
   void update(double dt) {
@@ -45,6 +45,12 @@ class Player extends Component implements JoystickListener {
     if (_move) {
       moveFromAngle(dt);
     }
+
+    // this centers camera on this component
+    // https://fireslime.xyz/articles/20190911_Basic_Camera_Usage_In_Flame.html
+    game.camera.x = body.position.x;
+    // TODO figure out why this inversion is even necessary
+    game.camera.y = -body.position.y;
   }
 
   @override
@@ -89,10 +95,26 @@ class Player extends Component implements JoystickListener {
         ) -
         _rect.center;
 
-    // this centers camera on this component
-    game.camera.x += nextX;
-    game.camera.y += nextY;
-
     _rect = _rect.shift(diffBase);
+
+    // TODO figure out why this inversion is even necessary
+    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+  }
+
+  @override
+  Body createBody() {
+    final PolygonShape shape = PolygonShape();
+    shape.setAsBoxXY(25, 25);
+    Vector2 worldPosition = Vector2(_rect.center.dx, _rect.center.dy);
+
+    final fixtureDef = FixtureDef()..shape = shape;
+
+    final bodyDef = BodyDef()
+      // To be able to determine object in collision
+      ..setUserData(this)
+      ..position = worldPosition
+      ..type = BodyType.DYNAMIC;
+
+    return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 }
