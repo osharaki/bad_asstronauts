@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/extensions/vector2.dart';
-import 'package:flame/palette.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -22,6 +21,20 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
   Spaceship(this.game, Image image, Vector2 size)
       : position = game.size.scaled(0.4),
         super(Sprite(image), size);
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (_move) {
+      moveFromAngle(dt);
+    }
+
+    // this centers camera on this component
+    // https://fireslime.xyz/articles/20190911_Basic_Camera_Usage_In_Flame.html
+    game.camera.x = body.position.x;
+    // TODO figure out why this inversion is even necessary
+    game.camera.y = -body.position.y;
+  }
 
   @override
   void joystickAction(JoystickActionEvent event) {
@@ -50,13 +63,12 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
     // TODO body needs to come to a stop more quickly
     final PolygonShape shape = PolygonShape();
     shape.setAsBoxXY(size.x / 2, size.y / 2);
-    paint.color=Colors.green;
+    paint.color = Colors.green;
 
     final fixtureDef = FixtureDef()..shape = shape;
 
     final bodyDef = BodyDef()
-      // To be able to determine object in collision
-      ..setUserData(this)
+      ..setUserData(this) // To be able to determine object in collision
       ..position = position
       ..type = BodyType.DYNAMIC;
 

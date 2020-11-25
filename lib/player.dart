@@ -46,11 +46,11 @@ class Player extends BodyComponent implements JoystickListener {
       moveFromAngle(dt);
     }
 
-    // this centers camera on this component
+    /* // this centers camera on this component
     // https://fireslime.xyz/articles/20190911_Basic_Camera_Usage_In_Flame.html
     game.camera.x = body.position.x;
     // TODO figure out why this inversion is even necessary
-    game.camera.y = -body.position.y;
+    game.camera.y = -body.position.y; */
   }
 
   @override
@@ -106,14 +106,13 @@ class Player extends BodyComponent implements JoystickListener {
     // TODO body needs to come to a stop more quickly
     final PolygonShape shape = PolygonShape();
     shape.setAsBoxXY(25, 25);
-    Vector2 worldPosition = Vector2(_rect.center.dx, _rect.center.dy);
 
     final fixtureDef = FixtureDef()..shape = shape;
 
     final bodyDef = BodyDef()
       // To be able to determine object in collision
       ..setUserData(this)
-      ..position = worldPosition
+      ..position = game.size.scaled(0.5)
       ..type = BodyType.DYNAMIC;
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);
