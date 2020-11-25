@@ -55,7 +55,8 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
     // TODO figure out why this inversion is even necessary
-    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20),
+        Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2), true);
   }
 
   @override
@@ -72,6 +73,8 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
       ..position = position
       ..type = BodyType.DYNAMIC;
 
-    return world.createBody(bodyDef)..createFixture(fixtureDef);
+    return world.createBody(bodyDef)
+      ..inverseInertia = 0.00001
+      ..createFixture(fixtureDef);
   }
 }
