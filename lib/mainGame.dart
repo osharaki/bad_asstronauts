@@ -50,12 +50,20 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       : super(
           gravity: Vector2.zero(),
         ) {
-    player = Player(this);
-    joystick.addObserver(player);
-    add(player);
-    add(joystick);
-    add(MyCircle(this,
-        10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
+    images.loadAll([
+      "spaceship.png",
+      "joystickKnob.png",
+      "joystickBase.png",
+    ]).then((images) {
+      player = Player(this);
+      spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.2));
+      joystick.addObserver(spaceship);
+      add(spaceship);
+      add(joystick);
+      add(player);
+      add(MyCircle(this,
+      10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html})
+    });
   }
 
   /* void initialize() {
@@ -73,7 +81,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    // canvas.drawCircle(Offset(size.x / 2, size.y / 2), 10, Paint()..color = Colors.white);
+    // canvas.drawCircle(Offset(100, 100), 10, Paint()..color = Colors.red);
   }
 
   /* @override
@@ -110,7 +118,7 @@ class MyCircle extends BodyComponent {
       // To be able to determine object in collision
       ..setUserData(this)
       ..position = worldPosition
-      ..type = BodyType.DYNAMIC;
+      ..type = BodyType.STATIC;
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }

@@ -103,6 +103,7 @@ class Player extends BodyComponent implements JoystickListener {
 
   @override
   Body createBody() {
+    // TODO body needs to come to a stop more quickly
     final PolygonShape shape = PolygonShape();
     shape.setAsBoxXY(25, 25);
     Vector2 worldPosition = Vector2(_rect.center.dx, _rect.center.dy);

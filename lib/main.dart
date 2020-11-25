@@ -1,6 +1,8 @@
+import 'dart:ui';
+
 import "package:flame/util.dart";
 import 'package:flame/flame.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/gameLauncher.dart';
@@ -19,12 +21,6 @@ void main() async {
   await flameUtil.setLandscape();
   // Vector2 viewportSize = await flameUtil.initialDimensions();
   await SystemChrome.setEnabledSystemUIOverlays([]);
-
-  Flame.images.loadAll([
-    "spaceship.png",
-    "joystickKnob.png",
-    "joystickBase.png",
-  ]);
 
   runApp(GameLauncher());
 }
