@@ -21,10 +21,11 @@ class PlanetSensor extends BodyComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    if (contactCallback.applyGravity)
-      contactCallback.spaceship.body.applyForce(
-          (body.worldCenter - contactCallback.spaceship.body.worldCenter).scaled(10),
-          contactCallback.spaceship.body.worldCenter);
+    if (contactCallback.applyGravity) {
+      Body spaceshipBody = contactCallback.spaceship.body;
+      spaceshipBody.applyForce(
+          (body.worldCenter - spaceshipBody.worldCenter).scaled(10), spaceshipBody.worldCenter);
+    }
   }
 
   @override
