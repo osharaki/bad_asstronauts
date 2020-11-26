@@ -39,15 +39,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
     Vector2 posRect = viewport.getWorldToScreen(body.worldCenter);
     Rect rect =
         Rect.fromCenter(center: Offset(posRect.x, posRect.y), width: size.x, height: size.y);
-    Vector2 pos = viewport.getScreenToWorld(game.size.scaled(0.4));
     canvas.translate(posRect.x, posRect.y);
-    // canvas.translate(pos.x, pos.y);
     canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
     canvas.translate(-posRect.x, -posRect.y);
-    // canvas.translate(-pos.x, -pos.y);
-    // spaceship.renderCentered(canvas, posRect);
     spaceship.renderRect(canvas, rect);
-    // canvas.drawRect(rect, paint);
     canvas.restore();
   }
 
