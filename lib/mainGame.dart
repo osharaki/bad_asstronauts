@@ -64,6 +64,11 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     });
   }
 
+  @override
+  Color backgroundColor() {
+    return Colors.blue[900];
+  }
+
   /* void initialize() {
     joystick.addObserver(spaceship);
     // add(spaceship);
