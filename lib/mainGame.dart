@@ -1,19 +1,17 @@
 import 'dart:ui';
 
-import 'package:flame/components/component.dart';
 import 'package:flame/components/joystick/joystick_action.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_directional.dart';
-import 'package:flame/components/position_component.dart';
 import 'package:flame/extensions/vector2.dart';
-import 'package:flame/game/base_game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
-import 'package:gameOff2020/player.dart';
-import 'package:gameOff2020/spaceship.dart';
+
+import 'components/player.dart';
+import 'components/spaceship.dart';
 
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
   Spaceship spaceship;
@@ -62,7 +60,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       add(joystick);
       add(player);
       add(MyCircle(this,
-      10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html})
+          10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html})
     });
   }
 

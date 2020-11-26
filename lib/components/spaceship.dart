@@ -5,22 +5,24 @@ import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/extensions/vector2.dart';
 import 'package:flame/sprite.dart';
-import 'package:flame_forge2d/sprite_body_component.dart';
+import 'package:flame_forge2d/body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 import 'package:gameOff2020/mainGame.dart';
 
-class Spaceship extends SpriteBodyComponent implements JoystickListener {
+class Spaceship extends BodyComponent implements JoystickListener {
   final MainGame game;
+  final Vector2 size;
   final Vector2 position;
   final double speed = 159;
+  Sprite spaceship;
   double currentSpeed = 0;
   double radAngle = 0;
   bool _move = false;
 
-  Spaceship(this.game, Image image, Vector2 size)
-      : position = game.size.scaled(0.4),
-        super(Sprite(image), size);
+  Spaceship(this.game, Image image, this.size) : position = game.size.scaled(0.4) {
+    spaceship = Sprite(image);
+  }
 
   @override
   void update(double dt) {
@@ -34,6 +36,25 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
     game.camera.x = body.position.x;
     // TODO figure out why this inversion is even necessary
     game.camera.y = -body.position.y;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    canvas.save();
+    Vector2 posRect = viewport.getWorldToScreen(body.worldCenter);
+    Rect rect =
+        Rect.fromCenter(center: Offset(posRect.x, posRect.y), width: size.x, height: size.y);
+    Vector2 pos = viewport.getScreenToWorld(game.size.scaled(0.4));
+    canvas.translate(posRect.x, posRect.y);
+    // canvas.translate(pos.x, pos.y);
+    canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
+    canvas.translate(-posRect.x, -posRect.y);
+    // canvas.translate(-pos.x, -pos.y);
+    // spaceship.renderCentered(canvas, posRect);
+    spaceship.renderRect(canvas, rect);
+    // canvas.drawRect(rect, paint);
+    canvas.restore();
   }
 
   @override
@@ -55,8 +76,7 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
     // TODO figure out why this inversion is even necessary
-    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20),
-        Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2), true);
+    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
   }
 
   @override
@@ -64,7 +84,7 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
     // TODO body needs to come to a stop more quickly
     final PolygonShape shape = PolygonShape();
     shape.setAsBoxXY(size.x / 2, size.y / 2);
-    paint.color = Colors.green;
+    paint.color = Colors.transparent;
 
     final fixtureDef = FixtureDef()..shape = shape;
 
@@ -73,8 +93,6 @@ class Spaceship extends SpriteBodyComponent implements JoystickListener {
       ..position = position
       ..type = BodyType.DYNAMIC;
 
-    return world.createBody(bodyDef)
-      ..inverseInertia = 0.00001
-      ..createFixture(fixtureDef);
+    return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 }
