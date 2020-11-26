@@ -53,6 +53,7 @@ flutter:
     - assets/images/joystickKnob.png
     - assets/images/spaceship.png
     - assets/images/moon.png
+    - assets/images/option1_ring.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
