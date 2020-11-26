@@ -11,6 +11,7 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 
 import 'components/planet.dart';
+import 'components/planetSensor.dart';
 import 'components/player.dart';
 import 'components/spaceship.dart';
 
@@ -18,6 +19,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   Spaceship spaceship;
   Player player;
   Planet planet;
+  PlanetSensor planetSensor;
 
   final joystick = JoystickComponent(
     directional: JoystickDirectional(),
@@ -54,12 +56,14 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       "spaceship.png",
       "moon.png",
     ]).then((images) {
+      planetSensor = PlanetSensor(this, size: Vector2(268, 268), position: Vector2(100, 350));
       planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
       spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.06));
       joystick.addObserver(spaceship);
       add(spaceship);
       add(planet);
+      add(planetSensor);
       add(joystick);
       add(player);
       add(MyCircle(this,
