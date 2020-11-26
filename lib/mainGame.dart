@@ -10,12 +10,14 @@ import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 
+import 'components/planet.dart';
 import 'components/player.dart';
 import 'components/spaceship.dart';
 
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
   Spaceship spaceship;
   Player player;
+  Planet planet;
 
   final joystick = JoystickComponent(
     directional: JoystickDirectional(),
@@ -50,13 +52,14 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         ) {
     images.loadAll([
       "spaceship.png",
-      "joystickKnob.png",
-      "joystickBase.png",
+      "moon.png",
     ]).then((images) {
+      planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
-      spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.2));
+      spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.06));
       joystick.addObserver(spaceship);
       add(spaceship);
+      add(planet);
       add(joystick);
       add(player);
       add(MyCircle(this,
@@ -67,6 +70,12 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   Color backgroundColor() {
     return Colors.blue[900];
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (spaceship != null) cameraFollow(spaceship, horizontal: 0, vertical: 0);
   }
 
   /* void initialize() {

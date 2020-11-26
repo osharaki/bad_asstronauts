@@ -30,12 +30,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
     if (_move) {
       moveFromAngle(dt);
     }
-
-    // this centers camera on this component
-    // https://fireslime.xyz/articles/20190911_Basic_Camera_Usage_In_Flame.html
-    game.camera.x = body.position.x;
-    // TODO figure out why this inversion is even necessary
-    game.camera.y = -body.position.y;
   }
 
   @override
