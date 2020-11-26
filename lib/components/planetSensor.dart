@@ -31,11 +31,14 @@ class PlanetSensor extends BodyComponent {
   Body createBody() {
     final CircleShape shape = CircleShape()
       ..radius =
-          size.x / 2 + (size.x * 0.5); // planet sensor is a certain percentage larger than planet
+          size.x / 2 + (size.x * 0.4); // planet sensor is a certain percentage larger than planet
 
     final fixtureDef = FixtureDef()..shape = shape;
 
-    paint.color = Colors.transparent;
+    paint
+      ..color = Colors.red
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     final bodyDef = BodyDef()
       ..setUserData(this) // To be able to determine object in collision
