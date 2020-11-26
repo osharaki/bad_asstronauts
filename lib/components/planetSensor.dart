@@ -11,16 +11,27 @@ class PlanetSensor extends BodyComponent {
   final MainGame game;
   final Vector2 size;
   final Vector2 position;
+  final PlanetSensorContactCallback contactCallback;
 
-  PlanetSensor(this.game, {this.size, this.position}) {
-    game.addContactCallback(PlanetSensorContactCallback());
+  PlanetSensor(this.game, {this.size, this.position})
+      : contactCallback = PlanetSensorContactCallback() {
+    game.addContactCallback(contactCallback);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (contactCallback.applyGravity)
+      contactCallback.spaceship.body.applyForce(
+          (body.worldCenter - contactCallback.spaceship.body.worldCenter).scaled(10),
+          contactCallback.spaceship.body.worldCenter);
   }
 
   @override
   Body createBody() {
     final CircleShape shape = CircleShape()
       ..radius =
-          size.x / 2 + (size.x * 0.3); // planet sensor is a certain percentage larger than planet
+          size.x / 2 + (size.x * 0.5); // planet sensor is a certain percentage larger than planet
 
     final fixtureDef = FixtureDef()..shape = shape;
 
@@ -36,13 +47,20 @@ class PlanetSensor extends BodyComponent {
 }
 
 class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSensor> {
+  bool applyGravity = false;
+  Spaceship spaceship;
+
   @override
-  void begin(Spaceship a, PlanetSensor b, Contact contact) {
+  void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     print('spaceship entered atmosphere!');
+    this.spaceship = spaceship;
+    applyGravity = true;
   }
 
   @override
   void end(Spaceship a, PlanetSensor b, Contact contact) {
     print('spaceship left atmosphere!');
+    spaceship = null;
+    applyGravity = false;
   }
 }
