@@ -66,8 +66,10 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       "moon.png",
       "generic_planet1.png",
     ]).then((images) {
-      planet2 = Planet(this, images[2], '2', size: Vector2(268, 268), position: Vector2(800, 350));
-      planet1 = Planet(this, images[1], '1', size: Vector2(268, 268), position: Vector2(100, 350));
+      planet2 =
+          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350));
+      planet1 =
+          Planet(this, images[1], '1', 1000, size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
       spaceship = Spaceship(
         this,
