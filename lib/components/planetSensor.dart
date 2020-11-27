@@ -12,19 +12,16 @@ class PlanetSensor extends BodyComponent {
   final MainGame game;
   final Vector2 size;
   final Vector2 position;
-  final PlanetSensorContactCallback contactCallback;
   final Planet planet;
+  final List<Spaceship> spaceshipsInOrbit = [];
 
-  PlanetSensor(this.game, this.planet, {this.size, this.position})
-      : contactCallback = PlanetSensorContactCallback() {
-    game.addContactCallback(contactCallback);
-  }
+  PlanetSensor(this.game, this.planet, {this.size, this.position});
 
   @override
   void update(double dt) {
     super.update(dt);
-    if (contactCallback.spaceshipsInOrbit.length != 0) {
-      for (Spaceship spaceship in contactCallback.spaceshipsInOrbit) {
+    if (spaceshipsInOrbit.length != 0) {
+      for (Spaceship spaceship in spaceshipsInOrbit) {
         spaceship.body.applyForce(
             (body.worldCenter - spaceship.body.worldCenter).scaled(10), spaceship.body.worldCenter);
         if (spaceship.id == planet.spaceshipId) {
@@ -65,19 +62,17 @@ class PlanetSensor extends BodyComponent {
 }
 
 class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSensor> {
-  List<Spaceship> spaceshipsInOrbit = [];
-
   @override
   void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     print('spaceship entered atmosphere!');
-    spaceshipsInOrbit.add(spaceship);
-    print(spaceshipsInOrbit);
+    planetSensor.spaceshipsInOrbit.add(spaceship);
+    print(planetSensor.spaceshipsInOrbit);
   }
 
   @override
   void end(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     print('spaceship left atmosphere!');
-    spaceshipsInOrbit.remove(spaceship);
-    print(spaceshipsInOrbit);
+    planetSensor.spaceshipsInOrbit.remove(spaceship);
+    print(planetSensor.spaceshipsInOrbit);
   }
 }
