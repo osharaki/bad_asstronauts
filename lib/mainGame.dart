@@ -16,7 +16,8 @@ import 'components/player.dart';
 import 'components/spaceship.dart';
 
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
-  final viewportSize;
+  // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
+  final Vector2 viewportSize;
 
   Spaceship spaceship;
   Player player;
@@ -54,18 +55,28 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       : super(
           gravity: Vector2.zero(),
         ) {
-    print(viewportSize);
     images.loadAll([
       "spaceship.png",
       "moon.png",
     ]).then((images) {
-      // planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
+      planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
-      spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.06));
+      spaceship = Spaceship(
+        this,
+        images.first,
+        size: Vector2(254, 512).scaled(0.06),
+        position: viewportSize / 2,
+      );
+
       joystick.addObserver(spaceship);
-      add(BoundingBox(this));
+      add(BoundingBox(
+        this,
+        center: viewportSize.scaled(.5),
+        width: 1500,
+        height: 1500,
+      ));
       add(spaceship);
-      // add(planet);
+      add(planet);
       add(joystick);
       // add(player);
       add(MyCircle(this,
@@ -144,17 +155,26 @@ class MyCircle extends BodyComponent {
 
 class BoundingBox extends BodyComponent {
   final MainGame game;
-  Vector2 position;
+  final Vector2 center;
+  final double width, height;
 
-  BoundingBox(this.game) {
-    position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
-  }
+  BoundingBox(this.game, {this.center, this.width, this.height});
 
   @override
   Body createBody() {
-    EdgeShape shape = EdgeShape()
-      ..set(position, Vector2(position.x + 100, position.y))
-      ..radius = 20;
+    // Box edges
+    double top = center.y + height / 2;
+    double bottom = center.y - height / 2;
+    double left = center.x - width / 2;
+    double right = center.x + width / 2;
+
+    ChainShape shape = ChainShape()
+      ..createLoop([
+        Vector2(left, bottom), //bottom-left corner
+        Vector2(left, top), // top-left corner
+        Vector2(right, top), // top-right corner
+        Vector2(right, bottom), // bottom-right corner
+      ]);
 
     final fixtureDef = FixtureDef()
       ..shape = shape
@@ -163,12 +183,11 @@ class BoundingBox extends BodyComponent {
       ..friction = 0.1;
 
     paint
-      ..style = PaintingStyle.fill
+      ..style = PaintingStyle.stroke
       ..color = Colors.white;
 
     final bodyDef = BodyDef()
-      // To be able to determine object in collision
-      ..setUserData(this)
+      ..setUserData(this) // To be able to determine object in collision
       ..type = BodyType.STATIC;
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);
