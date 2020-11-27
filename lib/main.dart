@@ -21,6 +21,6 @@ void main() async {
   await flameUtil.fullScreen();
   await flameUtil.setLandscape();
   Vector2 viewportSize = await flameUtil.initialDimensions();
-  await SystemChrome.setEnabledSystemUIOverlays([]);
+  
   runApp(GameLauncher(viewportSize));
 }
