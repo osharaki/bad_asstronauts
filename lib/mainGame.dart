@@ -11,7 +11,6 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 
 import 'components/planet.dart';
-import 'components/planetSensor.dart';
 import 'components/player.dart';
 import 'components/spaceship.dart';
 
@@ -19,10 +18,13 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
 
+  double resources = 10000;
+  double storeRate = 0.2;
+  double harvestRate = 0.1;
   Spaceship spaceship;
   Player player;
-  Planet planet;
-  PlanetSensor planetSensor;
+  Planet planet1;
+  Planet planet2;
 
   final joystick = JoystickComponent(
     directional: JoystickDirectional(),
@@ -58,12 +60,15 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     images.loadAll([
       "spaceship.png",
       "moon.png",
+      "generic_planet1.png",
     ]).then((images) {
-      planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
+      planet2 = Planet(this, images[2], '2', size: Vector2(268, 268), position: Vector2(800, 350));
+      planet1 = Planet(this, images[1], '1', size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
       spaceship = Spaceship(
         this,
         images.first,
+        '2',
         size: Vector2(254, 512).scaled(0.06),
         position: viewportSize / 2,
       );
@@ -76,7 +81,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         height: 1500,
       ));
       add(spaceship);
-      add(planet);
+      add(planet1);
+      add(planet2);
       add(joystick);
       // add(player);
       add(MyCircle(this,

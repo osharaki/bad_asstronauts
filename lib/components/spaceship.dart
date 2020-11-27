@@ -15,12 +15,16 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final Vector2 size;
   final Vector2 position;
   final double speed = 159;
+  final double capacity= 100;
+  final String id;
+
+  double resources = 100;
   Sprite spaceship;
   double currentSpeed = 0;
   double radAngle = 0;
   bool _move = false;
 
-  Spaceship(this.game, Image image, this.size) : position = game.size.scaled(0.4) {
+  Spaceship(this.game, Image image, this.id, {this.size, this.position}) {
     spaceship = Sprite(image);
   }
 

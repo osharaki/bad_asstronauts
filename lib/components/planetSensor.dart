@@ -2,6 +2,7 @@ import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
+import 'package:gameOff2020/components/planet.dart';
 import 'package:gameOff2020/mainGame.dart';
 
 import 'spaceship.dart';
@@ -12,8 +13,9 @@ class PlanetSensor extends BodyComponent {
   final Vector2 size;
   final Vector2 position;
   final PlanetSensorContactCallback contactCallback;
+  final Planet planet;
 
-  PlanetSensor(this.game, {this.size, this.position})
+  PlanetSensor(this.game, this.planet, {this.size, this.position})
       : contactCallback = PlanetSensorContactCallback() {
     game.addContactCallback(contactCallback);
   }
@@ -21,10 +23,22 @@ class PlanetSensor extends BodyComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    if (contactCallback.applyGravity) {
-      Body spaceshipBody = contactCallback.spaceship.body;
-      spaceshipBody.applyForce(
-          (body.worldCenter - spaceshipBody.worldCenter).scaled(10), spaceshipBody.worldCenter);
+    if (contactCallback.spaceshipsInOrbit.length != 0) {
+      for (Spaceship spaceship in contactCallback.spaceshipsInOrbit) {
+        spaceship.body.applyForce(
+            (body.worldCenter - spaceship.body.worldCenter).scaled(10), spaceship.body.worldCenter);
+        if (spaceship.id == planet.spaceshipId) {
+          // home planet -> store
+          planet.resources += game.storeRate;
+          spaceship.resources -= game.storeRate;
+        } else {
+          // foreign planet -> harvest
+          planet.resources -= game.harvestRate;
+          spaceship.resources += game.harvestRate;
+        }
+        // print("player resources: " + spaceship.resources.toString());
+      }
+      // print("planet resources: " + planet.resources.toString());
     }
   }
 
@@ -51,20 +65,19 @@ class PlanetSensor extends BodyComponent {
 }
 
 class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSensor> {
-  bool applyGravity = false;
-  Spaceship spaceship;
+  List<Spaceship> spaceshipsInOrbit = [];
 
   @override
   void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     print('spaceship entered atmosphere!');
-    this.spaceship = spaceship;
-    applyGravity = true;
+    spaceshipsInOrbit.add(spaceship);
+    print(spaceshipsInOrbit);
   }
 
   @override
-  void end(Spaceship a, PlanetSensor b, Contact contact) {
+  void end(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     print('spaceship left atmosphere!');
-    spaceship = null;
-    applyGravity = false;
+    spaceshipsInOrbit.remove(spaceship);
+    print(spaceshipsInOrbit);
   }
 }

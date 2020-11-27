@@ -12,11 +12,14 @@ class Planet extends SpriteBodyComponent {
   final MainGame game;
   final Vector2 size;
   final Vector2 position;
-  final PlanetSensor planetSensor;
+  final spaceshipId;
 
-  Planet(this.game, Image image, {this.size, this.position})
-      : planetSensor = PlanetSensor(game, size: size, position: position),
-        super(Sprite(image), size) {
+  PlanetSensor planetSensor;
+  double resources = 0;
+
+  Planet(this.game, Image image, this.spaceshipId, {this.size, this.position})
+      : super(Sprite(image), size) {
+    planetSensor = PlanetSensor(game, this, size: size, position: position);
     game.add(planetSensor);
   }
 
