@@ -6,8 +6,8 @@ import 'package:gameOff2020/mainGame.dart';
 class GameLauncher extends StatelessWidget {
   MainGame game;
 
-  GameLauncher() {
-    game = MainGame();
+  GameLauncher(viewportSize) {
+    game = MainGame(viewportSize);
   }
 
   @override

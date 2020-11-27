@@ -16,6 +16,8 @@ import 'components/player.dart';
 import 'components/spaceship.dart';
 
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
+  final viewportSize;
+
   Spaceship spaceship;
   Player player;
   Planet planet;
@@ -48,22 +50,24 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     ],
   );
 
-  MainGame()
+  MainGame(this.viewportSize)
       : super(
           gravity: Vector2.zero(),
         ) {
+    print(viewportSize);
     images.loadAll([
       "spaceship.png",
       "moon.png",
     ]).then((images) {
-      planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
+      // planet = Planet(this, images[1], size: Vector2(268, 268), position: Vector2(100, 350));
       player = Player(this);
       spaceship = Spaceship(this, images.first, Vector2(254, 512).scaled(0.06));
       joystick.addObserver(spaceship);
+      add(BoundingBox(this));
       add(spaceship);
-      add(planet);
+      // add(planet);
       add(joystick);
-      add(player);
+      // add(player);
       add(MyCircle(this,
           10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html})
     });
@@ -124,7 +128,7 @@ class MyCircle extends BodyComponent {
 
     final fixtureDef = FixtureDef()
       ..shape = shape
-      ..restitution = 0.8
+      ..restitution = 0
       ..density = 1.0
       ..friction = 0.1;
 
@@ -132,6 +136,39 @@ class MyCircle extends BodyComponent {
       // To be able to determine object in collision
       ..setUserData(this)
       ..position = worldPosition
+      ..type = BodyType.STATIC;
+
+    return world.createBody(bodyDef)..createFixture(fixtureDef);
+  }
+}
+
+class BoundingBox extends BodyComponent {
+  final MainGame game;
+  Vector2 position;
+
+  BoundingBox(this.game) {
+    position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
+  }
+
+  @override
+  Body createBody() {
+    EdgeShape shape = EdgeShape()
+      ..set(position, Vector2(position.x + 100, position.y))
+      ..radius = 20;
+
+    final fixtureDef = FixtureDef()
+      ..shape = shape
+      ..restitution = 0.8
+      ..density = 1.0
+      ..friction = 0.1;
+
+    paint
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+
+    final bodyDef = BodyDef()
+      // To be able to determine object in collision
+      ..setUserData(this)
       ..type = BodyType.STATIC;
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);

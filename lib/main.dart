@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flame/extensions/vector2.dart';
 import "package:flame/util.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -19,8 +20,7 @@ void main() async {
   var flameUtil = Util();
   await flameUtil.fullScreen();
   await flameUtil.setLandscape();
-  // Vector2 viewportSize = await flameUtil.initialDimensions();
+  Vector2 viewportSize = await flameUtil.initialDimensions();
   await SystemChrome.setEnabledSystemUIOverlays([]);
-
-  runApp(GameLauncher());
+  runApp(GameLauncher(viewportSize));
 }
