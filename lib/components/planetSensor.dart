@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flutter/material.dart';
@@ -26,16 +28,26 @@ class PlanetSensor extends BodyComponent {
             (body.worldCenter - spaceship.body.worldCenter).scaled(10), spaceship.body.worldCenter);
         if (spaceship.id == planet.spaceshipId) {
           // home planet -> store
-          planet.resources += game.storeRate;
-          spaceship.resources -= game.storeRate;
+
+          // Ensure ship resources never drop below 0
+          double payload = min(spaceship.resources, game.storeRate);
+          planet.resources += payload;
+          spaceship.resources -= payload;
         } else {
           // foreign planet -> harvest
-          planet.resources -= game.harvestRate;
-          spaceship.resources += game.harvestRate;
+
+          // Ensure ship's harvest doesn't exceed capacity and planet resources never drop below zero
+          double payload = [
+            game.harvestRate,
+            spaceship.capacity - spaceship.resources,
+            planet.resources,
+          ].reduce(min);
+          planet.resources -= payload;
+          spaceship.resources += payload;
         }
-        // print("player resources: " + spaceship.resources.toString());
+        print("Spaceship at ${spaceship.resources.toString()}/${spaceship.capacity} capacity");
       }
-      // print("planet resources: " + planet.resources.toString());
+      print("Planet resources: " + planet.resources.toString());
     }
   }
 
