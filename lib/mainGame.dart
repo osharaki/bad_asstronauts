@@ -21,6 +21,12 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
   final PlanetSensorContactCallback contactCallback = PlanetSensorContactCallback();
+  final TextConfig resourceDisplayConfig = TextConfig(
+    fontSize: 48.0,
+    fontFamily: 'Awesome Font',
+    textAlign: TextAlign.center,
+  );
+  final Map<String, dynamic> planets = Map<String, dynamic>();
 
   double resources = 10000;
   double storeRate = 0.2;
@@ -68,10 +74,16 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       "moon.png",
       "generic_planet1.png",
     ]).then((images) {
-      planet2 =
-          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350));
-      planet1 =
+      Planet p2 =
+          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350)); 
+      Planet p1 =
           Planet(this, images[1], '1', 1000, size: Vector2(268, 268), position: Vector2(100, 350));
+
+      planets.addAll({
+        '2': p2,
+        '1': p1,
+      });
+
       player = Player(this);
       spaceship = Spaceship(
         this,
@@ -89,8 +101,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         height: 1500,
       ));
       add(spaceship);
-      add(planet1);
-      add(planet2);
+      add(p1);
+      add(p2);
       add(joystick);
       // add(player);
       add(MyCircle(this,
@@ -124,6 +136,15 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    for (Planet planet in planets.values) {
+      resourceDisplayConfig.render(
+        canvas,
+        planet.resources.toStringAsFixed(2),
+        viewport.getWorldToScreen(planet.position),
+        anchor: Anchor.center,
+      );
+    }
+
     // canvas.drawCircle(Offset(100, 100), 10, Paint()..color = Colors.red);
   }
 
