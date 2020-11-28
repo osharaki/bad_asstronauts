@@ -35,6 +35,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
     super.update(dt);
     if (_move) {
       moveFromAngle(dt);
+
+      // Consume resources by moving
+      // we normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
+      resources -= min(resources, (currentSpeed / 159) / 10);
     }
   }
 
