@@ -23,7 +23,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   final PlanetSensorContactCallback contactCallback = PlanetSensorContactCallback();
   final TextConfig resourceDisplayConfig = TextConfig(
     fontSize: 48.0,
-    fontFamily: 'Awesome Font',
+    fontFamily: 'BigShouldersStencilDisplay2',
     textAlign: TextAlign.center,
   );
   final Map<String, dynamic> planets = Map<String, dynamic>();
