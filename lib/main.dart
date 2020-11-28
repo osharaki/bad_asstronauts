@@ -2,20 +2,10 @@ import "package:flame/util.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/joystick/gameLauncher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // WebSocket Channel
-  // IOWebSocketChannel channel = IOWebSocketChannel.connect("ws://10.0.2.2:3000");
-
-  // Using Laptop's Local IP Address
-  IOWebSocketChannel channel =
-      IOWebSocketChannel.connect("ws://192.168.1.8:3000");
-  // IOWebSocketChannel channel =
-  //     IOWebSocketChannel.connect("ws://192.168.1.183:3000");
 
   var flameUtil = Util();
   await flameUtil.fullScreen();
@@ -28,5 +18,5 @@ void main() async {
     "joystickBase.png",
   ]);
 
-  runApp(GameLauncher(channel: channel));
+  runApp(GameLauncher());
 }

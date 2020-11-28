@@ -2,13 +2,13 @@ import 'dart:convert';
 import "package:flame/game.dart";
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:gameOff2020/utils/math.dart';
 
 import 'bullet.dart';
 import 'trigger.dart';
 import 'joystick.dart';
 import 'touchData.dart';
+import 'gameLauncher.dart';
 import 'serverHandler.dart';
 
 class MainGame extends Game {
@@ -17,7 +17,7 @@ class MainGame extends Game {
   double tileSize;
   Offset screenCenter;
 
-  IOWebSocketChannel channel;
+  final GameLauncherState launcher;
 
   String id;
   ServerHandler serverHandler;
@@ -28,10 +28,11 @@ class MainGame extends Game {
 
   List<TouchData> taps = [];
 
-  MainGame({@required this.channel}) {
+  MainGame({@required this.launcher}) {
     initialize();
 
-    channel.stream.listen((rawMessage) => onReceiveMessage(rawMessage));
+    launcher.channel.stream
+        .listen((rawMessage) => onReceiveMessage(rawMessage));
   }
 
   void initialize() async {
@@ -100,29 +101,55 @@ class MainGame extends Game {
       );
 
       serverHandler.bullets.add(bullet);
-
-      // Empty
-    } else {
-      // Join
-      if (serverData.isEmpty) {
-        Map<String, dynamic> joinData = {
-          "action": "join",
-          "data": {"session": "test"},
-        };
-
-        channel.sink.add(json.encode(joinData));
-
-        // Leave
-      } else {
-        Map<String, dynamic> leaveData = {
-          "action": "leave",
-          "data": {"session": "test"},
-        };
-
-        serverData.clear();
-        channel.sink.add(json.encode(leaveData));
-      }
     }
+  }
+
+  void createSession(int limit) {
+    Map<String, dynamic> createData = {
+      "action": "create",
+      "data": {
+        "host": id,
+        "limit": limit,
+        "time": 5000,
+        "remainingTime": 5000,
+        "state": "waiting",
+        "players": {},
+      },
+    };
+
+    launcher.channel.sink.add(json.encode(createData));
+  }
+
+  void joinSession(String session) {
+    Map<String, dynamic> joinData = {
+      "action": "join",
+      "data": {"session": session},
+    };
+
+    launcher.channel.sink.add(json.encode(joinData));
+  }
+
+  void joinRandomSession() {
+    Map<String, dynamic> joinRandomData = {
+      "action": "joinRandom",
+      "data": null,
+    };
+
+    launcher.channel.sink.add(json.encode(joinRandomData));
+  }
+
+  void leaveSession() {
+    Map<String, dynamic> leaveData = {
+      "action": "leave",
+      "data": {"session": serverData["id"]},
+    };
+
+    launcher.channel.sink.add(json.encode(leaveData));
+  }
+
+  void leftSession() {
+    serverData.clear();
+    launcher.updateState("out");
   }
 
   void onDrag(TouchData touch) {
@@ -188,7 +215,7 @@ class MainGame extends Game {
     @required Map<String, dynamic> data,
   }) {
     String message = jsonEncode({"action": action, "data": data});
-    channel.sink.add(message);
+    launcher.channel.sink.add(message);
   }
 
   void onReceiveMessage(String rawMessage) {
@@ -212,7 +239,10 @@ class MainGame extends Game {
       serverData = data["info"];
       String player = data["player"];
 
+      launcher.updateRemainingPlayers(getRemainingPlayers());
+
       if (player == id) {
+        launcher.updateState("waiting");
         serverHandler = ServerHandler(game: this);
         serverHandler.joinSession();
         moveCameraToPercent(
@@ -223,8 +253,46 @@ class MainGame extends Game {
 
       // Player Left
     } else if (action == "playerLeft") {
+      serverData = data["info"];
+
       serverHandler.removePlayer(data["player"]);
+      launcher.updateRemainingPlayers(getRemainingPlayers());
+
+      // Session State Changed
+    } else if (action == "stateChanged") {
+      print("STATE CHANGED TO: ${data["state"]}");
+      launcher.updateState(data["state"]);
+
+      // Joined Wrong Session
+    } else if (action == "wrongSession") {
+      // Emit wrong session signal
+      print("WRONG SESSION!");
+
+      // You left
+    } else if (action == "youLeft") {
+      leftSession();
+
+      // Session Terminated
+    } else if (action == "sessionTerminated") {
+      print("HOST IS A HO!");
+
+      // No Sessions Available
+    } else if (action == "noSessions") {
+      print("NO SESSIONS AVAILABLE");
+
+      // Time Updated
+    } else if (action == "timeUpdated") {
+      serverData["remainingTime"] = data["remainingTime"];
+      launcher.updateRemainingTime();
     }
+  }
+
+  int getRemainingPlayers() {
+    int sessionLimit = serverData["limit"];
+    int currentPlayerCount = serverData["players"].keys.length;
+    int remainingPlayers = sessionLimit - currentPlayerCount;
+
+    return remainingPlayers;
   }
 
   void moveCameraToPercent(List<dynamic> percent) {

@@ -13,7 +13,6 @@ class ServerHandler {
 
   Arena arena;
 
-  // {"id": {"spaceship":Spaceship(), "planet":Planet()}}
   Map<String, Map<String, dynamic>> players = {};
 
   List<Debris> debris = List.empty(growable: true);
