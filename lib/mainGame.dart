@@ -75,7 +75,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       "generic_planet1.png",
     ]).then((images) {
       Planet p2 =
-          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350)); 
+          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350));
       Planet p1 =
           Planet(this, images[1], '1', 1000, size: Vector2(268, 268), position: Vector2(100, 350));
 
@@ -105,8 +105,9 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       add(p2);
       add(joystick);
       // add(player);
-      add(MyCircle(this,
-          10)); // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html})
+
+      // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
+      // add(MyCircle(this, 10));
     });
   }
 
@@ -167,7 +168,7 @@ class MyCircle extends BodyComponent {
     position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
   }
 
-  @override
+  /* @override
   void render(Canvas c) {
     super.render(c);
     TextConfig(
@@ -180,7 +181,7 @@ class MyCircle extends BodyComponent {
       game.viewport.getWorldToScreen(position),
       anchor: Anchor.center,
     );
-  }
+  } */
 
   @override
   Body createBody() {
