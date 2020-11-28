@@ -59,7 +59,7 @@ class Planet extends SpriteBodyComponent {
       textAlign: TextAlign.center,
     ).render(
       c,
-      resources.toString(),
+      resources.toStringAsFixed(2),
       game.viewport.getWorldToScreen(Vector2(position.x, position.y + size.y / 2 + 22)),
       anchor: Anchor.center,
     );
