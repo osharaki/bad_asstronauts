@@ -67,7 +67,7 @@ class Planet extends SpriteBodyComponent {
       game.viewport.getWorldToScreen(Vector2(position.x, position.y + size.y / 2 + 22)),
       anchor: Anchor.center,
     );
-    // As opposed to BodyComponents, calling super.render() first in a SpriteBodyComponent's render method will cause the subsequently rendered text to wobble around as the camera moves. calling it last solves this.
+    // As opposed to BodyComponents, calling super.render() first in a SpriteBodyComponent's render method will cause the subsequently rendered text to wobble around as the camera moves. calling it last solves this. This however causes the planet to cover the text!
     super.render(c);
   } */
 
