@@ -62,9 +62,9 @@ class PlanetSensor extends BodyComponent {
           planet.resources -= payload;
           spaceship.resources += payload;
         }
-        print("Spaceship at ${spaceship.resources.toString()}/${spaceship.capacity} capacity");
+        // print("Spaceship at ${spaceship.resources.toString()}/${spaceship.capacity} capacity");
       }
-      print("Planet resources: " + planet.resources.toString());
+      // print("Planet resources: " + planet.resources.toString());
     }
   }
 
@@ -93,15 +93,15 @@ class PlanetSensor extends BodyComponent {
 class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSensor> {
   @override
   void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
-    print('spaceship entered atmosphere!');
+    // print('spaceship entered atmosphere!');
     planetSensor.spaceshipsInOrbit.add(spaceship);
-    print(planetSensor.spaceshipsInOrbit);
+    // print(planetSensor.spaceshipsInOrbit);
   }
 
   @override
   void end(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
-    print('spaceship left atmosphere!');
+    // print('spaceship left atmosphere!');
     planetSensor.spaceshipsInOrbit.remove(spaceship);
-    print(planetSensor.spaceshipsInOrbit);
+    // print(planetSensor.spaceshipsInOrbit);
   }
 }
