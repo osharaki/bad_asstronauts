@@ -1,10 +1,12 @@
 import 'dart:ui';
 
+import 'package:flame/anchor.dart';
 import 'package:flame/components/joystick/joystick_action.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_directional.dart';
 import 'package:flame/extensions/vector2.dart';
 import 'package:flame/gestures.dart';
+import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -137,10 +139,26 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 class MyCircle extends BodyComponent {
   final MainGame game;
   final double radius;
+
   Vector2 position;
 
   MyCircle(this.game, this.radius) {
     position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
+  }
+
+  @override
+  void render(Canvas c) {
+    super.render(c);
+    TextConfig(
+      fontSize: 48.0,
+      fontFamily: 'Awesome Font',
+      textAlign: TextAlign.center,
+    ).render(
+      c,
+      'Resources',
+      game.viewport.getWorldToScreen(position),
+      anchor: Anchor.center,
+    );
   }
 
   @override

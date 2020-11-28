@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flame/anchor.dart';
+import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,21 @@ class PlanetSensor extends BodyComponent {
   final List<Spaceship> spaceshipsInOrbit = [];
 
   PlanetSensor(this.game, this.planet, {this.size, this.position});
+
+  /* @override
+  void render(Canvas c) {
+    super.render(c);
+    TextConfig(
+      fontSize: 48.0,
+      fontFamily: 'Awesome Font',
+      textAlign: TextAlign.center,
+    ).render(
+      c,
+      'Resouuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuurces',
+      game.viewport.getWorldToScreen(position),
+      anchor: Anchor.center,
+    );
+  } */
 
   @override
   void update(double dt) {
