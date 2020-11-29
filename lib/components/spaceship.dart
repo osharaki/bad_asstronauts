@@ -27,6 +27,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double resourceCriticalThreshold = 6;
 
   bool _move = false;
+  bool inOrbit = false;
   Sprite spaceship;
 
   Spaceship(this.game, Image image, this.id, {this.size, this.position}) {
@@ -41,7 +42,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
       // Consume resources by moving
       // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
-      resources -= min(resources, (currentSpeed / 159) / 10);
+      if (!inOrbit) resources -= min(resources, (currentSpeed / 159) / 10);
     }
     // Resources only start being replenished if they drop below critical levels otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, The fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
     if (resources < resourceCriticalThreshold) {

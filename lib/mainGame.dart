@@ -29,8 +29,11 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   final Map<String, dynamic> planets = Map<String, dynamic>();
 
   double resources = 10000;
+
+  // storeRate being twice the harvest rate provides home field (sadeeq) advantage
   double storeRate = 0.2;
   double harvestRate = 0.1;
+  
   Spaceship spaceship;
   Player player;
   Planet planet1;

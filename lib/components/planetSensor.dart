@@ -97,6 +97,7 @@ class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSenso
   void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     // print('spaceship entered atmosphere!');
     planetSensor.spaceshipsInOrbit.add(spaceship);
+    spaceship.inOrbit = true;
     // print(planetSensor.spaceshipsInOrbit);
   }
 
@@ -104,6 +105,7 @@ class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSenso
   void end(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
     // print('spaceship left atmosphere!');
     planetSensor.spaceshipsInOrbit.remove(spaceship);
+    spaceship.inOrbit = false;
     // print(planetSensor.spaceshipsInOrbit);
   }
 }
