@@ -36,14 +36,16 @@ class Planet extends SpriteBodyComponent {
     final CircleShape shape = CircleShape()..radius = size.x / 2;
 
     final fixtureDef = FixtureDef();
-    fixtureDef.setUserData(this); // To be able to determine object in collision
     fixtureDef.shape = shape;
 
     paint.color = Colors.transparent;
 
     final bodyDef = BodyDef();
-    bodyDef.position = position;
-    bodyDef.type = BodyType.STATIC;
+    bodyDef
+      ..position = position
+      ..type = BodyType.STATIC
+      ..setUserData(this); // To be able to determine object in collision
+
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 }
