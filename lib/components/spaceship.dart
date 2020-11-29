@@ -89,7 +89,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
   @override
   void joystickChangeDirectional(JoystickDirectionalEvent event) {
-    // If check is > 0, it will always and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
+    // If check is > 0, it will always pass and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
     if (resources > 0.1) {
       _move = event.directional != JoystickMoveDirectional.IDLE;
       if (_move) {

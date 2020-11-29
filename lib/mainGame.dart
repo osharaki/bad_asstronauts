@@ -105,12 +105,14 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       );
 
       joystick.addObserver(spaceship);
+      
       add(BoundingBox(
         this,
         center: viewportSize.scaled(.5),
         width: 1500,
         height: 1500,
       ));
+      
       add(p1);
       add(p2);
       add(spaceship);
