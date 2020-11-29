@@ -1,11 +1,10 @@
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:gameOff2020/joystick/gameOverlay.dart';
-import 'package:gameOff2020/joystick/serverHandler.dart';
+import 'serverHandler.dart';
 
 import 'mainMenu.dart';
 import 'mainGame.dart';
+import 'gameOverlay.dart';
 import 'waitingRoom.dart';
-import 'package:flutter/gestures.dart';
 import "package:flutter/material.dart";
 import "package:web_socket_channel/io.dart";
 
@@ -76,7 +75,8 @@ class GameLauncherState extends State<GameLauncher> {
 
   void updateRemainingTime() {
     setState(() {
-      remainingTime = convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
+      remainingTime =
+          convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
     });
   }
 
@@ -87,9 +87,15 @@ class GameLauncherState extends State<GameLauncher> {
       home: Stack(
         children: [
           game.widget,
-          state == "waiting" ? WaitingRoom(launcher: this) : Container(width: 0, height: 0),
-          state == "out" ? MainMenu(launcher: this) : Container(width: 0, height: 0),
-          state == "playing" ? GameOverlay(launcher: this) : Container(width: 0, height: 0),
+          state == "waiting"
+              ? WaitingRoom(launcher: this)
+              : Container(width: 0, height: 0),
+          state == "out"
+              ? MainMenu(launcher: this)
+              : Container(width: 0, height: 0),
+          state == "playing"
+              ? GameOverlay(launcher: this)
+              : Container(width: 0, height: 0),
         ],
       ),
     );

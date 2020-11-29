@@ -25,9 +25,20 @@ class Planet extends SpriteBodyComponent {
   PlanetAtmosphere planetAtmosphere;
   double resources;
 
-  Planet(this.game, Image image, this.spaceshipId, this.resources, {this.size, this.position})
-      : super(Sprite(image), size) {
-    planetAtmosphere = PlanetAtmosphere(game, this, size: size, position: position);
+  Planet({
+    @required this.game,
+    @required Image image,
+    @required this.spaceshipId,
+    @required this.resources,
+    this.size,
+    this.position,
+  }) : super(Sprite(image), size) {
+    planetAtmosphere = PlanetAtmosphere(
+      game: game,
+      planet: this,
+      size: size,
+      position: position,
+    );
     game.add(planetAtmosphere);
   }
 
@@ -54,7 +65,8 @@ class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
   @override
   void begin(Spaceship spaceship, Planet planet, Contact contact) {
     spaceship.isSpectating = true;
-    print('spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
+    print(
+        'spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
   }
 
   @override

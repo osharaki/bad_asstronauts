@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import 'package:gameOff2020/joystick/gameLauncher.dart';
+import 'gameLauncher.dart';
 
 class WaitingRoom extends StatefulWidget {
   final GameLauncherState launcher;

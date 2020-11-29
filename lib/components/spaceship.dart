@@ -31,7 +31,13 @@ class Spaceship extends BodyComponent implements JoystickListener {
   bool inOrbit = false;
   Sprite spaceship;
 
-  Spaceship(this.game, Image image, this.id, {this.size, this.position}) {
+  Spaceship({
+    @required this.game,
+    @required Image image,
+    @required this.id,
+    this.size,
+    this.position,
+  }) {
     spaceship = Sprite(image);
   }
 
@@ -60,8 +66,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
     canvas.save();
     Vector2 posRect = viewport.getWorldToScreen(body.worldCenter);
-    Rect rect =
-        Rect.fromCenter(center: Offset(posRect.x, posRect.y), width: size.x, height: size.y);
+    Rect rect = Rect.fromCenter(
+        center: Offset(posRect.x, posRect.y), width: size.x, height: size.y);
     canvas.translate(posRect.x, posRect.y);
     canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
     canvas.translate(-posRect.x, -posRect.y);
@@ -76,8 +82,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
     ).render(
       canvas,
       resources.toStringAsFixed(2),
-      game.viewport
-          .getWorldToScreen(Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
+      game.viewport.getWorldToScreen(
+          Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
       anchor: Anchor.center,
     );
   }
@@ -105,7 +111,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
     // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
-    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+    body.applyLinearImpulse(
+        Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
   }
 
   @override

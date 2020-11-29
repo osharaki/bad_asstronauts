@@ -1,24 +1,25 @@
+import 'dart:ui';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flame/extensions/vector2.dart';
+import 'package:flutter/material.dart' hide Image;
 
-
+import 'gameLauncher.dart';
 import 'components/planet.dart';
 import 'components/spaceship.dart';
-import 'gameLauncher.dart';
 
 class ServerHandler {
   String id;
+  List<Image> imageList;
   Map<String, dynamic> serverData = {};
-  // {"id": id, "host":"player1", "players": {"playerID": {"ready": true, "color": HEX, "spaceship": {"position":[50, 50], "angle": 45, "resources":1000}, "planet": {"position": [50, 50], "resources":1000}}}}
 
   GameLauncherState launcher;
 
-  Map<String, Map<String, dynamic>> players =
-      {}; // {"player1": {"ready": true, "color":HEX, "spaceship": Spaceship(id: "player1"), "planet": Planet()}
+  Map<String, Map<String, dynamic>> players = {};
 
   ServerHandler({@required this.launcher}) {
-    launcher.channel.stream.listen((rawMessage) => onReceiveMessage(rawMessage));
+    launcher.channel.stream
+        .listen((rawMessage) => onReceiveMessage(rawMessage));
   }
 
   void requestCreateSession(int limit) {
@@ -91,18 +92,26 @@ class ServerHandler {
     });
   }
 
-  void initializePlayers() {
+  void initializePlayers() async {
+    imageList = await launcher.game.imageList;
+
     players.keys.forEach((player) {
-      bool centered = player == id ? true : false;
+      Image spaceshipImage = imageList[0];
+      Image planetImage = imageList[1];
 
       players[player] = {
-        "spaceship": Spaceship(game: launcher.game, centered: centered),
-        "planet": Planet(game: launcher.game),
+        "spaceship": Spaceship(
+          game: launcher.game,
+          image: spaceshipImage,
+          id: player,
+        ),
+        "planet": Planet(
+          game: launcher.game,
+          image: planetImage,
+          spaceshipId: player,
+          resources: serverData["players"][player]["planet"]["resources"],
+        ),
       };
-
-      if (player == id) {
-        launcher.game.moveCameraToPercent(serverData["players"][player]["spaceship"]["position"]);
-      }
     });
   }
 
@@ -117,24 +126,42 @@ class ServerHandler {
     launcher.updateState("out");
   }
 
+  void updateLocalSpaceship(String player, Map<String, dynamic> data) {
+    int angle = data["angle"];
+    int resources = data["resources"];
+    Vector2 position = Vector2(data["position"][0], data["position"][1]);
+
+    serverData["players"][player]["spaceship"] = data;
+
+    // TODO: Plug information into Spaceship class
+  }
+
+  void updateLocalPlanet(String player, Map<String, dynamic> data) {
+    int resources = data["resources"];
+
+    serverData["players"][player]["planet"]["resources"] = resources;
+
+    // TODO: Plug information into Planet class
+  }
+
   void updatePlayers() {
-    if (serverData["state"] == "playing") {
-      players.keys.forEach((player) {
-        dynamic angle = serverData["players"][player]["spaceship"]["angle"];
+    // if (serverData["state"] == "playing") {
+    //   players.keys.forEach((player) {
+    //     dynamic angle = serverData["players"][player]["spaceship"]["angle"];
 
-        Offset position = launcher.game
-            .getWorldPositionFromPercent(serverData["players"][player]["spaceship"]["position"]);
+    //     Offset position = launcher.game.getWorldPositionFromPercent(
+    //         serverData["players"][player]["spaceship"]["position"]);
 
-        Offset planetPosition = launcher.game
-            .getWorldPositionFromPercent(serverData["players"][player]["planet"]["position"]);
+    //     Offset planetPosition = launcher.game.getWorldPositionFromPercent(
+    //         serverData["players"][player]["planet"]["position"]);
 
-        // Update info
-        players[player]["spaceship"].worldPosition = position;
-        players[player]["spaceship"].angle = angle.toDouble();
+    //     // Update info
+    //     players[player]["spaceship"].worldPosition = position;
+    //     players[player]["spaceship"].angle = angle.toDouble();
 
-        players[player]["planet"].position = planetPosition;
-      });
-    }
+    //     players[player]["planet"].position = planetPosition;
+    //   });
+    // }
   }
 
   void sendDataToServer({
@@ -146,6 +173,7 @@ class ServerHandler {
   }
 
   void onReceiveMessage(String rawMessage) {
+    // {"action": <actionName>, "data": {<field>: <value>}}
     Map message = jsonDecode(rawMessage);
     String action = message["action"];
     Map<String, dynamic> data = message["data"];
@@ -221,21 +249,18 @@ class ServerHandler {
 
       // Spaceship updated
     } else if (action == "spaceshipUpdated") {
+      // {"player":<id>, "info": {"position":[50, 50], "angle":10, "resources":100}}
       String player = data["player"];
       Map<String, dynamic> info = data["info"];
 
-      serverData["players"][player]["spaceship"] = info;
-
-      updatePlayers();
+      updateLocalSpaceship(player, info);
 
       // Planet Updated
     } else if (action == "planetUpdated") {
       String player = data["player"];
       Map<String, dynamic> info = data["info"];
 
-      serverData["players"][player]["planet"] = info;
-
-      updatePlayers();
+      updateLocalPlanet(player, info);
     }
   }
 
@@ -264,24 +289,6 @@ class ServerHandler {
   }
 
   void render(Canvas canvas) {
-
-
-    // Planets
-   
-
-  void render(Canvas canvas) {
-    // Arena
-    arena.render(canvas);
-
-    // Debris
-    debris.forEach((d) => (d.render(canvas)));
-
-    // Asteroids
-    asteroids.forEach((a) => (a.render(canvas)));
-
-    // Bullets
-    bullets.forEach((b) => b.render(canvas));
-
     // Planets
     players.keys.forEach((player) {
       players[player]["planet"].render(canvas);

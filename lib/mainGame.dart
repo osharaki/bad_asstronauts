@@ -12,6 +12,7 @@ import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
+import 'package:gameOff2020/gameLauncher.dart';
 
 import 'components/planet.dart';
 import 'components/planetAtmosphere.dart';
@@ -21,6 +22,8 @@ import 'components/spaceship.dart';
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
+  final GameLauncherState launcher;
+  Future<List<Image>> imageList;
 
   final PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
       PlanetAtmosphereContactCallback();
@@ -72,7 +75,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     ],
   );
 
-  MainGame(this.viewportSize)
+  MainGame({this.launcher, this.viewportSize})
       : super(
           gravity: Vector2.zero(),
         ) {
@@ -80,48 +83,60 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     addContactCallback(planetContactCallback);
     // addContactCallback(myCircleContactCallback);
 
-    images.loadAll([
+    imageList = images.loadAll([
       "spaceship.png",
       "moon.png",
       "generic_planet1.png",
-    ]).then((images) {
-      Planet p2 =
-          Planet(this, images[2], '2', 0, size: Vector2(268, 268), position: Vector2(800, 350));
-      Planet p1 =
-          Planet(this, images[1], '1', 1000, size: Vector2(268, 268), position: Vector2(100, 350));
+    ]);
 
-      planets.addAll({
-        '2': p2,
-        '1': p1,
-      });
+    // .then((images) {
+    //   Planet p2 = Planet(
+    //       game: this,
+    //       image: images[2],
+    //       spaceshipId: '2',
+    //       resources: 0,
+    //       size: Vector2(268, 268),
+    //       position: Vector2(800, 350));
 
-      // player = Player(this);
-      spaceship = Spaceship(
-        this,
-        images.first,
-        '2',
-        size: Vector2(254, 512).scaled(0.06),
-        position: viewportSize / 2,
-      );
+    //   Planet p1 = Planet(
+    //       game: this,
+    //       image: images[1],
+    //       spaceshipId: '1',
+    //       resources: 1000,
+    //       size: Vector2(268, 268),
+    //       position: Vector2(100, 350));
 
-      joystick.addObserver(spaceship);
-      
-      add(BoundingBox(
-        this,
-        center: viewportSize.scaled(.5),
-        width: 1500,
-        height: 1500,
-      ));
-      
-      add(p1);
-      add(p2);
-      add(spaceship);
-      add(joystick);
-      // add(player);
+    //   planets.addAll({
+    //     '2': p2,
+    //     '1': p1,
+    //   });
 
-      // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
-      // add(MyCircle(this, 10));
-    });
+    // player = Player(this);
+    // spaceship = Spaceship(
+    //   game: this,
+    //   image: images.first,
+    //   id: '2',
+    //   size: Vector2(254, 512).scaled(0.06),
+    //   position: viewportSize / 2,
+    // );
+
+    // joystick.addObserver(spaceship);
+
+    // add(BoundingBox(
+    //   this,
+    //   center: viewportSize.scaled(.5),
+    //   width: 1500,
+    //   height: 1500,
+    // ));
+
+    // add(p1);
+    // add(p2);
+    // add(spaceship);
+    // add(joystick);
+    // add(player);
+
+    // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
+    // add(MyCircle(this, 10));
   }
 
   @override

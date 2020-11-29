@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
-import 'package:gameOff2020/joystick/gameLauncher.dart';
+import 'gameLauncher.dart';
 
 class MainMenu extends StatefulWidget {
   final GameLauncherState launcher;
