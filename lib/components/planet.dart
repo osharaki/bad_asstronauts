@@ -2,12 +2,14 @@ import 'dart:ui';
 
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
+import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
-import 'package:gameOff2020/components/planetSensor.dart';
+import 'package:gameOff2020/components/planetAtmosphere.dart';
 
 import '../mainGame.dart';
+import 'spaceship.dart';
 
 class Planet extends SpriteBodyComponent {
   final MainGame game;
@@ -20,13 +22,13 @@ class Planet extends SpriteBodyComponent {
     textAlign: TextAlign.center,
   );
 
-  PlanetSensor planetSensor;
+  PlanetAtmosphere planetAtmosphere;
   double resources;
 
   Planet(this.game, Image image, this.spaceshipId, this.resources, {this.size, this.position})
       : super(Sprite(image), size) {
-    planetSensor = PlanetSensor(game, this, size: size, position: position);
-    game.add(planetSensor);
+    planetAtmosphere = PlanetAtmosphere(game, this, size: size, position: position);
+    game.add(planetAtmosphere);
   }
 
   @override
@@ -34,14 +36,27 @@ class Planet extends SpriteBodyComponent {
     final CircleShape shape = CircleShape()..radius = size.x / 2;
 
     final fixtureDef = FixtureDef();
-    fixtureDef.setUserData(this); // To be able to determine object in collision
     fixtureDef.shape = shape;
 
     paint.color = Colors.transparent;
 
     final bodyDef = BodyDef();
-    bodyDef.position = position;
-    bodyDef.type = BodyType.STATIC;
+    bodyDef
+      ..position = position
+      ..type = BodyType.STATIC
+      ..setUserData(this); // To be able to determine object in collision
+
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
+}
+
+class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
+  @override
+  void begin(Spaceship spaceship, Planet planet, Contact contact) {
+    spaceship.isSpectating = true;
+    print('spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
+  }
+
+  @override
+  void end(Spaceship spaceship, Planet planet, Contact contact) {}
 }

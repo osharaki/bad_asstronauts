@@ -8,19 +8,25 @@ import 'package:flame/extensions/vector2.dart';
 import 'package:flame/gestures.dart';
 import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
+import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 
 import 'components/planet.dart';
-import 'components/planetSensor.dart';
+import 'components/planetAtmosphere.dart';
 import 'components/player.dart';
 import 'components/spaceship.dart';
 
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
-  final PlanetSensorContactCallback contactCallback = PlanetSensorContactCallback();
+
+  final PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
+      PlanetAtmosphereContactCallback();
+  final PlanetContactCallback planetContactCallback = PlanetContactCallback();
+  // final MyCircleContactCallback myCircleContactCallback = MyCircleContactCallback();
+
   final TextConfig resourceDisplayConfig = TextConfig(
     fontSize: 48.0,
     fontFamily: 'BigShouldersStencilDisplay2',
@@ -70,7 +76,9 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       : super(
           gravity: Vector2.zero(),
         ) {
-    addContactCallback(contactCallback);
+    addContactCallback(planetAtmosphereContactCallback);
+    addContactCallback(planetContactCallback);
+    // addContactCallback(myCircleContactCallback);
 
     images.loadAll([
       "spaceship.png",
@@ -206,6 +214,17 @@ class MyCircle extends BodyComponent {
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
+}
+
+class MyCircleContactCallback extends ContactCallback<Spaceship, MyCircle> {
+  @override
+  void begin(Spaceship spaceship, MyCircle circle, Contact contact) {
+    spaceship.isSpectating = true;
+    print('spaceship ${spaceship.id} crashed into circle');
+  }
+
+  @override
+  void end(Spaceship spaceship, MyCircle circle, Contact contact) {}
 }
 
 class BoundingBox extends BodyComponent {

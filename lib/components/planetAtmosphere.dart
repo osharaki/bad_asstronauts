@@ -12,14 +12,14 @@ import 'package:gameOff2020/mainGame.dart';
 import 'spaceship.dart';
 
 // TODO add visual cue to indicate planet harvesting range (see Trello card)
-class PlanetSensor extends BodyComponent {
+class PlanetAtmosphere extends BodyComponent {
   final MainGame game;
   final Vector2 size;
   final Vector2 position;
   final Planet planet;
   final List<Spaceship> spaceshipsInOrbit = [];
 
-  PlanetSensor(this.game, this.planet, {this.size, this.position});
+  PlanetAtmosphere(this.game, this.planet, {this.size, this.position});
 
   /* @override
   void render(Canvas c) {
@@ -92,20 +92,20 @@ class PlanetSensor extends BodyComponent {
   }
 }
 
-class PlanetSensorContactCallback extends ContactCallback<Spaceship, PlanetSensor> {
+class PlanetAtmosphereContactCallback extends ContactCallback<Spaceship, PlanetAtmosphere> {
   @override
-  void begin(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
+  void begin(Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
     // print('spaceship entered atmosphere!');
-    planetSensor.spaceshipsInOrbit.add(spaceship);
+    planetAtmosphere.spaceshipsInOrbit.add(spaceship);
     spaceship.inOrbit = true;
-    // print(planetSensor.spaceshipsInOrbit);
+    // print(planetAtmosphere.spaceshipsInOrbit);
   }
 
   @override
-  void end(Spaceship spaceship, PlanetSensor planetSensor, Contact contact) {
+  void end(Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
     // print('spaceship left atmosphere!');
-    planetSensor.spaceshipsInOrbit.remove(spaceship);
+    planetAtmosphere.spaceshipsInOrbit.remove(spaceship);
     spaceship.inOrbit = false;
-    // print(planetSensor.spaceshipsInOrbit);
+    // print(planetAtmosphere.spaceshipsInOrbit);
   }
 }
