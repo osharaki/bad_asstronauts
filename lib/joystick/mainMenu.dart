@@ -14,7 +14,7 @@ class MainMenu extends StatefulWidget {
 class MainMenuState extends State<MainMenu> {
   String page = "main";
   TextEditingController codeController = TextEditingController();
-  TextEditingController limitController = TextEditingController();
+  TextEditingController limitController = TextEditingController(text: "1");
 
   void changePange(String newPage) {
     setState(() {
@@ -73,48 +73,28 @@ class MainMenuState extends State<MainMenu> {
                         },
                       ),
                     )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey[800],
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      width: 400,
+                  : SizedBox(
+                      width: 300,
                       height: 75,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 300,
-                            height: 75,
-                            child: TextField(
-                              controller: codeController,
-                              textAlign: TextAlign.center,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10)
-                              ],
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50)),
-                                    borderSide: BorderSide(
-                                      style: BorderStyle.none,
-                                    )),
-                                fillColor: Colors.blueGrey[500],
-                                filled: true,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.refresh,
-                              color: Colors.blueGrey[200],
-                            ),
-                            onPressed: null,
-                            iconSize: 50,
-                          )
-                        ],
+                      child: TextField(
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w100,
+                        ),
+                        controller: codeController,
+                        textAlign: TextAlign.center,
+                        inputFormatters: [LengthLimitingTextInputFormatter(4)],
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              borderSide: BorderSide(
+                                style: BorderStyle.none,
+                              )),
+                          fillColor: Colors.blueGrey[500],
+                          filled: true,
+                        ),
                       ),
                     ),
               SizedBox(height: 10),
@@ -154,9 +134,21 @@ class MainMenuState extends State<MainMenu> {
                       width: 300,
                       height: 75,
                       child: TextField(
+                        onSubmitted: (_) {
+                          if (limitController.text.isEmpty)
+                            limitController.text = "1";
+                        },
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w100,
+                        ),
                         controller: limitController,
                         textAlign: TextAlign.center,
-                        inputFormatters: [LengthLimitingTextInputFormatter(1)],
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(1),
+                          FilteringTextInputFormatter.allow(RegExp("[1-9]")),
+                        ],
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
