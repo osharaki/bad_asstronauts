@@ -26,18 +26,18 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     fontFamily: 'BigShouldersStencilDisplay2',
     textAlign: TextAlign.center,
   );
-  final Map<String, dynamic> planets = Map<String, dynamic>();
+  final Map<String, dynamic> planets = {};
 
-  double resources = 10000;
+  // double resources = 10000;
 
   // storeRate being twice the harvest rate provides home field (sadeeq) advantage
   double storeRate = 0.2;
   double harvestRate = 0.1;
-  
+
   Spaceship spaceship;
-  Player player;
-  Planet planet1;
-  Planet planet2;
+  // Player player;
+  // Planet planet1;
+  // Planet planet2;
 
   final joystick = JoystickComponent(
     directional: JoystickDirectional(),
@@ -87,7 +87,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         '1': p1,
       });
 
-      player = Player(this);
+      // player = Player(this);
       spaceship = Spaceship(
         this,
         images.first,
