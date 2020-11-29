@@ -20,7 +20,10 @@ import 'components/spaceship.dart';
 class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
-  final PlanetSensorContactCallback contactCallback = PlanetSensorContactCallback();
+
+  final PlanetSensorContactCallback planetSensorContactCallback = PlanetSensorContactCallback();
+  final PlanetContactCallback planetContactCallback = PlanetContactCallback();
+
   final TextConfig resourceDisplayConfig = TextConfig(
     fontSize: 48.0,
     fontFamily: 'BigShouldersStencilDisplay2',
@@ -33,7 +36,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // storeRate being twice the harvest rate provides home field (sadeeq) advantage
   double storeRate = 0.2;
   double harvestRate = 0.1;
-  
+
   Spaceship spaceship;
   Player player;
   Planet planet1;
@@ -70,7 +73,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       : super(
           gravity: Vector2.zero(),
         ) {
-    addContactCallback(contactCallback);
+    addContactCallback(planetSensorContactCallback);
+    addContactCallback(planetContactCallback);
 
     images.loadAll([
       "spaceship.png",

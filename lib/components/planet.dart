@@ -2,12 +2,14 @@ import 'dart:ui';
 
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
+import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 import 'package:gameOff2020/components/planetSensor.dart';
 
 import '../mainGame.dart';
+import 'spaceship.dart';
 
 class Planet extends SpriteBodyComponent {
   final MainGame game;
@@ -44,4 +46,15 @@ class Planet extends SpriteBodyComponent {
     bodyDef.type = BodyType.STATIC;
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
+}
+
+class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
+  @override
+  void begin(Spaceship spaceship, Planet planet, Contact contact) {
+    spaceship.isSpectating = true;
+    print('spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
+  }
+
+  @override
+  void end(Spaceship spaceship, Planet planet, Contact contact) {}
 }

@@ -26,6 +26,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double resourceReplenishRate = 0.005;
   double resourceCriticalThreshold = 6;
 
+  bool isSpectating = false;
   bool _move = false;
   bool inOrbit = false;
   Sprite spaceship;
