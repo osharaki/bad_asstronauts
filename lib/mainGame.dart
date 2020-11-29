@@ -13,7 +13,7 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
 
 import 'components/planet.dart';
-import 'components/planetSensor.dart';
+import 'components/planetAtmosphere.dart';
 import 'components/player.dart';
 import 'components/spaceship.dart';
 
@@ -21,7 +21,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
 
-  final PlanetSensorContactCallback planetSensorContactCallback = PlanetSensorContactCallback();
+  final PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
+      PlanetAtmosphereContactCallback();
   final PlanetContactCallback planetContactCallback = PlanetContactCallback();
 
   final TextConfig resourceDisplayConfig = TextConfig(
@@ -73,7 +74,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       : super(
           gravity: Vector2.zero(),
         ) {
-    addContactCallback(planetSensorContactCallback);
+    addContactCallback(planetAtmosphereContactCallback);
     addContactCallback(planetContactCallback);
 
     images.loadAll([
