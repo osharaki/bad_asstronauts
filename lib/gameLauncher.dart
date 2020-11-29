@@ -1,16 +1,19 @@
+import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:gameOff2020/joystick/gameOverlay.dart';
 import 'package:gameOff2020/joystick/serverHandler.dart';
 
 import 'mainMenu.dart';
-import 'itemDrag.dart';
 import 'mainGame.dart';
-import 'touchData.dart';
 import 'waitingRoom.dart';
 import 'package:flutter/gestures.dart';
 import "package:flutter/material.dart";
 import "package:web_socket_channel/io.dart";
 
 class GameLauncher extends StatefulWidget {
+  final Vector2 viewportSize;
+
+  GameLauncher(this.viewportSize);
+
   @override
   GameLauncherState createState() => GameLauncherState();
 }
@@ -22,6 +25,7 @@ class GameLauncherState extends State<GameLauncher> {
   String winterGardenIP_2G = "ws://192.168.1.8:3000";
   String winterGardenIP_5G = "ws://192.168.1.4:3000";
 
+  // UI Variables
   String state = "out";
   int remainingPlayers = 0;
   String remainingTime = "";
@@ -31,14 +35,12 @@ class GameLauncherState extends State<GameLauncher> {
   IOWebSocketChannel channel;
   ServerHandler serverHandler;
 
-  int touchCounter = 0;
-
   @override
   void initState() {
     super.initState();
     channel = IOWebSocketChannel.connect(winterGardenIP_5G);
     serverHandler = ServerHandler(launcher: this);
-    game = MainGame(launcher: this);
+    game = MainGame(launcher: this, viewportSize: widget.viewportSize);
   }
 
   void updateState(String newState) {
@@ -74,8 +76,7 @@ class GameLauncherState extends State<GameLauncher> {
 
   void updateRemainingTime() {
     setState(() {
-      remainingTime =
-          convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
+      remainingTime = convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
     });
   }
 
@@ -85,38 +86,10 @@ class GameLauncherState extends State<GameLauncher> {
       debugShowCheckedModeBanner: false,
       home: Stack(
         children: [
-          RawGestureDetector(
-            child: game.widget,
-            gestures: <Type, GestureRecognizerFactory>{
-              ImmediateMultiDragGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                      ImmediateMultiDragGestureRecognizer>(
-                () => ImmediateMultiDragGestureRecognizer(),
-                (ImmediateMultiDragGestureRecognizer instance) {
-                  instance.onStart = (Offset offset) {
-                    touchCounter++;
-                    game.onTap(TouchData(touchCounter, offset));
-                    return ItemDrag((details, tId) {
-                      game.onDrag(TouchData(tId, details.globalPosition));
-                    }, (details, tId) {
-                      game.onRelease(TouchData(tId, Offset(0, 0)));
-                    }, (tId) {
-                      game.onCancel(TouchData(tId, Offset(0, 0)));
-                    }, touchCounter);
-                  };
-                },
-              )
-            },
-          ),
-          state == "waiting"
-              ? WaitingRoom(launcher: this)
-              : Container(width: 0, height: 0),
-          state == "out"
-              ? MainMenu(launcher: this)
-              : Container(width: 0, height: 0),
-          state == "playing"
-              ? GameOverlay(launcher: this)
-              : Container(width: 0, height: 0),
+          game.widget,
+          state == "waiting" ? WaitingRoom(launcher: this) : Container(width: 0, height: 0),
+          state == "out" ? MainMenu(launcher: this) : Container(width: 0, height: 0),
+          state == "playing" ? GameOverlay(launcher: this) : Container(width: 0, height: 0),
         ],
       ),
     );

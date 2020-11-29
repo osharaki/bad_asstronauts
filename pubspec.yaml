@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -23,18 +23,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flame: ^1.0.0-rc2
+  flame_forge2d: ^0.5.0-rc1
+  web_socket_channel: ^1.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
-  flame: ^0.28.0
-  firebase_core: ^0.5.2
-  firebase_auth: "^0.18.3"
-  cloud_firestore: ^0.14.3
-  cloud_functions: ^0.7.0+1
-  vibration: ^1.7.1
-  web_socket_channel: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -45,24 +40,49 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  fonts:
+    - family: BigShouldersStencilDisplay1
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Black.ttf
+    - family: BigShouldersStencilDisplay2
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Regular.ttf
+    - family: BigShouldersStencilDisplay3
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Bold.ttf
+    - family: BigShouldersStencilDisplay4
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-ExtraBold.ttf
+    - family: BigShouldersStencilDisplay5
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Light.ttf
+    - family: BigShouldersStencilDisplay6
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Medium.ttf
+    - family: BigShouldersStencilDisplay7
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-SemiBold.ttf
+    - family: BigShouldersStencilDisplay8
+      fonts:
+        - asset: fonts/google_fonts/BigShouldersStencilDisplay-Thin.ttf
 
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/joystickBase.png
     - assets/images/joystickKnob.png
     - assets/images/spaceship.png
-
+    - assets/images/moon.png
+    - assets/images/option1_ring.svg
+    - assets/images/generic_planet1.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
-
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
-
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
