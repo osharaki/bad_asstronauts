@@ -103,17 +103,26 @@ class Joystick {
       double multiplier = distance / baseRadius;
 
       // Use angle to orient spaceship
-      game.serverHandler.players[game.id]["spaceship"].angle = angle;
+      game.launcher.serverHandler
+          .players[game.launcher.serverHandler.id]["spaceship"].angle = angle;
 
       // Next Frame's Offset
       // Same as getting Drag Radial Position, but (multiplier * speed * t) is our radius
       nextOffset = Offset(
         (multiplier *
-                game.serverHandler.players[game.id]["spaceship"].speed *
+                game
+                    .launcher
+                    .serverHandler
+                    .players[game.launcher.serverHandler.id]["spaceship"]
+                    .speed *
                 t) *
             cos(angle),
         (multiplier *
-                game.serverHandler.players[game.id]["spaceship"].speed *
+                game
+                    .launcher
+                    .serverHandler
+                    .players[game.launcher.serverHandler.id]["spaceship"]
+                    .speed *
                 t) *
             sin(angle),
       );
@@ -158,17 +167,25 @@ class Joystick {
       knobRect = knobRect.shift(difference);
 
       // Obtain Spaceship Arena Position
-      game.serverHandler.players[game.id]["spaceship"].worldPosition =
-          game.serverHandler.players[game.id]["spaceship"].getWorldPosition();
+      game
+              .launcher
+              .serverHandler
+              .players[game.launcher.serverHandler.id]["spaceship"]
+              .worldPosition =
+          game.launcher.serverHandler
+              .players[game.launcher.serverHandler.id]["spaceship"]
+              .getWorldPosition();
 
       // Send spaceship arena position to serverHandler
-      game.serverHandler.players[game.id]["spaceship"].sendToServer();
+      game.launcher.serverHandler
+          .players[game.launcher.serverHandler.id]["spaceship"]
+          .sendToServer();
     }
   }
 
   Map<String, bool> isSpaceshipOffsetFromCenter() {
-    Offset spaceshipScreenCenterOffset = game
-        .serverHandler.players[game.id]["spaceship"]
+    Offset spaceshipScreenCenterOffset = game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
         .getOffsetFromScreenCenter();
 
     Map<String, bool> offsetValues = {"x": false, "y": false};
@@ -187,8 +204,8 @@ class Joystick {
   }
 
   Offset getSpaceshipCenterAlignmentOffset() {
-    Offset spaceshipScreenCenterOffset = game
-        .serverHandler.players[game.id]["spaceship"]
+    Offset spaceshipScreenCenterOffset = game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
         .getOffsetFromScreenCenter();
 
     double xOffsetIncrement = 0;
@@ -226,16 +243,20 @@ class Joystick {
 
   Offset limitToScreenBoundaries(Offset offset) {
     // Limit to Screen Boundaries
-    if (game.serverHandler.players[game.id]["spaceship"].exceedsTop(offset.dy))
-      offset = Offset(offset.dx, 0);
+    if (game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
+        .exceedsTop(offset.dy)) offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.players[game.id]["spaceship"]
+    if (game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
         .exceedsBottom(offset.dy)) offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.players[game.id]["spaceship"].exceedsLeft(offset.dx))
-      offset = Offset(0, offset.dy);
+    if (game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
+        .exceedsLeft(offset.dx)) offset = Offset(0, offset.dy);
 
-    if (game.serverHandler.players[game.id]["spaceship"]
+    if (game.launcher.serverHandler
+        .players[game.launcher.serverHandler.id]["spaceship"]
         .exceedsRight(offset.dx)) offset = Offset(0, offset.dy);
 
     return offset;
@@ -243,16 +264,16 @@ class Joystick {
 
   Offset limitToWorldBoundaries(Offset offset) {
     // Limit to Arena Boundaries
-    if (game.serverHandler.arena.exceedsTop(offset.dy))
+    if (game.launcher.serverHandler.arena.exceedsTop(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.arena.exceedsBottom(offset.dy))
+    if (game.launcher.serverHandler.arena.exceedsBottom(offset.dy))
       offset = Offset(offset.dx, 0);
 
-    if (game.serverHandler.arena.exceedsLeft(offset.dx))
+    if (game.launcher.serverHandler.arena.exceedsLeft(offset.dx))
       offset = Offset(0, offset.dy);
 
-    if (game.serverHandler.arena.exceedsRight(offset.dx))
+    if (game.launcher.serverHandler.arena.exceedsRight(offset.dx))
       offset = Offset(0, offset.dy);
 
     return offset;

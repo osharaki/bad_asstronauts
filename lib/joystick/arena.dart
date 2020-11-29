@@ -57,7 +57,8 @@ class Arena {
   bool exceedsTop(double offset) {
     if ((rect.top -
             offset -
-            game.serverHandler.players[game.id]["spaceship"]
+            game.launcher.serverHandler
+                .players[game.launcher.serverHandler.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dy) >
         0) {
@@ -70,7 +71,8 @@ class Arena {
   bool exceedsBottom(double offset) {
     if ((rect.bottom -
             offset -
-            game.serverHandler.players[game.id]["spaceship"]
+            game.launcher.serverHandler
+                .players[game.launcher.serverHandler.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dy) <
         (game.screenSize.height)) {
@@ -83,7 +85,8 @@ class Arena {
   bool exceedsLeft(double offset) {
     if ((rect.left -
             offset -
-            game.serverHandler.players[game.id]["spaceship"]
+            game.launcher.serverHandler
+                .players[game.launcher.serverHandler.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dx) >
         0) {
@@ -96,7 +99,8 @@ class Arena {
   bool exceedsRight(double offset) {
     if ((rect.right -
             offset -
-            game.serverHandler.players[game.id]["spaceship"]
+            game.launcher.serverHandler
+                .players[game.launcher.serverHandler.id]["spaceship"]
                 .getOffsetFromScreenCenter()
                 .dx) <
         (game.screenSize.width)) {

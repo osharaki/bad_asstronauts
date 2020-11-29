@@ -1,15 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:gameOff2020/joystick/gameLauncher.dart';
 
 import 'arena.dart';
 import 'bullet.dart';
 import 'debris.dart';
 import 'planet.dart';
 import 'asteroid.dart';
-import 'mainGame.dart';
 import 'spaceship.dart';
 
 class ServerHandler {
-  MainGame game;
+  String id;
+  Map<String, dynamic> serverData = {};
+
+  GameLauncherState launcher;
 
   Arena arena;
 
@@ -19,51 +24,246 @@ class ServerHandler {
   List<Bullet> bullets = List.empty(growable: true);
   List<Asteroid> asteroids = List.empty(growable: true);
 
-  ServerHandler({@required this.game}) {
-    arena = Arena(game: game);
-
-    for (var i = 0; i < 250; i++) {
-      debris.add(Debris(game: game));
-    }
+  ServerHandler({@required this.launcher}) {
+    launcher.channel.stream
+        .listen((rawMessage) => onReceiveMessage(rawMessage));
   }
 
-  void joinSession() {
-    game.serverData["players"].keys.forEach((player) {
-      addPlayer(player);
-    });
+  void requestCreateSession(int limit) {
+    Map<String, dynamic> createData = {
+      "action": "create",
+      "data": {
+        "host": id,
+        "limit": limit,
+        "time": 15000,
+        "remainingTime": 15000,
+        "state": "creating",
+        "players": {},
+      },
+    };
+
+    launcher.channel.sink.add(json.encode(createData));
+  }
+
+  void requestJoinSession(String session) {
+    Map<String, dynamic> joinData = {
+      "action": "join",
+      "data": {"session": session},
+    };
+
+    launcher.channel.sink.add(json.encode(joinData));
+  }
+
+  void requestJoinRandomSession() {
+    Map<String, dynamic> joinRandomData = {
+      "action": "joinRandom",
+      "data": null,
+    };
+
+    launcher.channel.sink.add(json.encode(joinRandomData));
+  }
+
+  void requestLeaveSession() {
+    Map<String, dynamic> leaveData = {
+      "action": "leave",
+      "data": {"session": serverData["id"]},
+    };
+
+    launcher.channel.sink.add(json.encode(leaveData));
+  }
+
+  void requestStartSession() {
+    Map<String, dynamic> startData = {
+      "action": "start",
+      "data": {"session": serverData["id"]},
+    };
+
+    launcher.channel.sink.add(json.encode(startData));
   }
 
   void addPlayer(String player) {
-    // Add player
-    bool centered = player == game.id ? true : false;
-
     players[player] = {
-      "spaceship": Spaceship(game: game, centered: centered),
-      "planet": Planet(game: game),
+      "spaceship": null,
+      "planet": null,
     };
   }
 
+  void addPlayers() {
+    serverData["players"].keys.forEach((player) {
+      if (!players.containsKey(player)) {
+        players[player] = {
+          "spaceship": null,
+          "planet": null,
+        };
+      }
+    });
+  }
+
+  void initializePlayers() {
+    players.keys.forEach((player) {
+      bool centered = player == id ? true : false;
+
+      players[player] = {
+        "spaceship": Spaceship(game: launcher.game, centered: centered),
+        "planet": Planet(game: launcher.game),
+      };
+
+      if (player == id) {
+        launcher.game.moveCameraToPercent(
+            serverData["players"][player]["spaceship"]["position"]);
+      }
+    });
+  }
+
   void removePlayer(String player) {
-    // Remove player
+    // TODO: Earlier players see later players right off the bat, but later players can only see earlier players when they move. Why? Must be some information being sent to people already in session. Make sure to add people THEN update the info.
+
     players.remove(player);
   }
 
+  void leaveSession() {
+    serverData.clear();
+    launcher.updateState("out");
+  }
+
   void updatePlayers() {
-    players.keys.forEach((player) {
-      dynamic angle = game.serverData["players"][player]["spaceship"]["angle"];
+    if (serverData["state"] == "playing") {
+      players.keys.forEach((player) {
+        dynamic angle = serverData["players"][player]["spaceship"]["angle"];
 
-      Offset position = game.getWorldPositionFromPercent(
-          game.serverData["players"][player]["spaceship"]["position"]);
+        Offset position = launcher.game.getWorldPositionFromPercent(
+            serverData["players"][player]["spaceship"]["position"]);
 
-      Offset planetPosition = game.getWorldPositionFromPercent(
-          game.serverData["players"][player]["planet"]["position"]);
+        Offset planetPosition = launcher.game.getWorldPositionFromPercent(
+            serverData["players"][player]["planet"]["position"]);
 
-      // Update info
-      players[player]["spaceship"].worldPosition = position;
-      players[player]["spaceship"].angle = angle.toDouble();
+        // Update info
+        players[player]["spaceship"].worldPosition = position;
+        players[player]["spaceship"].angle = angle.toDouble();
 
-      players[player]["planet"].position = planetPosition;
-    });
+        players[player]["planet"].position = planetPosition;
+      });
+    }
+  }
+
+  void sendDataToServer({
+    @required String action,
+    @required Map<String, dynamic> data,
+  }) {
+    String message = jsonEncode({"action": action, "data": data});
+    launcher.channel.sink.add(message);
+  }
+
+  void onReceiveMessage(String rawMessage) {
+    Map message = jsonDecode(rawMessage);
+    String action = message["action"];
+    Map<String, dynamic> data = message["data"];
+
+    // ACTIONS
+    // Connect
+    if (action == "connect") {
+      // Store ID
+      id = data["id"];
+
+      // Update
+    } else if (action == "update") {
+      serverData = data["info"];
+      updatePlayers();
+
+      // Player Joined
+    } else if (action == "playerJoined") {
+      serverData = data["info"];
+      String player = data["player"];
+
+      launcher.updatePlayersInfo(serverData["players"]);
+      addPlayers();
+
+      if (player == id) {
+        launcher.updateState("waiting");
+      }
+
+      // Player Left
+    } else if (action == "playerLeft") {
+      serverData = data["info"];
+
+      removePlayer(data["player"]);
+      launcher.updatePlayersInfo(serverData["players"]);
+
+      // Session State Changed
+    } else if (action == "stateChanged") {
+      String state = data["state"];
+
+      if (state == "playing") {
+        initializeGame();
+      } else if (state == "waiting") {
+        launcher.updatePlayersInfo(serverData["players"]);
+      }
+
+      launcher.updateState(state);
+
+      // Joined Wrong Session
+    } else if (action == "wrongSession") {
+      print("WRONG SESSION!");
+
+      // You left
+    } else if (action == "youLeft") {
+      leaveSession();
+
+      // Session Terminated
+    } else if (action == "sessionTerminated") {
+      print("HOST ENDED SESSION");
+
+      // No Sessions Available
+    } else if (action == "noSessions") {
+      print("NO SESSIONS AVAILABLE");
+
+      // Time Updated
+    } else if (action == "timeUpdated") {
+      serverData["remainingTime"] = data["remainingTime"];
+      launcher.updateRemainingTime();
+
+      // Session Reset
+    } else if (action == "sessionReset") {
+      serverData = data["info"];
+      initializePlayers();
+      updatePlayers();
+
+      // Spaceship updated
+    } else if (action == "spaceshipUpdated") {
+      String player = data["player"];
+      Map<String, dynamic> info = data["info"];
+
+      serverData["players"][player]["spaceship"] = info;
+
+      updatePlayers();
+
+      // Planet Updated
+    } else if (action == "planetUpdated") {
+      String player = data["player"];
+      Map<String, dynamic> info = data["info"];
+
+      serverData["players"][player]["planet"] = info;
+
+      updatePlayers();
+    }
+  }
+
+  int getRemainingPlayers() {
+    int sessionLimit = serverData["limit"];
+    int currentPlayerCount = serverData["players"].keys.length;
+    int remainingPlayers = sessionLimit - currentPlayerCount;
+
+    return remainingPlayers;
+  }
+
+  void initializeGame() {
+    arena = Arena(game: launcher.game);
+
+    for (var i = 0; i < 250; i++) {
+      debris.add(Debris(game: launcher.game));
+    }
+
+    initializePlayers();
   }
 
   void update(double t) {

@@ -46,15 +46,27 @@ class Spaceship {
     // Debris Impact
     List<int> removeDebris = [];
 
-    for (int i = 0; i < game.serverHandler.debris.length; i++) {
-      if (rect.overlaps(game.serverHandler.debris[i].rect)) {
-        fuelLeft -= 1;
+    for (int i = 0; i < game.launcher.serverHandler.debris.length; i++) {
+      if (rect.overlaps(game.launcher.serverHandler.debris[i].rect)) {
         removeDebris.add(i);
+
+        game.launcher.serverHandler.serverData["players"]
+            [game.launcher.serverHandler.id]["planet"]["resources"] += 1;
+
+        game.launcher.serverHandler
+            .sendDataToServer(action: "updatePlanet", data: {
+          "player": game.launcher.serverHandler.id,
+          "info": {
+            "position": [50, 50],
+            "resources": game.launcher.serverHandler.serverData["players"]
+                [game.launcher.serverHandler.id]["planet"]["resources"]
+          }
+        });
       }
     }
 
     removeDebris.forEach((i) {
-      game.serverHandler.debris.removeAt(i);
+      game.launcher.serverHandler.debris.removeAt(i);
     });
 
     if (centered) {
@@ -63,8 +75,8 @@ class Spaceship {
     } else {
       // Create Spaceship at arena position
       rect = Rect.fromLTWH(
-        worldPosition.dx + game.serverHandler.arena.position.dx,
-        worldPosition.dy + game.serverHandler.arena.position.dy,
+        worldPosition.dx + game.launcher.serverHandler.arena.position.dx,
+        worldPosition.dy + game.launcher.serverHandler.arena.position.dy,
         size,
         size * 2,
       );
@@ -102,18 +114,21 @@ class Spaceship {
 
   void sendToServer() {
     // Send Arena Position to Server
-    game.sendDataToServer(
+    game.launcher.serverHandler.sendDataToServer(
       action: "updateSpaceship",
       data: {
         "position": game.getPercentFromWorldPosition(worldPosition),
         "angle": angle,
+        "resources": game.launcher.serverHandler.serverData["players"]
+            [game.launcher.serverHandler.id]["spaceship"]["resources"]
       },
     );
   }
 
   Offset getWorldPosition() {
     // Get Spaceship Arena Position
-    var worldPosition = (game.serverHandler.arena.position - rect.topLeft) * -1;
+    var worldPosition =
+        (game.launcher.serverHandler.arena.position - rect.topLeft) * -1;
 
     return worldPosition;
   }

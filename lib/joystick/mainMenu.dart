@@ -67,8 +67,8 @@ class MainMenuState extends State<MainMenu> {
                           if (page != "create") {
                             changePange("create");
                           } else {
-                            widget.launcher.game
-                                .createSession(int.parse(limitController.text));
+                            widget.launcher.serverHandler.requestCreateSession(
+                                int.parse(limitController.text));
                           }
                         },
                       ),
@@ -140,10 +140,11 @@ class MainMenuState extends State<MainMenu> {
                             changePange("join");
                           } else {
                             if (codeController.text.length != 0) {
-                              widget.launcher.game
-                                  .joinSession(codeController.text);
+                              widget.launcher.serverHandler
+                                  .requestJoinSession(codeController.text);
                             } else {
-                              widget.launcher.game.joinRandomSession();
+                              widget.launcher.serverHandler
+                                  .requestJoinRandomSession();
                             }
                           }
                         },

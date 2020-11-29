@@ -1,4 +1,5 @@
 import 'package:gameOff2020/joystick/gameOverlay.dart';
+import 'package:gameOff2020/joystick/serverHandler.dart';
 
 import 'mainMenu.dart';
 import 'itemDrag.dart';
@@ -24,11 +25,11 @@ class GameLauncherState extends State<GameLauncher> {
   String state = "out";
   int remainingPlayers = 0;
   String remainingTime = "";
+  Map<String, dynamic> playersInfo = {};
 
   MainGame game;
-  MainMenu mainMenu;
-  WaitingRoom waitingRoom;
   IOWebSocketChannel channel;
+  ServerHandler serverHandler;
 
   int touchCounter = 0;
 
@@ -36,6 +37,7 @@ class GameLauncherState extends State<GameLauncher> {
   void initState() {
     super.initState();
     channel = IOWebSocketChannel.connect(winterGardenIP_5G);
+    serverHandler = ServerHandler(launcher: this);
     game = MainGame(launcher: this);
   }
 
@@ -48,6 +50,14 @@ class GameLauncherState extends State<GameLauncher> {
   void updateRemainingPlayers(int players) {
     setState(() {
       remainingPlayers = players;
+    });
+  }
+
+  void updatePlayersInfo(Map<String, dynamic> newPlayersInfo) {
+    updateRemainingPlayers(newPlayersInfo.length);
+
+    setState(() {
+      playersInfo = newPlayersInfo;
     });
   }
 
@@ -65,7 +75,7 @@ class GameLauncherState extends State<GameLauncher> {
   void updateRemainingTime() {
     setState(() {
       remainingTime =
-          convertMillisecondsToTime(game.serverData["remainingTime"]);
+          convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
     });
   }
 

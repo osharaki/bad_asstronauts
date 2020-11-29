@@ -89,7 +89,8 @@ class GameOverlayState extends State<GameOverlay> {
                           highlightedBorderColor: Colors.red[900],
                           highlightColor: Colors.red[900].withAlpha(75),
                           borderSide: BorderSide(color: Colors.red[900]),
-                          onPressed: () => widget.launcher.game.leaveSession(),
+                          onPressed: () => widget.launcher.serverHandler
+                              .requestLeaveSession(),
                           child: Text(
                             "LEAVE",
                             style: TextStyle(
