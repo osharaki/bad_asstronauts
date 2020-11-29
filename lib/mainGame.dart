@@ -100,9 +100,9 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         width: 1500,
         height: 1500,
       ));
-      add(spaceship);
       add(p1);
       add(p2);
+      add(spaceship);
       add(joystick);
       // add(player);
 

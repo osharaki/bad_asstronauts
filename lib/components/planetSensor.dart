@@ -46,10 +46,12 @@ class PlanetSensor extends BodyComponent {
         if (spaceship.id == planet.spaceshipId) {
           // home planet -> store
 
-          // Ensure ship resources never drop below 0
-          double payload = min(spaceship.resources, game.storeRate);
-          planet.resources += payload;
-          spaceship.resources -= payload;
+          // Ensure ship resources never drop below the amount necessary to exit orbit
+          if (spaceship.resources > spaceship.resourceCriticalThreshold) {
+            double payload = min(spaceship.resources, game.storeRate);
+            planet.resources += payload;
+            spaceship.resources -= payload;
+          }
         } else {
           // foreign planet -> harvest
 

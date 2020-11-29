@@ -21,10 +21,13 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final String id;
 
   double resources = 100;
-  Sprite spaceship;
   double currentSpeed = 0;
   double radAngle = 0;
+  double resourceReplenishRate = 0.005;
+  double resourceCriticalThreshold = 6;
+
   bool _move = false;
+  Sprite spaceship;
 
   Spaceship(this.game, Image image, this.id, {this.size, this.position}) {
     spaceship = Sprite(image);
@@ -37,8 +40,15 @@ class Spaceship extends BodyComponent implements JoystickListener {
       moveFromAngle(dt);
 
       // Consume resources by moving
-      // we normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
+      // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
       resources -= min(resources, (currentSpeed / 159) / 10);
+    }
+    // Resources only start being replenished if they drop below critical levels otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, The fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
+    if (resources < resourceCriticalThreshold) {
+      resources += [
+        resourceReplenishRate,
+        resourceCriticalThreshold - resources,
+      ].reduce(min);
     }
   }
 
@@ -60,6 +70,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
       fontSize: 10.0,
       fontFamily: 'Awesome Font',
       textAlign: TextAlign.center,
+      color: resources > 20 ? Colors.black : Colors.red,
     ).render(
       canvas,
       resources.toStringAsFixed(2),
@@ -76,18 +87,22 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
   @override
   void joystickChangeDirectional(JoystickDirectionalEvent event) {
-    _move = event.directional != JoystickMoveDirectional.IDLE;
-    if (_move) {
-      radAngle = event.radAngle;
-      currentSpeed = speed * event.intensity;
-    }
+    // If check is > 0, it will always and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
+    if (resources > 0.1) {
+      _move = event.directional != JoystickMoveDirectional.IDLE;
+      if (_move) {
+        radAngle = event.radAngle;
+        currentSpeed = speed * event.intensity;
+      }
+    } else
+      _move = false;
   }
 
   void moveFromAngle(double dtUpdate) {
     final double nextX = (currentSpeed * dtUpdate) * cos(radAngle);
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
-    // TODO figure out why this inversion is even necessary
+    // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
     body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
   }
 
