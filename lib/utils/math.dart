@@ -1,4 +1,5 @@
 import "dart:math";
+import 'package:flame/extensions/vector2.dart';
 import 'package:flutter/material.dart';
 
 double getDecimal(double number) {
@@ -109,4 +110,56 @@ dynamic getValueInRangeFromPercent({
       min;
 
   return value;
+}
+
+Vector2 getRelativeCoordinates({
+  @required Vector2 reference,
+  @required Vector2 global,
+}) {
+  double xRelative = global.x - reference.x;
+  double yRelative = global.y - reference.y;
+  Vector2 relative = Vector2(xRelative, yRelative);
+
+  return relative;
+}
+
+double valueInvertAndMap({
+  @required double value,
+  @required double oldMax,
+  @required double newMax,
+  double oldMin = 0,
+  double newMin = 0,
+}) {
+  // Invert distance to make the closer distance have a stronger pull, and vice versa
+  double valueInverse = mapValueFromRangeToRange(
+    aValue: value,
+    aStart: oldMin,
+    aEnd: oldMax,
+    bStart: oldMax,
+    bEnd: oldMin,
+  );
+
+  // Distribute inverted distance to a bigger range, so we have more constrast between the pull forces
+  double valueConvert = mapValueFromRangeToRange(
+    aValue: valueInverse,
+    aStart: oldMin,
+    aEnd: oldMax,
+    bStart: newMin,
+    bEnd: newMax,
+  );
+
+  return valueConvert;
+}
+
+dynamic clampValueToRange(
+    {@required dynamic value, @required dynamic min, @required dynamic max}) {
+  dynamic clampedValue = value;
+
+  if (value < min) {
+    clampedValue = min;
+  } else if (value > max) {
+    clampedValue = max;
+  }
+
+  return clampedValue;
 }
