@@ -1,6 +1,7 @@
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'serverHandler.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'serverHandler.dart';
 import 'mainMenu.dart';
 import 'mainGame.dart';
 import 'gameOverlay.dart';
@@ -18,12 +19,6 @@ class GameLauncher extends StatefulWidget {
 }
 
 class GameLauncherState extends State<GameLauncher> {
-  // IP Addresses
-  String androidIP = "ws://10.0.2.2:3000";
-  String orlandoIP = "ws://192.168.1.183:3000";
-  String winterGardenIP_2G = "ws://192.168.1.8:3000";
-  String winterGardenIP_5G = "ws://192.168.1.4:3000";
-
   // UI Variables
   String state = "out";
   int remainingPlayers = 0;
@@ -37,7 +32,7 @@ class GameLauncherState extends State<GameLauncher> {
   @override
   void initState() {
     super.initState();
-    channel = IOWebSocketChannel.connect(winterGardenIP_5G);
+    channel = IOWebSocketChannel.connect(DotEnv().env['WSS_IP']);
     serverHandler = ServerHandler(launcher: this);
     game = MainGame(launcher: this, viewportSize: widget.viewportSize);
   }
