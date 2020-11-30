@@ -41,6 +41,10 @@ class PlanetAtmosphere extends BodyComponent {
     );
   } */
 
+  void destroy() {
+    game.remove(this);
+  }
+
   @override
   void update(double dt) {
     super.update(dt);

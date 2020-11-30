@@ -46,6 +46,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
     spaceship = Sprite(image);
   }
 
+  void destroy() {
+    game.remove(this);
+  }
+
   @override
   void update(double dt) {
     super.update(dt);

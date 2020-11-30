@@ -33,13 +33,28 @@ class Planet extends SpriteBodyComponent {
     this.size,
     this.position,
   }) : super(Sprite(image), size) {
+    addAtmosphere();
+  }
+
+  void addAtmosphere() {
     planetAtmosphere = PlanetAtmosphere(
       game: game,
       planet: this,
       size: size,
       position: position,
     );
+
     game.add(planetAtmosphere);
+  }
+
+  void removeAtmosphere() {
+    planetAtmosphere.destroy();
+    planetAtmosphere = null;
+  }
+
+  void destroy() {
+    removeAtmosphere();
+    game.remove(this);
   }
 
   @override

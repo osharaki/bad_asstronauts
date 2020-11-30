@@ -266,10 +266,14 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     Spaceship spaceship = players[player]["spaceship"];
     Planet planet = players[player]["planet"];
 
-    removeAll([
-      spaceship,
-      planet,
-    ]);
+    spaceship.destroy();
+    planet.destroy();
+
+    // removeAll([
+    //   spaceship,
+    //   planet.planetAtmosphere,
+    //   planet,
+    // ]);
 
     players.removeWhere((playerId, value) => playerId == player);
 
