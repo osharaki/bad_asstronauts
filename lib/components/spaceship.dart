@@ -19,6 +19,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final double speed = 159;
   final double capacity = 100;
   final String id;
+  final bool isEgo;
 
   double resources = 100;
   double currentSpeed = 0;
@@ -31,12 +32,16 @@ class Spaceship extends BodyComponent implements JoystickListener {
   bool inOrbit = false;
   Sprite spaceship;
 
+  Vector2 posRect;
+  Rect rect;
+
   Spaceship({
     @required this.game,
     @required Image image,
     @required this.id,
     this.size,
     this.position,
+    this.isEgo = false,
   }) {
     spaceship = Sprite(image);
   }
@@ -44,19 +49,28 @@ class Spaceship extends BodyComponent implements JoystickListener {
   @override
   void update(double dt) {
     super.update(dt);
-    if (_move) {
-      moveFromAngle(dt);
+    if (isEgo) {
+      if (_move) {
+        moveFromAngle(dt);
 
-      // Consume resources by moving
-      // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
-      if (!inOrbit) resources -= min(resources, (currentSpeed / 159) / 10);
-    }
-    // Resources only start being replenished if they drop below critical levels otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, The fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
-    if (resources < resourceCriticalThreshold) {
-      resources += [
-        resourceReplenishRate,
-        resourceCriticalThreshold - resources,
-      ].reduce(min);
+        // Consume resources by moving
+        // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
+        if (!inOrbit) resources -= min(resources, (currentSpeed / 159) / 10);
+      }
+      // Resources only start being replenished if they drop below critical levels otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, The fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
+      if (resources < resourceCriticalThreshold) {
+        resources += [
+          resourceReplenishRate,
+          resourceCriticalThreshold - resources,
+        ].reduce(min);
+      }
+
+      posRect = viewport.getWorldToScreen(body.worldCenter);
+      rect = Rect.fromCenter(
+        center: Offset(posRect.x, posRect.y),
+        width: size.x,
+        height: size.y,
+      );
     }
   }
 
@@ -64,10 +78,14 @@ class Spaceship extends BodyComponent implements JoystickListener {
   void render(Canvas canvas) {
     super.render(canvas);
 
+    posRect = viewport.getWorldToScreen(body.worldCenter);
+    rect = Rect.fromCenter(
+      center: Offset(posRect.x, posRect.y),
+      width: size.x,
+      height: size.y,
+    );
+
     canvas.save();
-    Vector2 posRect = viewport.getWorldToScreen(body.worldCenter);
-    Rect rect = Rect.fromCenter(
-        center: Offset(posRect.x, posRect.y), width: size.x, height: size.y);
     canvas.translate(posRect.x, posRect.y);
     canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
     canvas.translate(-posRect.x, -posRect.y);
@@ -124,11 +142,14 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
     final fixtureDef = FixtureDef()..shape = shape;
 
+    final BodyType bodyType = isEgo ? BodyType.DYNAMIC : BodyType.STATIC;
+
     final bodyDef = BodyDef()
       ..setUserData(this) // To be able to determine object in collision
       ..position = position
-      ..type = BodyType.DYNAMIC;
+      ..type = bodyType;
 
-    return world.createBody(bodyDef)..createFixture(fixtureDef);
+    return world.createBody(bodyDef)
+      ..createFixture(fixtureDef).setSensor(!isEgo);
   }
 }

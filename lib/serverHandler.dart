@@ -8,6 +8,8 @@ import 'gameLauncher.dart';
 import 'components/planet.dart';
 import 'components/spaceship.dart';
 
+// TODO: Enforce Session Limit
+
 class ServerHandler {
   String id;
   List<Image> imageList;
@@ -92,27 +94,8 @@ class ServerHandler {
     });
   }
 
-  void initializePlayers() async {
-    imageList = await launcher.game.imageList;
-
-    players.keys.forEach((player) {
-      Image spaceshipImage = imageList[0];
-      Image planetImage = imageList[1];
-
-      players[player] = {
-        "spaceship": Spaceship(
-          game: launcher.game,
-          image: spaceshipImage,
-          id: player,
-        ),
-        "planet": Planet(
-          game: launcher.game,
-          image: planetImage,
-          spaceshipId: player,
-          resources: serverData["players"][player]["planet"]["resources"],
-        ),
-      };
-    });
+  void initializeGame() {
+    launcher.game.refreshGame();
   }
 
   void removePlayer(String player) {
@@ -127,13 +110,23 @@ class ServerHandler {
   }
 
   void updateLocalSpaceship(String player, Map<String, dynamic> data) {
-    int angle = data["angle"];
-    int resources = data["resources"];
-    Vector2 position = Vector2(data["position"][0], data["position"][1]);
+    double angle = data["angle"].toDouble();
+    double resources = data["resources"].toDouble();
+    Vector2 position = Vector2(
+      data["position"][0].toDouble(),
+      data["position"][1].toDouble(),
+    );
 
     serverData["players"][player]["spaceship"] = data;
 
-    // TODO: Plug information into Spaceship class
+    if (player != id) {
+      if (launcher.game.players.containsKey(player)) {
+        launcher.game.players[player]["spaceship"].body
+            .setTransform(position, angle);
+        launcher.game.players[player]["spaceship"].radAngle = angle;
+        launcher.game.players[player]["spaceship"].resources = resources;
+      }
+    }
   }
 
   void updateLocalPlanet(String player, Map<String, dynamic> data) {
@@ -213,8 +206,9 @@ class ServerHandler {
       String state = data["state"];
 
       if (state == "playing") {
-        initializeGame();
+        launcher.game.startGame();
       } else if (state == "waiting") {
+        launcher.game.endGame();
         launcher.updatePlayersInfo(serverData["players"]);
       }
 
@@ -238,13 +232,14 @@ class ServerHandler {
 
       // Time Updated
     } else if (action == "timeUpdated") {
+      // TODO: Screen flickers on time tick
       serverData["remainingTime"] = data["remainingTime"];
       launcher.updateRemainingTime();
 
       // Session Reset
     } else if (action == "sessionReset") {
       serverData = data["info"];
-      initializePlayers();
+      // initializeGame();
       updatePlayers();
 
       // Spaceship updated
@@ -270,10 +265,6 @@ class ServerHandler {
     int remainingPlayers = sessionLimit - currentPlayerCount;
 
     return remainingPlayers;
-  }
-
-  void initializeGame() {
-    initializePlayers();
   }
 
   void update(double t) {

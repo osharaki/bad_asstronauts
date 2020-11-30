@@ -47,7 +47,7 @@ wss.on( 'connection', ws => {
       
     } else if ( action == "updateSpaceship" ) {
       serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ] = data;
-      sendMessageToSession( "spaceshipUpdated", { "player": player, "info": { "resources": data[ "resources" ], "position": data[ "position" ], "angle": data[ "angle" ] } }, session );
+      sendMessageToSession( "spaceshipUpdated", { "player": player, "info": { "resources": data[ "resources" ], "position": data[ "position" ], "angle": data[ "angle" ] } }, session, except=[ player ] );
 
     } else if ( action == "updatePlanet" ) {
       var player = data["player"];
@@ -398,12 +398,14 @@ function sendMessageToPlayer( action, data, player ) {
   playerWebSocket.send( message );
 }
 
-function sendMessageToSession( action, data, session ) {
+function sendMessageToSession( action, data, session, except=[] ) {
   var players = serverData[ 'sessions' ][ session ][ 'players' ];
   
   // Send message to all players in the session
   Object.keys( players ).forEach( player => {
-    sendMessageToPlayer( action, data, player );
+    if ( !iterableContainsItem( except, player ) ) {
+      sendMessageToPlayer( action, data, player );
+    }
   });
 }
 

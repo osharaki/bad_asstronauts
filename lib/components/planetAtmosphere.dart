@@ -44,11 +44,12 @@ class PlanetAtmosphere extends BodyComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    if (spaceshipsInOrbit.length != 0) {
+    if (spaceshipsInOrbit.isNotEmpty) {
       for (Spaceship spaceship in spaceshipsInOrbit) {
         spaceship.body.applyForce(
             (body.worldCenter - spaceship.body.worldCenter).scaled(10),
             spaceship.body.worldCenter);
+
         if (spaceship.id == planet.spaceshipId) {
           // home planet -> store
 

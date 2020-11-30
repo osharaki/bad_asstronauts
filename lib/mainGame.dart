@@ -25,9 +25,9 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   final GameLauncherState launcher;
   Future<List<Image>> imageList;
 
-  final PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
+  PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
       PlanetAtmosphereContactCallback();
-  final PlanetContactCallback planetContactCallback = PlanetContactCallback();
+  PlanetContactCallback planetContactCallback = PlanetContactCallback();
   // final MyCircleContactCallback myCircleContactCallback = MyCircleContactCallback();
 
   final TextConfig resourceDisplayConfig = TextConfig(
@@ -43,12 +43,15 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   double storeRate = 0.2;
   double harvestRate = 0.1;
 
-  Spaceship spaceship;
+  // {"playerId": {"spaceship": Spaceship(), "planet": Planet()}}
+  Map<String, dynamic> players = {};
+
+  Spaceship egoSpaceship;
   // Player player;
   // Planet planet1;
   // Planet planet2;
 
-  final joystick = JoystickComponent(
+  JoystickComponent joystick = JoystickComponent(
     directional: JoystickDirectional(),
     actions: [
       JoystickAction(
@@ -132,11 +135,147 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     // add(p1);
     // add(p2);
     // add(spaceship);
-    // add(joystick);
     // add(player);
+    add(joystick);
 
     // Not passing game.size directly because atthis point, size is still Vector2.zero(). See https://pub.dev/documentation/flame/1.0.0-rc2/game_base_game/BaseGame/size.html
     // add(MyCircle(this, 10));
+  }
+
+  Future<void> startGame() async {
+    planetAtmosphereContactCallback = PlanetAtmosphereContactCallback();
+    planetContactCallback = PlanetContactCallback();
+    addContactCallback(planetAtmosphereContactCallback);
+    addContactCallback(planetContactCallback);
+    joystick = JoystickComponent(
+      directional: JoystickDirectional(),
+      actions: [
+        JoystickAction(
+          actionId: 1,
+          size: 50,
+          margin: const EdgeInsets.all(50),
+          color: const Color(0xFF0000FF),
+        ),
+        JoystickAction(
+          actionId: 2,
+          size: 50,
+          color: const Color(0xFF00FF00),
+          margin: const EdgeInsets.only(
+            right: 50,
+            bottom: 120,
+          ),
+        ),
+        JoystickAction(
+          actionId: 3,
+          size: 50,
+          margin: const EdgeInsets.only(bottom: 50, right: 120),
+          enableDirection: true,
+        ),
+      ],
+    );
+    add(joystick);
+    await addPlayers();
+    print("START GAME: $players");
+  }
+
+  Future<void> endGame() async {
+    removeContactCallback(planetAtmosphereContactCallback);
+    removeContactCallback(planetContactCallback);
+    remove(joystick);
+    await removePlayers();
+    print("END GAME: $players");
+  }
+
+  void refreshGame() async {
+    await endGame();
+    await startGame();
+  }
+
+  /// Without refreshing Joystick, it is only responsive during the FIRST game of the session.
+  /// After that the Joystick will be unresponsive.
+  /// However, this poses another issue, where the planet's gravity overpowers the spaceship's thrust,
+  /// which means once you're in the gravitational field, you'll get sucked in. Again, this issue only happens
+  /// in post-FIRST games.
+  ///
+  /// Planet force seems to get stronger every time we play in the same session
+
+  Future<void> addPlayers({Map<String, dynamic> playersList}) async {
+    if (playersList == null)
+      playersList = launcher.serverHandler.serverData["players"];
+
+    playersList.forEach((player, info) {
+      addPlayer(player);
+    });
+  }
+
+  Future<void> addPlayer(String player) async {
+    // Ensure Images are loaded
+    List<Image> images = await imageList;
+
+    Image spaceshipImage = images[0];
+    Image planetImage = images[1];
+
+    // Instantiate Components
+    Spaceship spaceship = Spaceship(
+      game: this,
+      image: spaceshipImage,
+      id: player,
+      size: Vector2(254, 512).scaled(0.06),
+      position: launcher.widget.viewportSize / 2,
+      isEgo: player == launcher.serverHandler.id ? true : false,
+    );
+
+    Planet planet = Planet(
+      game: this,
+      image: planetImage,
+      spaceshipId: player,
+      size: Vector2(268, 268),
+      position: Vector2(100, 350),
+      resources: 0,
+    );
+
+    // Add Components to game
+    addAll([
+      spaceship,
+      planet,
+    ]);
+
+    // Attach spaceship to joystick if ego
+    if (player == launcher.serverHandler.id) {
+      joystick.addObserver(spaceship);
+      egoSpaceship = spaceship;
+    }
+
+    // Store Components in players map
+    players[player] = {
+      "spaceship": spaceship,
+      "planet": planet,
+    };
+  }
+
+  Future<void> removePlayers({Map<String, dynamic> playersList}) async {
+    if (playersList == null) playersList = Map.from(players);
+
+    playersList.forEach((player, info) {
+      removePlayer(player);
+    });
+  }
+
+  Future<void> removePlayer(String player) async {
+    // Remove Components from game
+    Spaceship spaceship = players[player]["spaceship"];
+    Planet planet = players[player]["planet"];
+
+    removeAll([
+      spaceship,
+      planet,
+    ]);
+
+    players.removeWhere((playerId, value) => playerId == player);
+
+    if (player == launcher.serverHandler.id) {
+      egoSpaceship = null;
+    }
   }
 
   @override
@@ -147,7 +286,22 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void update(double dt) {
     super.update(dt);
-    if (spaceship != null) cameraFollow(spaceship, horizontal: 0, vertical: 0);
+    if (egoSpaceship != null) {
+      cameraFollow(egoSpaceship, horizontal: 0, vertical: 0);
+
+      // Send Spaceship information to Server
+      launcher.serverHandler.sendDataToServer(
+        action: "updateSpaceship",
+        data: {
+          "position": [
+            egoSpaceship.body.position.x,
+            egoSpaceship.body.position.y
+          ],
+          "angle": egoSpaceship.radAngle,
+          "resources": egoSpaceship.resources,
+        },
+      );
+    }
   }
 
   /* void initialize() {
@@ -158,7 +312,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
   @override
   void onReceiveDrag(DragEvent drag) {
-    joystick.onReceiveDrag(drag);
+    if (joystick != null) joystick.onReceiveDrag(drag);
     super.onReceiveDrag(drag);
   }
 

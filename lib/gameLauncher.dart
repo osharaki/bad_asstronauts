@@ -74,10 +74,10 @@ class GameLauncherState extends State<GameLauncher> {
   }
 
   void updateRemainingTime() {
-    setState(() {
-      remainingTime =
-          convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
-    });
+    // setState(() {
+    //   remainingTime =
+    //       convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
+    // });
   }
 
   @override
@@ -87,15 +87,9 @@ class GameLauncherState extends State<GameLauncher> {
       home: Stack(
         children: [
           game.widget,
-          state == "waiting"
-              ? WaitingRoom(launcher: this)
-              : Container(width: 0, height: 0),
-          state == "out"
-              ? MainMenu(launcher: this)
-              : Container(width: 0, height: 0),
-          state == "playing"
-              ? GameOverlay(launcher: this)
-              : Container(width: 0, height: 0),
+          state == "out" ? MainMenu(launcher: this) : Container(),
+          state == "waiting" ? WaitingRoom(launcher: this) : Container(),
+          state == "playing" ? GameOverlay(launcher: this) : Container(),
         ],
       ),
     );
