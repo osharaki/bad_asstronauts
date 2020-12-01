@@ -259,7 +259,7 @@ class ServerHandler {
       updateLocalPlanet(player, info);
     } else if (action == "respawnTimerUpdate") {
       print(data);
-      String respawnTime = data['respawnTime'].toString();
+      int respawnTime = data['respawnTime'];
       launcher.game.players[id]["spaceship"].respawnTime = respawnTime;
     }
   }

@@ -21,7 +21,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final String id;
   final bool isEgo;
 
-  String respawnTime;
+  int respawnTime;
 
   double resources = 100;
   double currentSpeed = 0;

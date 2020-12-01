@@ -230,7 +230,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
           },
         );
       } else {
-        if (egoSpaceship.respawnTime != null && int.parse(egoSpaceship.respawnTime) == 0) {
+        if (egoSpaceship.respawnTime != null && egoSpaceship.respawnTime == 0) {
           egoSpaceship.isSpectating = false;
 
           // TODO: reset own position and angle to initial values
