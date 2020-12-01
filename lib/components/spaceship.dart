@@ -4,13 +4,24 @@ import 'dart:ui';
 import 'package:flame/anchor.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
+import 'package:flame/components/particle_component.dart';
 import 'package:flame/extensions/vector2.dart';
+import 'package:flame/particle.dart';
+import 'package:flame/particles/accelerated_particle.dart';
+import 'package:flame/particles/circle_particle.dart';
+import 'package:flame/particles/component_particle.dart';
+import 'package:flame/particles/computed_particle.dart';
+import 'package:flame/particles/moving_particle.dart';
+import 'package:flame/particles/translated_particle.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
+import 'package:gameOff2020/components/particle.dart';
+import 'package:gameOff2020/components/planet.dart';
 import 'package:gameOff2020/mainGame.dart';
+import 'package:gameOff2020/utils/var.dart';
 
 class Spaceship extends BodyComponent implements JoystickListener {
   final MainGame game;
@@ -34,6 +45,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
   Vector2 posRect;
   Rect rect;
+
+  bool shot = false;
 
   Spaceship({
     @required this.game,
@@ -128,13 +141,28 @@ class Spaceship extends BodyComponent implements JoystickListener {
       _move = false;
   }
 
-  void moveFromAngle(double dtUpdate) {
+  void moveFromAngle(double dtUpdate) async {
     final double nextX = (currentSpeed * dtUpdate) * cos(radAngle);
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
     // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
     body.applyLinearImpulse(
         Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+
+    if (!shot) {
+      // shot = true;
+
+      final particle = MyParticle(
+        game: game,
+        position: body.worldCenter,
+        direction: Vector2(-nextX, nextY),
+        size: 3,
+        speed: 25,
+        // endSize: 5,
+      );
+
+      game.add(particle);
+    }
   }
 
   @override
