@@ -79,9 +79,20 @@ class Planet extends SpriteBodyComponent {
 class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
   @override
   void begin(Spaceship spaceship, Planet planet, Contact contact) {
-    spaceship.isSpectating = true;
-    print(
-        'spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
+    // We only care about detecting collisions for the client
+    if (spaceship.isEgo) {
+      // Prevent duplicate collision detection
+      if (!spaceship.isSpectating) {
+        spaceship.isSpectating = true;
+        spaceship.game.updateServer({
+          "position": [spaceship.body.position.x, spaceship.body.position.y],
+          "angle": spaceship.radAngle,
+          "resources": spaceship.resources,
+          "isSpectating": spaceship.isSpectating,
+        });
+        print('spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
+      }
+    }
   }
 
   @override

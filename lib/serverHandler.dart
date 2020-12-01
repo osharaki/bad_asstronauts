@@ -20,8 +20,7 @@ class ServerHandler {
   Map<String, Map<String, dynamic>> players = {};
 
   ServerHandler({@required this.launcher}) {
-    launcher.channel.stream
-        .listen((rawMessage) => onReceiveMessage(rawMessage));
+    launcher.channel.stream.listen((rawMessage) => onReceiveMessage(rawMessage));
   }
 
   void requestCreateSession(int limit) {
@@ -116,13 +115,15 @@ class ServerHandler {
       data["position"][0].toDouble(),
       data["position"][1].toDouble(),
     );
+    bool isSpectating = data["isSpectating"];
 
     serverData["players"][player]["spaceship"] = data;
 
+    launcher.game.players[player]["spaceship"].isSpectating = isSpectating;
+
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
-        launcher.game.players[player]["spaceship"].body
-            .setTransform(position, angle);
+        launcher.game.players[player]["spaceship"].body.position = position;
         launcher.game.players[player]["spaceship"].radAngle = angle;
         launcher.game.players[player]["spaceship"].resources = resources;
       }
@@ -256,6 +257,10 @@ class ServerHandler {
       Map<String, dynamic> info = data["info"];
 
       updateLocalPlanet(player, info);
+    } else if (action == "respawnTimerUpdate") {
+      print(data);
+      String respawnTime = data['respawnTime'].toString();
+      launcher.game.players[id]["spaceship"].respawnTime = respawnTime;
     }
   }
 

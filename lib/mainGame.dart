@@ -216,16 +216,48 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     if (egoSpaceship != null) {
       cameraFollow(egoSpaceship, horizontal: 0, vertical: 0);
 
-      // Send Spaceship information to Server
-      launcher.serverHandler.sendDataToServer(
-        action: "updateSpaceship",
-        data: {
-          "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
-          "angle": egoSpaceship.radAngle,
-          "resources": egoSpaceship.resources,
-        },
-      );
+      /* Only send spaceship updates to server if we're alive. 
+      Otherwise, client listens for respawnTime updates.
+      Once respawnTime hits 0, client resets its position and rotation
+      to initial values and server is updated in next tick. */
+      if (!egoSpaceship.isSpectating) {
+        updateServer(
+          {
+            "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
+            "angle": egoSpaceship.radAngle,
+            "resources": egoSpaceship.resources,
+            "isSpectating": egoSpaceship.isSpectating,
+          },
+        );
+      } else {
+        if (egoSpaceship.respawnTime != null && int.parse(egoSpaceship.respawnTime) == 0) {
+          egoSpaceship.isSpectating = false;
+
+          // TODO: reset own position and angle to initial values
+
+          // TODO: This update will be removed.
+          /*  The actual server update will be executed as usual in the next tick from the if-block above.
+              This is just kept temporarily to tell the server to stop sending respawnTime updates. */
+          egoSpaceship.game.updateServer({
+            "position": [
+              (launcher.widget.viewportSize / 2).x,
+              (launcher.widget.viewportSize / 2).y
+            ],
+            "angle": 0,
+            "resources": egoSpaceship.resources,
+            "isSpectating": egoSpaceship.isSpectating,
+          });
+        }
+      }
     }
+  }
+
+  void updateServer(data) {
+    // Send Spaceship information to Server
+    launcher.serverHandler.sendDataToServer(
+      action: "updateSpaceship",
+      data: data,
+    );
   }
 
   @override

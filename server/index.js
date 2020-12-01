@@ -6,87 +6,89 @@ wss.addListener('listening', () => {
   console.log('WebSocket server running...');
 });
 
+const respawnTime = 5;
+
 var serverData = {
   'players': {},
   'sessions': {},
   'assets': {}
 };
 
-setInterval( updateTime, 1000 );
+setInterval(updateTime, 1000);
 
-wss.on( 'connection', ws => {
+wss.on('connection', ws => {
   // Add player to server
-  connectPlayer( ws, wss );
-  
-  ws.on( 'message', ( rawMessage ) => {
+  connectPlayer(ws, wss);
+
+  ws.on('message', (rawMessage) => {
     // Get Player info
-    var player = ws[ "id" ];
-    var session = serverData[ "players" ][ player ][ "session" ];
+    var player = ws["id"];
+    var session = serverData["players"][player]["session"];
 
     // Extract data from message
-    var message = JSON.parse( rawMessage );
-    var action = message[ 'action' ];
-    var data = message[ 'data' ];
+    var message = JSON.parse(rawMessage);
+    var action = message['action'];
+    var data = message['data'];
 
-    if ( action == 'join' ) {
-      var session = data[ "session" ];
+    if (action == 'join') {
+      var session = data["session"];
 
-      if ( session in serverData[ "sessions" ] ) {
-        addPlayerToSpecificSession( player, session );
+      if (session in serverData["sessions"]) {
+        addPlayerToSpecificSession(player, session);
 
       } else {
-        sendMessageToPlayer( "wrongSession", null, player );
+        sendMessageToPlayer("wrongSession", null, player);
       }
-      
-    } else if ( action == 'update' ) {
-      serverData[ 'sessions' ][ session ] = data;
-      updateSession( session );
-      
-    } else if ( action == "leave" ) {
-      removePlayerFromSession( player );
-      
-    } else if ( action == "updateSpaceship" ) {
-      serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ] = data;
-      sendMessageToSession( "spaceshipUpdated", { "player": player, "info": { "resources": data[ "resources" ], "position": data[ "position" ], "angle": data[ "angle" ] } }, session, except=[ player ] );
 
-    } else if ( action == "updatePlanet" ) {
+    } else if (action == 'update') {
+      serverData['sessions'][session] = data;
+      updateSession(session);
+
+    } else if (action == "leave") {
+      removePlayerFromSession(player);
+
+    } else if (action == "updateSpaceship") {
+      serverData["sessions"][session]["players"][player]["spaceship"] = data;
+      sendMessageToSession("spaceshipUpdated", { "player": player, "info": { "resources": data["resources"], "position": data["position"], "angle": data["angle"], "isSpectating": data["isSpectating"], } }, session, except = [player]);
+
+    } else if (action == "updatePlanet") {
       var player = data["player"];
       var info = data["info"];
 
-      serverData[ "sessions" ][ session ][ "players" ][ player ][ "planet" ] = info;
-      console.log( `${player} RESOURCES: ${info["resources"]}` );
-      sendMessageToSession( "planetUpdated", { "player": player, "info": info }, session );
+      serverData["sessions"][session]["players"][player]["planet"] = info;
+      console.log(`${player} RESOURCES: ${info["resources"]}`);
+      sendMessageToSession("planetUpdated", { "player": player, "info": info }, session);
 
-    } else if ( action == "create" ) {
-      createSession( data );
+    } else if (action == "create") {
+      createSession(data);
 
-    } else if ( action == "joinRandom" ) {
-      addPlayerToRandomSession( player );
+    } else if (action == "joinRandom") {
+      addPlayerToRandomSession(player);
 
-    } else if ( action == "start" ) {
-      startSession( data[ "session" ] );
+    } else if (action == "start") {
+      startSession(data["session"]);
     }
   });
 
-  ws.on( 'close', reason => {
+  ws.on('close', reason => {
     // TODO doesn't detect broken connections. See https://www.npmjs.com/package/ws#how-to-detect-and-close-broken-connections
 
     // Get player info
-    var player = ws[ "id" ];
-        
+    var player = ws["id"];
+
     // Remove player from session
-    removePlayerFromSession( player );
+    removePlayerFromSession(player);
 
     // Remove player from server
-    disconnectPlayer( player )
-    
+    disconnectPlayer(player)
+
   });
 });
 
-function removeItemFromIterable( item, iterable ) {
-  for ( var i = 0; i < iterable.length; i++ ) {
-    if ( iterable[ i ] == item ) {
-      iterable.splice( i, 1 );
+function removeItemFromIterable(item, iterable) {
+  for (var i = 0; i < iterable.length; i++) {
+    if (iterable[i] == item) {
+      iterable.splice(i, 1);
 
       break;
     }
@@ -95,71 +97,71 @@ function removeItemFromIterable( item, iterable ) {
   return iterable;
 }
 
-function generateID( length=10 ) {
+function generateID(length = 10) {
   var id = '';
   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   var charactersLength = characters.length;
 
-  for ( var i = 0; i < length; i++ ) {
-    id += characters.charAt( Math.floor( Math.random() * charactersLength ) );
+  for (var i = 0; i < length; i++) {
+    id += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
   return id;
 }
 
-function connectPlayer( websocket, server ) {
+function connectPlayer(websocket, server) {
   // Generate, Store, & Send Client ID
   var clientID = generateID();
   websocket['id'] = clientID;
-  serverData[ 'players' ][ clientID ] = {
+  serverData['players'][clientID] = {
     'session': null,
     'websocket': websocket
   };
-  
-  sendMessageToPlayer( 'connect', { 'id':clientID }, clientID );
+
+  sendMessageToPlayer('connect', { 'id': clientID }, clientID);
 
   // Print
   console.log(`Connected Client: ${clientID}`);
 }
 
-function disconnectPlayer( player ) {
+function disconnectPlayer(player) {
   // Remove player from server
-  delete serverData[ 'players' ][ player ];
+  delete serverData['players'][player];
 
   // Print
   console.log(`Disconnected Client: ${player}`);
 }
 
-function createSession( data ) {
-  var host = data[ "host" ];
-  var session = generateID( 4 );
+function createSession(data) {
+  var host = data["host"];
+  var session = generateID(4);
 
-  serverData[ "sessions" ][ session ] = data;
-  serverData[ "sessions" ][ session ][ "id" ] = session;
+  serverData["sessions"][session] = data;
+  serverData["sessions"][session]["id"] = session;
 
-  addPlayerToSpecificSession( host, session );
-  
+  addPlayerToSpecificSession(host, session);
+
   console.log(`Created Session: ${session}`);
 }
 
-function assignHostToSession( host, session ) {
-  serverData[ "sessions" ][ session ][ "host" ] = host;
+function assignHostToSession(host, session) {
+  serverData["sessions"][session]["host"] = host;
 
   // Send the updated session information to all players in the session
-  updateSession( session );
+  updateSession(session);
 }
 
-function sessionExists( session ) {
-  if ( iterableContainsItem( Object.keys( serverData[ "sessions" ] ), session ) ) {
+function sessionExists(session) {
+  if (iterableContainsItem(Object.keys(serverData["sessions"]), session)) {
     return true;
   }
 
   return false;
 }
 
-function playerInSession( player, session ) {
-  if ( sessionExists( session ) ) {
-    if ( iterableContainsItem( Object.keys( serverData[ "sessions" ][ session ][ "players" ] ), player ) ) {
+function playerInSession(player, session) {
+  if (sessionExists(session)) {
+    if (iterableContainsItem(Object.keys(serverData["sessions"][session]["players"]), player)) {
       return true;
     }
   }
@@ -167,143 +169,143 @@ function playerInSession( player, session ) {
   return false;
 }
 
-function assignRandomHostToSession( session ) {
-  if ( sessionExists( session ) ) {
-    var randomHost = fetchRandomPlayerFromSession( session );
-  
-    assignHostToSession( randomHost, session );
+function assignRandomHostToSession(session) {
+  if (sessionExists(session)) {
+    var randomHost = fetchRandomPlayerFromSession(session);
+
+    assignHostToSession(randomHost, session);
   }
 }
 
-function startSession( session ) {
-  updateSessionState( session, setState="playing" );
+function startSession(session) {
+  updateSessionState(session, setState = "playing");
 }
 
-function getSessionColors( session ) {
+function getSessionColors(session) {
   var colors = [];
 
-  Object.keys( serverData[ "sessions" ][ session ][ "players" ] ).forEach( ( player ) => {
-    var color = serverData[ "sessions" ][ session ][ "players" ][ player ][ "color" ];
-    colors.push( color );
-  } );
+  Object.keys(serverData["sessions"][session]["players"]).forEach((player) => {
+    var color = serverData["sessions"][session]["players"][player]["color"];
+    colors.push(color);
+  });
 
   return colors;
 }
 
-function getPlayerSession( player ) {
-  var session = serverData[ "players" ][ player ][ "session" ];
+function getPlayerSession(player) {
+  var session = serverData["players"][player]["session"];
 
   return session;
 }
 
-function getSessionPlayers( session ) {
-  var players = Object.keys( serverData[ "sessions" ][ session ][ "players" ] );
+function getSessionPlayers(session) {
+  var players = Object.keys(serverData["sessions"][session]["players"]);
 
   return players;
 }
 
-function getSessionData( session ) {
-  var data = serverData[ "sessions" ][ session ];
+function getSessionData(session) {
+  var data = serverData["sessions"][session];
 
   return data;
 }
 
-function pickRandomFromIterable( iterable ) {  
-  var randomIndex = Math.floor( Math.random() * iterable.length );
-  var randomItem = iterable[ randomIndex ];
+function pickRandomFromIterable(iterable) {
+  var randomIndex = Math.floor(Math.random() * iterable.length);
+  var randomItem = iterable[randomIndex];
 
   return randomItem;
 }
 
-function assignPlayerColor( player ) {
+function assignPlayerColor(player) {
   var availableColors = [];
-  var session = getPlayerSession( player );
-  var takenColors = getSessionColors( session );
+  var session = getPlayerSession(player);
+  var takenColors = getSessionColors(session);
   // var colors = [ "red", "green", "blue", "orange", "yellow", "purple", "gold", "silver", "pink" ];
-  var colors = [ "0xFFDF2828", "0xFF28DF68", "0xFF477EAE", "0xFFFF9100", "0xFFFFD23F", "0xFFaa00ff", "0xFFFFC30E", "0xFFF3FCF0", "0xFFEE4266" ];
+  var colors = ["0xFFDF2828", "0xFF28DF68", "0xFF477EAE", "0xFFFF9100", "0xFFFFD23F", "0xFFaa00ff", "0xFFFFC30E", "0xFFF3FCF0", "0xFFEE4266"];
 
-  colors.forEach( ( color ) => {
-    if ( !iterableContainsItem( takenColors, color ) ) {
-      availableColors.push( color );
+  colors.forEach((color) => {
+    if (!iterableContainsItem(takenColors, color)) {
+      availableColors.push(color);
     }
-  } );
+  });
 
-  var randomColor = pickRandomFromIterable( availableColors );
+  var randomColor = pickRandomFromIterable(availableColors);
 
-  serverData[ "sessions" ][ session ][ "players" ][ player ][ "color" ] = randomColor;
+  serverData["sessions"][session]["players"][player]["color"] = randomColor;
 
   // Print
-  console.log( `Assigned Color: ${randomColor} to Player: ${player}` );
+  console.log(`Assigned Color: ${randomColor} to Player: ${player}`);
 }
 
-function addPlayerToSpecificSession( player, session ) {
+function addPlayerToSpecificSession(player, session) {
   // If player not in session and session not playing
-  if ( ( serverData[ 'players' ][ player ][ 'session' ] != session )  && ( serverData[ "sessions" ][ session ][ "state" ] != "playing" ) ) {
+  if ((serverData['players'][player]['session'] != session) && (serverData["sessions"][session]["state"] != "playing")) {
     // Initial Data to assign player
     var initData = {
       "ready": false,
       "color": null,
       'spaceship': {
-        'position': [ 50, 50 ],
+        'position': [50, 50],
         'angle': 0,
         'resources': 0
       },
       'planet': {
-        "position": [ 50, 50 ],
+        "position": [50, 50],
         'resources': 0
       }
     };
 
     // Add session in player and player in session
-    serverData[ 'players' ][ player ][ 'session' ] = session;
-    serverData[ 'sessions' ][ session ][ 'players' ][ player ] = initData;
+    serverData['players'][player]['session'] = session;
+    serverData['sessions'][session]['players'][player] = initData;
 
     // Assign Color
-    assignPlayerColor( player );
+    assignPlayerColor(player);
 
     // Inform session that player joined
-    sendMessageToSession( "playerJoined", { "player": player, "info":getSessionData( session ) }, session );
-    
+    sendMessageToSession("playerJoined", { "player": player, "info": getSessionData(session) }, session);
+
     // Print
-    console.log( `Added player ${player} to session ${session}` );
+    console.log(`Added player ${player} to session ${session}`);
 
     // Send latest information to session
-    updateSession( session );
+    updateSession(session);
 
     // Send state updates to session
-    updateSessionState( session );
+    updateSessionState(session);
   }
 }
 
-function fetchRandomPlayerFromSession( session ) {
-  var players = Object.keys( serverData[ "sessions" ][ session ][ "players" ] );
-  
+function fetchRandomPlayerFromSession(session) {
+  var players = Object.keys(serverData["sessions"][session]["players"]);
+
   // Pick Random Player
-  var randomPlayerIndex = Math.floor( Math.random() * players.length );
-  var randomPlayer = players[ randomPlayerIndex ];
+  var randomPlayerIndex = Math.floor(Math.random() * players.length);
+  var randomPlayer = players[randomPlayerIndex];
 
   return randomPlayer;
 }
 
 function fetchRandomSession() {
-  var sessions = Object.keys( serverData[ "sessions" ] );
+  var sessions = Object.keys(serverData["sessions"]);
   var sessionCount = sessions.length;
   var foundSession = false;
   var count = 0;
 
-  while ( count != sessionCount ) {
+  while (count != sessionCount) {
     // Add Count
     count += 1;
 
     // Pick Random Session
-    var randomSessionIndex = Math.floor( Math.random() * sessions.length );
-    var randomSession = sessions[ randomSessionIndex ];
+    var randomSessionIndex = Math.floor(Math.random() * sessions.length);
+    var randomSession = sessions[randomSessionIndex];
 
     // Remove Session from Sessions, so next iteration we don't pick it again
-    sessions = removeItemFromIterable( randomSession, sessions );
+    sessions = removeItemFromIterable(randomSession, sessions);
 
     // Join session if waiting
-    if ( serverData[ "sessions" ][ randomSession ][ "state" ] == "waiting" ) {
+    if (serverData["sessions"][randomSession]["state"] == "waiting") {
       foundSession = randomSession;
       break;
     }
@@ -312,167 +314,167 @@ function fetchRandomSession() {
   return foundSession;
 }
 
-function addPlayerToRandomSession( player ) {
+function addPlayerToRandomSession(player) {
   // Get Random Session ID
   var session = fetchRandomSession();
 
-  if ( session != false ) {
+  if (session != false) {
     // Add Player to Session
-    addPlayerToSpecificSession( player, session );
+    addPlayerToSpecificSession(player, session);
 
   } else {
     // No sessions found
-    sendMessageToPlayer( "noSessions", null, player );
+    sendMessageToPlayer("noSessions", null, player);
   }
 }
 
-function sessionEmpty( session ) {
-  if ( getNumberOfPlayersInSession( session ) == 0 ) {
+function sessionEmpty(session) {
+  if (getNumberOfPlayersInSession(session) == 0) {
     return true;
   }
 
   return false;
 }
 
-function removePlayerFromSession( player, session=null ) {
+function removePlayerFromSession(player, session = null) {
   // Get player's session
-  if ( session == null ) {
-    session = serverData[ 'players' ][ player ][ 'session' ];
+  if (session == null) {
+    session = serverData['players'][player]['session'];
   }
 
-  if ( session != null ) {
-    var host = serverData[ 'sessions' ][ session ][ 'host' ];
-    var players = serverData[ 'sessions' ][ session ][ 'players' ];
+  if (session != null) {
+    var host = serverData['sessions'][session]['host'];
+    var players = serverData['sessions'][session]['players'];
 
-    if ( player in players ) {
+    if (player in players) {
       // Remove player from session and session from player
-      serverData[ "players" ][ player ][ "session" ] = null;
-      delete serverData[ 'sessions' ][ session ][ 'players' ][ player ];
-  
+      serverData["players"][player]["session"] = null;
+      delete serverData['sessions'][session]['players'][player];
+
       // Approve player leaving
-      sendMessageToPlayer( "youLeft", null, player );
-  
+      sendMessageToPlayer("youLeft", null, player);
+
       // If no more players in session
-      if ( sessionEmpty( session ) ) {
-        endSession( session );
+      if (sessionEmpty(session)) {
+        endSession(session);
 
         // If players remaining in session
       } else {
         // Assign new host
-        if ( player == host ) {
-          assignRandomHostToSession( session );
+        if (player == host) {
+          assignRandomHostToSession(session);
         }
-  
+
         // Inform session that player left
-        sendMessageToSession( "playerLeft", { "player": player, "info":serverData[ 'sessions' ][ session ] }, session );
-        
+        sendMessageToSession("playerLeft", { "player": player, "info": serverData['sessions'][session] }, session);
+
         // Print
-        console.log( `Removed player ${player} from session ${session}` );
+        console.log(`Removed player ${player} from session ${session}`);
       }
     }
   }
 }
 
-function endSession( session ) {
-  if ( sessionExists( session ) ) {
-    Object.keys( serverData[ "sessions" ][ session ][ "players" ] ).forEach( ( player ) => {
-      if ( player != serverData[ "sessions" ][ session ][ "host" ] ) {
-        sendMessageToPlayer( "sessionTerminated", null, player );
+function endSession(session) {
+  if (sessionExists(session)) {
+    Object.keys(serverData["sessions"][session]["players"]).forEach((player) => {
+      if (player != serverData["sessions"][session]["host"]) {
+        sendMessageToPlayer("sessionTerminated", null, player);
       }
 
-      removePlayerFromSession( player );
-    } );
+      removePlayerFromSession(player);
+    });
 
-    delete serverData[ "sessions" ][ session ];
+    delete serverData["sessions"][session];
   }
 }
 
-function sendMessageToPlayer( action, data, player ) {
+function sendMessageToPlayer(action, data, player) {
   // Create Message
-  message = compileMessage( action, data );
+  message = compileMessage(action, data);
 
   // Get WebSocket
-  var playerWebSocket = serverData[ 'players' ][ player ][ 'websocket' ];
+  var playerWebSocket = serverData['players'][player]['websocket'];
 
   // Send
-  playerWebSocket.send( message );
+  playerWebSocket.send(message);
 }
 
-function sendMessageToSession( action, data, session, except=[] ) {
-  var players = serverData[ 'sessions' ][ session ][ 'players' ];
-  
+function sendMessageToSession(action, data, session, except = []) {
+  var players = serverData['sessions'][session]['players'];
+
   // Send message to all players in the session
-  Object.keys( players ).forEach( player => {
-    if ( !iterableContainsItem( except, player ) ) {
-      sendMessageToPlayer( action, data, player );
+  Object.keys(players).forEach(player => {
+    if (!iterableContainsItem(except, player)) {
+      sendMessageToPlayer(action, data, player);
     }
   });
 }
 
-function compileMessage( action, data ) {
+function compileMessage(action, data) {
   // Compile Message
   var message = { 'action': action, 'data': data };
-  var encodedMessage = JSON.stringify( message );
+  var encodedMessage = JSON.stringify(message);
 
   return encodedMessage;
 }
 
-function updateSession( session ) {
+function updateSession(session) {
   // Send the updated session information to all players in the session
   sendMessageToSession(
     'update',
-    { "info": serverData[ 'sessions' ][ session ] },
+    { "info": serverData['sessions'][session] },
     session
   );
 }
 
-function getNumberOfPlayersInSession( session ) {
-  var numberOfPlayers = Object.keys( serverData[ 'sessions' ][ session ][ "players" ] ).length;
+function getNumberOfPlayersInSession(session) {
+  var numberOfPlayers = Object.keys(serverData['sessions'][session]["players"]).length;
 
   return numberOfPlayers;
 }
 
-function updateSessionState( session, setState=null ) {
-  var state = serverData[ "sessions" ][ session ][ "state" ];
-  var limit = serverData[ "sessions" ][ session ][ "limit" ];
-  var numberOfPlayers = getNumberOfPlayersInSession( session );
-  var remainingTime = serverData[ "sessions" ][ session ][ "remainingTime" ];
+function updateSessionState(session, setState = null) {
+  var state = serverData["sessions"][session]["state"];
+  var limit = serverData["sessions"][session]["limit"];
+  var numberOfPlayers = getNumberOfPlayersInSession(session);
+  var remainingTime = serverData["sessions"][session]["remainingTime"];
 
-  if ( setState == null ) {
+  if (setState == null) {
     var newState = state;
 
-    if ( numberOfPlayers == 0 ) {
-      endSession( session );
+    if (numberOfPlayers == 0) {
+      endSession(session);
       return;
     }
 
-    if ( state == "creating" ) {
+    if (state == "creating") {
       newState = "waiting";
 
-    } else if ( state == "waiting" ) {
+    } else if (state == "waiting") {
       // TODO: Check ready state for players
-      if ( numberOfPlayers == limit ) {
+      if (numberOfPlayers == limit) {
         // newState = "playing";
-        console.log( "Session Full!" );
+        console.log("Session Full!");
       }
 
-    } else if ( state == "playing" ) {
-      if ( remainingTime <= 0 ) {
+    } else if (state == "playing") {
+      if (remainingTime <= 0) {
         newState = "waiting";
       }
     }
-    
+
   } else {
     var newState = setState;
   }
 
   // Communicate
-  if ( newState != state ) {
-    serverData[ "sessions" ][ session ][ "state" ] = newState;
-    sendMessageToSession( "stateChanged", { "state": newState }, session );
-    
-    if ( ( state == "waiting" ) && ( newState == "playing" ) ) {
-      resetSession( session );
+  if (newState != state) {
+    serverData["sessions"][session]["state"] = newState;
+    sendMessageToSession("stateChanged", { "state": newState }, session);
+
+    if ((state == "waiting") && (newState == "playing")) {
+      resetSession(session);
     }
 
     // Print
@@ -481,43 +483,64 @@ function updateSessionState( session, setState=null ) {
   }
 }
 
-function resetSession( session ) {
+function resetSession(session) {
   // Reset Time
-  resetSessionTime( session );
+  resetSessionTime(session);
 
   // Reset Positions & Angles
-  Object.keys( serverData[ "sessions" ][ session ][ "players" ] ).forEach( ( player ) => {
-    serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ][ "position" ] = [ 50, 50 ];
-    serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ][ "angle" ] = 0;
-    serverData[ "sessions" ][ session ][ "players" ][ player ][ "spaceship" ][ "resources" ] = 0;
-    serverData[ "sessions" ][ session ][ "players" ][ player ][ "planet" ][ "position" ] = [ 50, 50 ];
-    serverData[ "sessions" ][ session ][ "players" ][ player ][ "planet" ][ "resources" ] = 0;
-  } );
+  Object.keys(serverData["sessions"][session]["players"]).forEach((player) => {
+    serverData["sessions"][session]["players"][player]["spaceship"]["position"] = [50, 50];
+    serverData["sessions"][session]["players"][player]["spaceship"]["angle"] = 0;
+    serverData["sessions"][session]["players"][player]["spaceship"]["resources"] = 0;
+    serverData["sessions"][session]["players"][player]["planet"]["position"] = [50, 50];
+    serverData["sessions"][session]["players"][player]["planet"]["resources"] = 0;
+    serverData["sessions"][session]["players"][player]["spaceship"]["isSpectating"] = false;
+  });
 
-  sendMessageToSession( "sessionReset", { "info": serverData[ "sessions" ][ session ] }, session );
+  sendMessageToSession("sessionReset", { "info": serverData["sessions"][session] }, session);
 }
 
-function resetSessionTime( session ) {
-  serverData[ "sessions" ][ session ][ "remainingTime" ] = serverData[ "sessions" ][ session ][ "time" ];
+function resetSessionTime(session) {
+  serverData["sessions"][session]["remainingTime"] = serverData["sessions"][session]["time"];
 }
 
 function updateTime() {
-  Object.keys( serverData[ "sessions" ] ).forEach( ( session ) => {
-    if ( serverData[ "sessions" ][ session ][ "state" ] == "playing" ) {
-      serverData[ "sessions" ][ session ][ "remainingTime" ] -= 1000;
+  Object.keys(serverData["sessions"]).forEach((session) => {
+    if (serverData["sessions"][session]["state"] == "playing") {
+      serverData["sessions"][session]["remainingTime"] -= 1000;
 
-      sendMessageToSession( "timeUpdated", { "remainingTime": serverData[ "sessions" ][ session ][ "remainingTime" ] }, session );
+      sendMessageToSession("timeUpdated", { "remainingTime": serverData["sessions"][session]["remainingTime"] }, session);
 
-      updateSessionState( session )
+      updateSessionState(session);
+
+      // Update spectating players' respawn timers
+      Object.keys(serverData["sessions"][session]["players"]).forEach((player) => {
+        let spaceship = serverData["sessions"][session]["players"][player]["spaceship"];
+
+        // Check to see which players are spectating (i.e. crashed)
+        if (spaceship['isSpectating']) {
+
+          // Spaceship["respawnTime"] is always null at the moment of the crash because players don't include it in their normal updates. See (action == "updateSpaceship") if clause.
+          if (spaceship["respawnTime"] == null) {
+            spaceship["respawnTime"] = respawnTime;
+          }
+          else {
+            // Prevent spaceship["respawnTime"] from dropping below 0
+            spaceship["respawnTime"] -= Math.min(spaceship["respawnTime"], 1);
+          }
+          console.log(`Sending respawn time ${spaceship["respawnTime"].toString()} to player ${player}`);
+          sendMessageToPlayer("respawnTimerUpdate", { "respawnTime": spaceship["respawnTime"] }, player);
+        }
+      })
     }
-  } );
+  });
 }
 
-function iterableContainsItem( iterable, item ) {  
-  for ( var i = 0; i < iterable.length; i++ ) {
-      if ( iterable[ i ] == item ) {
-          return true;
-      }
+function iterableContainsItem(iterable, item) {
+  for (var i = 0; i < iterable.length; i++) {
+    if (iterable[i] == item) {
+      return true;
+    }
   }
 
   return false;
