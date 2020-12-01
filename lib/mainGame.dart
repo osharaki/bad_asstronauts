@@ -42,6 +42,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   double storeRate = 0.2;
   double harvestRate = 0.1;
 
+  int latestRespawnTime = 0;
+
   // {"playerId": {"spaceship": Spaceship(), "planet": Planet()}}
   Map<String, dynamic> players = {};
 
@@ -220,35 +222,32 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       Otherwise, client listens for respawnTime updates.
       Once respawnTime hits 0, client resets its position and rotation
       to initial values and server is updated in next tick. */
-      if (!egoSpaceship.isSpectating) {
+      if (egoSpaceship.respawnTime == 0) {
+        if (latestRespawnTime == 1) {
+          latestRespawnTime = 0;
+          // TODO: reset own position and angle to proper initial values sent by server at game start
+          // TODO: Stop spaceship from being pulled toward planet. Make sure planet knows that ship is no longer in atmosphere
+          Vector2 initPos =
+              Vector2((launcher.widget.viewportSize / 2).x, (launcher.widget.viewportSize / 2).y);
+          egoSpaceship.body.setTransform(initPos, 0);
+          egoSpaceship.radAngle = 0;
+          /* egoSpaceship.body.applyLinearImpulse(
+            egoSpaceship.body.linearVelocity.scaled(-20),
+            initPos,
+            true,
+          ); */
+        }
         updateServer(
           {
             "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
             "angle": egoSpaceship.radAngle,
             "resources": egoSpaceship.resources,
-            "isSpectating": egoSpaceship.isSpectating,
+            "respawnTime": egoSpaceship.respawnTime,
           },
         );
-      } else {
-        if (egoSpaceship.respawnTime != null && egoSpaceship.respawnTime == 0) {
-          egoSpaceship.isSpectating = false;
-
-          // TODO: reset own position and angle to initial values
-
-          // TODO: This update will be removed.
-          /*  The actual server update will be executed as usual in the next tick from the if-block above.
-              This is just kept temporarily to tell the server to stop sending respawnTime updates. */
-          egoSpaceship.game.updateServer({
-            "position": [
-              (launcher.widget.viewportSize / 2).x,
-              (launcher.widget.viewportSize / 2).y
-            ],
-            "angle": 0,
-            "resources": egoSpaceship.resources,
-            "isSpectating": egoSpaceship.isSpectating,
-          });
-        }
-      }
+      } else
+        // It's necessary to keep track of the last respawnTime so that when its value is 0 we can tell whether it just hit 0 or if if's been like that for a while
+        latestRespawnTime = egoSpaceship.respawnTime;
     }
   }
 

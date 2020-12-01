@@ -55,7 +55,6 @@ wss.on("connection", (ws) => {
                         resources: data["resources"],
                         position: data["position"],
                         angle: data["angle"],
-                        isSpectating: data["isSpectating"],
                     },
                 },
                 session,
@@ -545,9 +544,6 @@ function resetSession(session) {
             serverData["sessions"][session]["players"][player]["planet"][
                 "resources"
             ] = 0;
-            serverData["sessions"][session]["players"][player]["spaceship"][
-                "isSpectating"
-            ] = false;
         }
     );
 
@@ -588,24 +584,16 @@ function updateTime() {
                         ];
 
                     // Check to see which players are spectating (i.e. crashed)
-                    if (spaceship["isSpectating"]) {
-                        // Spaceship["respawnTime"] is always null at the moment of the crash because players don't include it in their normal updates. See (action == "updateSpaceship") if clause.
-                        if (spaceship["respawnTime"] == null) {
-                            spaceship["respawnTime"] = respawnTime;
-                        } else {
-                            // Prevent spaceship["respawnTime"] from dropping below 0
-                            spaceship["respawnTime"] -= Math.min(
-                                spaceship["respawnTime"],
-                                1
-                            );
-                        }
+                    if (spaceship["respawnTime"] != 0) {
+                        if (spaceship["respawnTime"] > 0)
+                            spaceship["respawnTime"] -= 1;
                         console.log(
                             `Sending respawn time ${spaceship[
                                 "respawnTime"
                             ].toString()} to player ${player}`
                         );
                         sendMessageToPlayer(
-                            "respawnTimerUpdate",
+                            "respawnTimerUpdated",
                             { respawnTime: spaceship["respawnTime"] },
                             player
                         );

@@ -31,6 +31,7 @@ class ServerHandler {
         "limit": limit,
         "time": 15000,
         "remainingTime": 15000,
+        "respawnTime": launcher.respawnTime,
         "state": "creating",
         "players": {},
       },
@@ -123,7 +124,7 @@ class ServerHandler {
 
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
-        launcher.game.players[player]["spaceship"].body.position = position;
+        launcher.game.players[player]["spaceship"].body.setTransform(position, 0);
         launcher.game.players[player]["spaceship"].radAngle = angle;
         launcher.game.players[player]["spaceship"].resources = resources;
       }
@@ -257,7 +258,7 @@ class ServerHandler {
       Map<String, dynamic> info = data["info"];
 
       updateLocalPlanet(player, info);
-    } else if (action == "respawnTimerUpdate") {
+    } else if (action == "respawnTimerUpdated") {
       print(data);
       int respawnTime = data['respawnTime'];
       launcher.game.players[id]["spaceship"].respawnTime = respawnTime;

@@ -21,7 +21,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final String id;
   final bool isEgo;
 
-  int respawnTime;
+  int respawnTime = 0;
 
   double resources = 100;
   double currentSpeed = 0;
@@ -106,8 +106,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
     ).render(
       canvas,
       resources.toStringAsFixed(2),
-      game.viewport.getWorldToScreen(
-          Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
+      game.viewport
+          .getWorldToScreen(Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
       anchor: Anchor.center,
     );
   }
@@ -135,8 +135,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
     final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
 
     // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
-    body.applyLinearImpulse(
-        Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+    body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
   }
 
   @override
@@ -155,7 +154,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
       ..position = position
       ..type = bodyType;
 
-    return world.createBody(bodyDef)
-      ..createFixture(fixtureDef).setSensor(!isEgo);
+    return world.createBody(bodyDef)..createFixture(fixtureDef).setSensor(!isEgo);
   }
 }

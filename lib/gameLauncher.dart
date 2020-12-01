@@ -22,6 +22,7 @@ class GameLauncherState extends State<GameLauncher> {
   // UI Variables
   String state = "out";
   int remainingPlayers = 0;
+  int respawnTime = 5;  
   String remainingTime = "";
   Map<String, dynamic> playersInfo = {};
 

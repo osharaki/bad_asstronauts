@@ -83,12 +83,13 @@ class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
     if (spaceship.isEgo) {
       // Prevent duplicate collision detection
       if (!spaceship.isSpectating) {
-        spaceship.isSpectating = true;
+        spaceship.respawnTime = spaceship.game.launcher.respawnTime;
+        print(spaceship.respawnTime.toString());
         spaceship.game.updateServer({
           "position": [spaceship.body.position.x, spaceship.body.position.y],
           "angle": spaceship.radAngle,
           "resources": spaceship.resources,
-          "isSpectating": spaceship.isSpectating,
+          "respawnTime": spaceship.respawnTime,
         });
         print('spaceship ${spaceship.id} crashed into planet ${planet.spaceshipId}');
       }
