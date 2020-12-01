@@ -35,7 +35,6 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     fontFamily: 'BigShouldersStencilDisplay2',
     textAlign: TextAlign.center,
   );
-  final Map<String, dynamic> planets = {};
 
   // double resources = 10000;
 
@@ -128,8 +127,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
   /// Add specified players to Game. All in session would be added, if no players specified.
   Future<void> addPlayers({Map<String, dynamic> playersList}) async {
-    if (playersList == null)
-      playersList = launcher.serverHandler.serverData["players"];
+    if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
 
     playersList.forEach((player, info) {
       addPlayer(player);
@@ -222,10 +220,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       launcher.serverHandler.sendDataToServer(
         action: "updateSpaceship",
         data: {
-          "position": [
-            egoSpaceship.body.position.x,
-            egoSpaceship.body.position.y
-          ],
+          "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
           "angle": egoSpaceship.radAngle,
           "resources": egoSpaceship.resources,
         },
@@ -242,11 +237,11 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    for (Planet planet in planets.values) {
+    for (dynamic player in players.values) {
       resourceDisplayConfig.render(
         canvas,
-        planet.resources.toStringAsFixed(2),
-        viewport.getWorldToScreen(planet.position),
+        player['planet'].resources.toStringAsFixed(2),
+        viewport.getWorldToScreen(player['planet'].position),
         anchor: Anchor.center,
       );
     }
