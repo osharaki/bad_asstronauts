@@ -16,7 +16,7 @@ class MainMenuState extends State<MainMenu> {
   TextEditingController codeController = TextEditingController();
   TextEditingController limitController = TextEditingController(text: "1");
 
-  void changePange(String newPage) {
+  void changePage(String newPage) {
     setState(() {
       page = newPage;
     });
@@ -25,7 +25,7 @@ class MainMenuState extends State<MainMenu> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => changePange("main"),
+      onTap: () => changePage("main"),
       child: Material(
         color: Colors.blueGrey[900],
         child: Container(
@@ -65,10 +65,10 @@ class MainMenuState extends State<MainMenu> {
                         ),
                         onPressed: () {
                           if (page != "create") {
-                            changePange("create");
+                            changePage("create");
                           } else {
-                            widget.launcher.serverHandler.requestCreateSession(
-                                int.parse(limitController.text));
+                            widget.launcher.serverHandler
+                                .requestCreateSession(int.parse(limitController.text));
                           }
                         },
                       ),
@@ -87,8 +87,7 @@ class MainMenuState extends State<MainMenu> {
                         inputFormatters: [LengthLimitingTextInputFormatter(4)],
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(50)),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
                               borderSide: BorderSide(
                                 style: BorderStyle.none,
                               )),
@@ -117,14 +116,12 @@ class MainMenuState extends State<MainMenu> {
                         ),
                         onPressed: () {
                           if (page != "join") {
-                            changePange("join");
+                            changePage("join");
                           } else {
                             if (codeController.text.length != 0) {
-                              widget.launcher.serverHandler
-                                  .requestJoinSession(codeController.text);
+                              widget.launcher.serverHandler.requestJoinSession(codeController.text);
                             } else {
-                              widget.launcher.serverHandler
-                                  .requestJoinRandomSession();
+                              widget.launcher.serverHandler.requestJoinRandomSession();
                             }
                           }
                         },
@@ -135,8 +132,7 @@ class MainMenuState extends State<MainMenu> {
                       height: 75,
                       child: TextField(
                         onSubmitted: (_) {
-                          if (limitController.text.isEmpty)
-                            limitController.text = "1";
+                          if (limitController.text.isEmpty) limitController.text = "1";
                         },
                         style: TextStyle(
                           fontSize: 30,
@@ -152,8 +148,7 @@ class MainMenuState extends State<MainMenu> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(50)),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
                               borderSide: BorderSide(
                                 style: BorderStyle.none,
                               )),
