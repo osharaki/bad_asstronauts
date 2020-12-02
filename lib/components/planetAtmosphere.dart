@@ -6,6 +6,7 @@ import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
+import 'package:gameOff2020/components/particle.dart';
 import 'package:gameOff2020/components/planet.dart';
 import 'package:gameOff2020/mainGame.dart';
 import 'package:gameOff2020/utils/math.dart';
@@ -19,6 +20,8 @@ class PlanetAtmosphere extends BodyComponent {
   final Vector2 position;
   final Planet planet;
   final List<Spaceship> spaceshipsInOrbit = [];
+
+  bool shot = false;
 
   PlanetAtmosphere({
     @required this.game,
@@ -119,6 +122,33 @@ class PlanetAtmosphere extends BodyComponent {
         // print("Spaceship at ${spaceship.resources.toString()}/${spaceship.capacity} capacity");
       }
       // print("Planet resources: " + planet.resources.toString());
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    if (!shot) {
+      if (spaceshipsInOrbit.isNotEmpty) {
+        for (Spaceship spaceship in spaceshipsInOrbit) {
+          if (spaceship.isEgo) {
+            final particle = MyParticle(
+              game: game,
+              startPosition: body.worldCenter,
+              follow: spaceship,
+              life: 2,
+              startSize: 3,
+              speed: 1,
+              endSize: 3,
+              startColor: Colors.brown,
+              endColor: Colors.brown[800],
+            );
+
+            game.add(particle);
+          }
+        }
+        // shot = true;
+      }
     }
   }
 

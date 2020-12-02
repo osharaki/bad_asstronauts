@@ -4,15 +4,7 @@ import 'dart:ui';
 import 'package:flame/anchor.dart';
 import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
-import 'package:flame/components/particle_component.dart';
 import 'package:flame/extensions/vector2.dart';
-import 'package:flame/particle.dart';
-import 'package:flame/particles/accelerated_particle.dart';
-import 'package:flame/particles/circle_particle.dart';
-import 'package:flame/particles/component_particle.dart';
-import 'package:flame/particles/computed_particle.dart';
-import 'package:flame/particles/moving_particle.dart';
-import 'package:flame/particles/translated_particle.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
@@ -37,6 +29,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double radAngle = 0;
   double resourceReplenishRate = 0.005;
   double resourceCriticalThreshold = 6;
+  Vector2 velocity = Vector2.zero();
 
   bool isSpectating = false;
   bool _move = false;
@@ -45,8 +38,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
 
   Vector2 posRect;
   Rect rect;
-
-  bool shot = false;
 
   Spaceship({
     @required this.game,
@@ -59,16 +50,18 @@ class Spaceship extends BodyComponent implements JoystickListener {
     spaceship = Sprite(image);
   }
 
-  void destroy() {
-    game.remove(this);
-  }
-
   @override
   void update(double dt) {
     super.update(dt);
     if (isEgo) {
       if (_move) {
-        moveFromAngle(dt);
+        // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
+        velocity = Vector2(
+          (currentSpeed * dt) * cos(radAngle),
+          -(currentSpeed * dt) * sin(radAngle),
+        );
+
+        moveSpaceship(velocity);
 
         // Consume resources by moving
         // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
@@ -94,6 +87,22 @@ class Spaceship extends BodyComponent implements JoystickListener {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+
+    if (isEgo && _move) {
+      final particle = MyParticle(
+        game: game,
+        startPosition: body.worldCenter,
+        direction: velocity.scaled(-1),
+        life: 0.25,
+        startSize: 5,
+        speed: 1,
+        endSize: 1,
+        startColor: Colors.amber[800],
+        endColor: Colors.grey[800],
+      );
+
+      game.add(particle);
+    }
 
     posRect = viewport.getWorldToScreen(body.worldCenter);
     rect = Rect.fromCenter(
@@ -141,28 +150,16 @@ class Spaceship extends BodyComponent implements JoystickListener {
       _move = false;
   }
 
-  void moveFromAngle(double dtUpdate) async {
-    final double nextX = (currentSpeed * dtUpdate) * cos(radAngle);
-    final double nextY = (currentSpeed * dtUpdate) * sin(radAngle);
-
-    // This inversion is necessary because Forge2D uses the normal cartesian coordinate system while Flame uses 0,0 as top-left of screen
+  void moveSpaceship(Vector2 velocity) async {
     body.applyLinearImpulse(
-        Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
+      Vector2(velocity.x, velocity.y).scaled(20),
+      body.worldCenter,
+      true,
+    );
+  }
 
-    if (!shot) {
-      // shot = true;
-
-      final particle = MyParticle(
-        game: game,
-        position: body.worldCenter,
-        direction: Vector2(-nextX, nextY),
-        size: 3,
-        speed: 25,
-        // endSize: 5,
-      );
-
-      game.add(particle);
-    }
+  void destroy() {
+    game.remove(this);
   }
 
   @override
