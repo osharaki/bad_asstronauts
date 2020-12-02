@@ -51,8 +51,7 @@ class PlanetAtmosphere extends BodyComponent {
     if (spaceshipsInOrbit.isNotEmpty) {
       for (Spaceship spaceship in spaceshipsInOrbit) {
         spaceship.body.applyForce(
-            (body.worldCenter - spaceship.body.worldCenter).scaled(10),
-            spaceship.body.worldCenter);
+            (body.worldCenter - spaceship.body.worldCenter).scaled(10), spaceship.body.worldCenter);
 
         if (spaceship.id == planet.spaceshipId) {
           // home planet -> store
@@ -84,9 +83,8 @@ class PlanetAtmosphere extends BodyComponent {
   @override
   Body createBody() {
     final CircleShape shape = CircleShape()
-      ..radius = size.x / 2 +
-          (size.x *
-              0.4); // planet sensor is a certain percentage larger than planet
+      ..radius =
+          size.x / 2 + (size.x * 0.4); // planet sensor is a certain percentage larger than planet
 
     final fixtureDef = FixtureDef()..shape = shape;
 
@@ -104,23 +102,24 @@ class PlanetAtmosphere extends BodyComponent {
   }
 }
 
-class PlanetAtmosphereContactCallback
-    extends ContactCallback<Spaceship, PlanetAtmosphere> {
+class PlanetAtmosphereContactCallback extends ContactCallback<Spaceship, PlanetAtmosphere> {
   @override
-  void begin(
-      Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
-    // print('spaceship entered atmosphere!');
-    planetAtmosphere.spaceshipsInOrbit.add(spaceship);
-    spaceship.inOrbit = true;
-    // print(planetAtmosphere.spaceshipsInOrbit);
+  void begin(Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
+    onAtmosphereEnter(spaceship, planetAtmosphere);
   }
 
   @override
-  void end(
-      Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
-    // print('spaceship left atmosphere!');
+  void end(Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
+    onAtmosphereExit(spaceship, planetAtmosphere);
+  }
+
+  void onAtmosphereEnter(Spaceship spaceship, PlanetAtmosphere planetAtmosphere) {
+    planetAtmosphere.spaceshipsInOrbit.add(spaceship);
+    spaceship.inOrbit = true;
+  }
+
+  void onAtmosphereExit(Spaceship spaceship, PlanetAtmosphere planetAtmosphere) {
     planetAtmosphere.spaceshipsInOrbit.remove(spaceship);
     spaceship.inOrbit = false;
-    // print(planetAtmosphere.spaceshipsInOrbit);
   }
 }

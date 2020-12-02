@@ -226,16 +226,10 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         if (latestRespawnTime == 1) {
           latestRespawnTime = 0;
           // TODO: reset own position and angle to proper initial values sent by server at game start
-          // TODO: Stop spaceship from being pulled toward planet. Make sure planet knows that ship is no longer in atmosphere
           Vector2 initPos =
               Vector2((launcher.widget.viewportSize / 2).x, (launcher.widget.viewportSize / 2).y);
           egoSpaceship.body.setTransform(initPos, 0);
           egoSpaceship.radAngle = 0;
-          /* egoSpaceship.body.applyLinearImpulse(
-            egoSpaceship.body.linearVelocity.scaled(-20),
-            initPos,
-            true,
-          ); */
         }
         updateServer(
           {

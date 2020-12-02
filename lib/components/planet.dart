@@ -83,6 +83,10 @@ class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
     if (spaceship.isEgo) {
       // Prevent duplicate collision detection
       if (!spaceship.isSpectating) {
+        // Remove spaceship from list of spaceships in orbit so that the gravitational pull is no longer being applied when the ship respawns
+        spaceship.game.planetAtmosphereContactCallback
+            .onAtmosphereExit(spaceship, planet.planetAtmosphere);
+
         spaceship.respawnTime = spaceship.game.launcher.respawnTime;
         print(spaceship.respawnTime.toString());
         spaceship.game.updateServer({
