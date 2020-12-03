@@ -556,19 +556,21 @@ function updateTime() {
                         ];
 
                     // Check to see which players are spectating (i.e. crashed)
-                    if (spaceship["respawnTime"] != 0) {
-                        if (spaceship["respawnTime"] > 0)
-                            spaceship["respawnTime"] -= 1;
-                        console.log(
-                            `Sending respawn time ${spaceship[
-                                "respawnTime"
-                            ].toString()} to player ${player}`
-                        );
-                        sendMessageToPlayer(
-                            "respawnTimerUpdated",
-                            { respawnTime: spaceship["respawnTime"] },
-                            player
-                        );
+                    if (spaceship["respawnTime"] != null) {
+                        if (spaceship["respawnTime"] != 0) {
+                            if (spaceship["respawnTime"] > 0)
+                                spaceship["respawnTime"] -= 1;
+                            console.log(
+                                `Sending respawn time ${spaceship[
+                                    "respawnTime"
+                                ].toString()} to player ${player}`
+                            );
+                            sendMessageToPlayer(
+                                "respawnTimerUpdated",
+                                { respawnTime: spaceship["respawnTime"] },
+                                player
+                            );
+                        }
                     }
                 }
             );
