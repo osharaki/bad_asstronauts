@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 
 import 'package:flame/anchor.dart';
 import 'package:flame/components/joystick/joystick_action.dart';
@@ -47,6 +48,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // {"playerId": {"spaceship": Spaceship(), "planet": Planet()}}
   Map<String, dynamic> players = {};
 
+  Planet centralPlanet;
+
   Spaceship egoSpaceship;
 
   JoystickComponent joystick;
@@ -70,7 +73,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     // add(MyCircle(this, 10));
   }
 
-  /// Without refreshing Joystick, it is only responsive during the FIRST game of the session. After that the Joystick will be unresponsive.
+  // Without refreshing Joystick, it is only responsive during the FIRST game of the session. After that the Joystick will be unresponsive.
   void initializeJoystick() {
     joystick = JoystickComponent(
       directional: JoystickDirectional(),
@@ -107,40 +110,65 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     joystick = null;
   }
 
-  /// Initialize Game Components
+  // Initialize Game Components
   Future<void> startGame() async {
     initializeJoystick();
-    await addPlayers();
+    List<Image> images = await imageList;
+
+    centralPlanet = Planet(
+      game: this,
+      image: images[2],
+      spaceshipId: -1,
+      size: Vector2(268, 268),
+      position: Vector2.zero(),
+      resources: 1000,
+    );
+
+    add(centralPlanet);
+    addPlayers(images: images, centralPlanet: centralPlanet);
     print("START GAME: $players");
   }
 
-  /// Destroy Game Components
+  // Destroy Game Components
   Future<void> endGame() async {
     destroyJoystick();
-    await removePlayers();
+    remove(centralPlanet);
+    removePlayers();
     print("END GAME: $players");
   }
 
-  /// Destroy Game Components, the re-initalize, to ensure freshness
+  // Destroy Game Components, the re-initalize, to ensure freshness
   void refreshGame() async {
     await endGame();
     await startGame();
   }
 
-  /// Add specified players to Game. All in session would be added, if no players specified.
-  Future<void> addPlayers({Map<String, dynamic> playersList}) async {
+  // Add specified players to Game. All in session would be added, if no players specified.
+  void addPlayers(
+      {Map<String, dynamic> playersList, List<Image> images, Planet centralPlanet}) async {
     if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
 
+    // Calculate home planet init position using equation of the circle in parametric form
+    double distFromCircumference = 100;
+    double r = centralPlanet.size.x / 2 + distFromCircumference;
+    double angle = (2 * pi) / playersList.length;
+
+    for (int i = 0; i < playersList.length; i++) {
+      Vector2 planetPosition = Vector2(
+        centralPlanet.position.x + r * cos(angle * i),
+        centralPlanet.position.y + r * sin(angle * i),
+      );
+      addPlayer(playersList[i], images, planetPosition: planetPosition);
+    }
+
+    // TODO remove
     playersList.forEach((player, info) {
-      addPlayer(player);
+      addPlayer(player, images, planetPosition: null);
     });
   }
 
-  /// Add specified player to Game, and assign Planet & Spaceship
-  Future<void> addPlayer(String player) async {
-    // Ensure Images are loaded
-    List<Image> images = await imageList;
-
+  // Add specified player to Game, and assign Planet & Spaceship
+  Future<void> addPlayer(String player, List<Image> images, {Vector2 planetPosition}) async {
     Image spaceshipImage = images[0];
     Image planetImage = images[1];
 
@@ -182,8 +210,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     };
   }
 
-  /// Remove specified players from Game. All in session would be removed, if no players specified.
-  Future<void> removePlayers({Map<String, dynamic> playersList}) async {
+  // Remove specified players from Game. All in session would be removed, if no players specified.
+  void removePlayers({Map<String, dynamic> playersList}) {
     if (playersList == null) playersList = Map.from(players);
 
     playersList.forEach((player, info) {
@@ -191,8 +219,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     });
   }
 
-  /// Remove specified player from Game
-  Future<void> removePlayer(String player) async {
+  // Remove specified player from Game
+  void removePlayer(String player) {
     // Remove Components from game
     Spaceship spaceship = players[player]["spaceship"];
     Planet planet = players[player]["planet"];
