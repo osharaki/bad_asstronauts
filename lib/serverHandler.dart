@@ -94,9 +94,9 @@ class ServerHandler {
     });
   }
 
-  void initializeGame() {
+  /* void initializeGame() {
     launcher.game.refreshGame();
-  }
+  } */
 
   void removePlayer(String player) {
     // TODO: Earlier players see later players right off the bat, but later players can only see earlier players when they move. Why? Must be some information being sent to people already in session. Make sure to add people THEN update the info.

@@ -118,8 +118,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     centralPlanet = Planet(
       game: this,
       image: images[2],
-      spaceshipId: -1,
-      size: Vector2(268, 268),
+      spaceshipId: null,
+      size: Vector2(10, 10), // used to be 268, 268
       position: Vector2.zero(),
       resources: 1000,
     );
@@ -130,18 +130,18 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   }
 
   // Destroy Game Components
-  Future<void> endGame() async {
+  void endGame() {
     destroyJoystick();
-    remove(centralPlanet);
+    if (centralPlanet != null) remove(centralPlanet);
     removePlayers();
     print("END GAME: $players");
   }
 
   // Destroy Game Components, the re-initalize, to ensure freshness
-  void refreshGame() async {
+  /* void refreshGame() async {
     await endGame();
     await startGame();
-  }
+  } */
 
   // Add specified players to Game. All in session would be added, if no players specified.
   void addPlayers(
@@ -149,9 +149,9 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     // if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
     if (playersList == null) playersList = {'1': null, '2': null, '3': null};
 
-    // Calculate home planet init position using equation of the circle in parametric form
-    double distFromCircumference = 100;
-    double r = centralPlanet.size.x / 2 + distFromCircumference;
+    // Calculate home planet init positions using equation of the circle in parametric form
+    double distFromSurface = 100; // distance of homeplanets from central planet surface
+    double r = centralPlanet.size.x / 2 + distFromSurface;
     double angle = (2 * pi) / playersList.length;
 
     for (int i = 0; i < playersList.length; i++) {
@@ -173,13 +173,27 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     Image spaceshipImage = images[0];
     Image planetImage = images[1];
 
+    var planetSize = Vector2(10, 10);
+
+    double distFromSurface = 20; // distance of ship from its home planet's surface
+    double r = planetSize.x + distFromSurface;
+
+    var shipPos = Vector2(
+      homePlanetPos.x + planetSize.x,
+      homePlanetPos.y,
+    );
+    /* var shipPos = Vector2(
+      centralPlanet.position.x + r * cos(angle * i),
+      centralPlanet.position.y + r * sin(angle * i),
+    ); */
+
     // Instantiate Components
     Spaceship spaceship = Spaceship(
       game: this,
       image: spaceshipImage,
       id: player,
-      size: Vector2(254, 512).scaled(0.06),
-      position: launcher.widget.viewportSize / 2,
+      size: Vector2(254, 512).scaled(0.02), // scale used to be 0.06
+      position: shipPos,
       isEgo: player == launcher.serverHandler.id ? true : false,
     );
 
@@ -188,7 +202,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       image: planetImage,
       spaceshipId: player,
       size: Vector2(268, 268),
-      position: Vector2(100, 350),
+      position: homePlanetPos,
       resources: 0,
     );
 
