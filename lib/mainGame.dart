@@ -146,26 +146,24 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Add specified players to Game. All in session would be added, if no players specified.
   void addPlayers(
       {Map<String, dynamic> playersList, List<Image> images, Planet centralPlanet}) async {
+    // TODO restore
     // if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
-    if (playersList == null) playersList = {'1': null, '2': null, '3': null};
+    playersList = {'1': null, '2': null, '3': null};
 
     // Calculate home planet init positions using equation of the circle in parametric form
     double distFromSurface = 100; // distance of homeplanets from central planet surface
     double r = centralPlanet.size.x / 2 + distFromSurface;
     double angle = (2 * pi) / playersList.length;
 
-    for (int i = 0; i < playersList.length; i++) {
+    int i = 0;
+    playersList.forEach((player, info) {
       Vector2 planetPosition = Vector2(
         centralPlanet.position.x + r * cos(angle * i),
         centralPlanet.position.y + r * sin(angle * i),
       );
-      addPlayer(playersList[i], images, homePlanetPos: planetPosition);
-    }
-
-    // TODO remove
-    /* playersList.forEach((player, info) {
-      addPlayer(player, images, planetPosition: null);
-    }); */
+      addPlayer(player, images, homePlanetPos: planetPosition);
+      i++;
+    });
   }
 
   // Add specified player to Game, and assign Planet & Spaceship
@@ -175,11 +173,21 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
     var planetSize = Vector2(10, 10);
 
-    double distFromSurface = 20; // distance of ship from its home planet's surface
-    double r = planetSize.x + distFromSurface;
+    Planet planet = Planet(
+      game: this,
+      image: planetImage,
+      spaceshipId: player,
+      // TODO restore old size
+      size: planetSize, // used to be 268, 268
+      position: homePlanetPos,
+      resources: 0,
+    );
 
+    double distFromAtmosphere = 20; // distance of ship from its home planet's surface
+    double r = planet.size.x + distFromAtmosphere;
+    // TODO calculate ship position and rotation
     var shipPos = Vector2(
-      homePlanetPos.x + planetSize.x,
+      homePlanetPos.x + planet.planetAtmosphere.size.x + distFromAtmosphere,
       homePlanetPos.y,
     );
     /* var shipPos = Vector2(
@@ -192,18 +200,12 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       game: this,
       image: spaceshipImage,
       id: player,
+      // TODO restore old size
       size: Vector2(254, 512).scaled(0.02), // scale used to be 0.06
       position: shipPos,
-      isEgo: player == launcher.serverHandler.id ? true : false,
-    );
-
-    Planet planet = Planet(
-      game: this,
-      image: planetImage,
-      spaceshipId: player,
-      size: Vector2(268, 268),
-      position: homePlanetPos,
-      resources: 0,
+      // TODO restore
+      // isEgo: player == launcher.serverHandler.id ? true : false,
+      isEgo: player == '2' ? true : false,
     );
 
     // Add Components to game
@@ -213,7 +215,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     ]);
 
     // Attach spaceship to joystick if ego
-    if (player == launcher.serverHandler.id) {
+    // TODO if (player == launcher.serverHandler.id)
+    if (player == '2') {
       joystick.addObserver(spaceship);
       egoSpaceship = spaceship;
     }
