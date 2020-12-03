@@ -133,8 +133,13 @@ class PlanetAtmosphere extends BodyComponent {
                 ? Vector2(5, 5)
                 : Vector2(50, 50),
             endPositionRandom: planet.spaceshipId == spaceship.id
-                ? Vector2(250, 250)
+                ? Vector2(5, 5)
                 : Vector2(5, 5),
+            curve: Vector2(
+              getRandomValueInRange(min: -5, max: 5).toDouble(),
+              getRandomValueInRange(min: -5, max: 5).toDouble(),
+            ),
+            curvature: 0.25,
             turbulenceMagnitude: Vector2(15, 15),
             turbulenceSmoothness: 50,
           );

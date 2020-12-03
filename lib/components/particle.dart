@@ -27,15 +27,16 @@ class MyParticle extends BodyComponent {
   double life;
   Rect rect;
   Paint paint;
+  Vector2 curve;
+  double curvature;
   Vector2 startPositionRandom;
   Vector2 endPositionRandom;
   Vector2 endPositionOffset;
-  Vector2 endPositionOffsetNudge = Vector2.zero();
   Vector2 turbulenceMagnitude;
   double turbulenceSmoothness;
 
   /// Life (seconds) in frames (60/sec)
-  double frames;
+  int frames;
 
   /// To obtain life progress from
   double currentFrame = 0;
@@ -51,7 +52,7 @@ class MyParticle extends BodyComponent {
   double currentSpeed;
 
   Vector2 nextTurbulence;
-  Vector2 turbulenceNudge = Vector2.zero();
+  Vector2 turbulenceNudge;
 
   MyParticle({
     @required this.game,
@@ -70,8 +71,10 @@ class MyParticle extends BodyComponent {
     this.endPositionRandom,
     this.turbulenceMagnitude,
     this.turbulenceSmoothness = 30,
+    this.curve,
+    this.curvature = 0.5,
   }) {
-    frames = 60 * life;
+    frames = (60 * life).toInt();
 
     // Randomize Start Position
     if (startPositionRandom != null) {
@@ -100,8 +103,7 @@ class MyParticle extends BodyComponent {
         ),
       );
 
-      endPositionOffsetNudge = endPositionOffset.scaled(1 / frames);
-
+      // TODO: Implement start to end position logic
       if (endPosition != null) endPosition += endPositionOffset;
     }
 
@@ -153,17 +155,14 @@ class MyParticle extends BodyComponent {
     }
 
     // Position
+    currentPosition = body.position;
+
     if (follow != null) {
       Vector2 dir = normalizeVector(follow.body.position - currentPosition);
 
-      // currentPosition =
-      //     body.position + endPositionOffsetNudge + dir.scaled(currentSpeed);
-
-      currentPosition = body.position +
-          (endPositionOffset * progress) +
-          dir.scaled(currentSpeed);
+      currentPosition += dir.scaled(currentSpeed);
     } else if (direction != null) {
-      currentPosition = body.position + direction.scaled(currentSpeed);
+      currentPosition += direction.scaled(currentSpeed);
     }
 
     // Turbulence
@@ -183,7 +182,29 @@ class MyParticle extends BodyComponent {
       turbulenceNudge = nextTurbulence.scaled(1 / turbulenceSmoothness);
     }
 
-    currentPosition += turbulenceNudge;
+    if (curve != null) {
+      double curveInfluence;
+
+      if (progress <= 0.5) {
+        curveInfluence = pow(progress, curvature);
+      } else {
+        var progressInverse = mapValueFromRangeToRange(
+          aValue: progress,
+          aStart: 0,
+          aEnd: 1,
+          bStart: 1,
+          bEnd: 0,
+        );
+
+        curveInfluence = -pow(progressInverse, curvature);
+      }
+
+      currentPosition += curve.scaled(curveInfluence);
+    }
+
+    if (turbulenceNudge != null) currentPosition += turbulenceNudge;
+    if (endPositionOffset != null)
+      currentPosition += endPositionOffset.scaled(progress);
 
     paint.color = currentColor;
     body.setTransform(currentPosition, 0);
