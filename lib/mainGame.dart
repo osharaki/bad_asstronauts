@@ -146,7 +146,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Add specified players to Game. All in session would be added, if no players specified.
   void addPlayers(
       {Map<String, dynamic> playersList, List<Image> images, Planet centralPlanet}) async {
-    if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
+    // if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
+    if (playersList == null) playersList = {'1': null, '2': null, '3': null};
 
     // Calculate home planet init position using equation of the circle in parametric form
     double distFromCircumference = 100;
@@ -158,17 +159,17 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         centralPlanet.position.x + r * cos(angle * i),
         centralPlanet.position.y + r * sin(angle * i),
       );
-      addPlayer(playersList[i], images, planetPosition: planetPosition);
+      addPlayer(playersList[i], images, homePlanetPos: planetPosition);
     }
 
     // TODO remove
-    playersList.forEach((player, info) {
+    /* playersList.forEach((player, info) {
       addPlayer(player, images, planetPosition: null);
-    });
+    }); */
   }
 
   // Add specified player to Game, and assign Planet & Spaceship
-  Future<void> addPlayer(String player, List<Image> images, {Vector2 planetPosition}) async {
+  Future<void> addPlayer(String player, List<Image> images, {Vector2 homePlanetPos}) async {
     Image spaceshipImage = images[0];
     Image planetImage = images[1];
 
