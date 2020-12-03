@@ -6,8 +6,6 @@ wss.addListener("listening", () => {
     console.log("WebSocket server running...");
 });
 
-const respawnTime = 5;
-
 var serverData = {
     players: {},
     sessions: {},
@@ -61,6 +59,7 @@ wss.on("connection", (ws) => {
                 (except = [player])
             );
         } else if (action == "updatePlanet") {
+            // TODO this never gets executed, client never sends such an action
             var player = data["player"];
             var info = data["info"];
 
@@ -525,33 +524,6 @@ function updateSessionState(session, setState = null) {
 function resetSession(session) {
     // Reset Time
     resetSessionTime(session);
-
-    // Reset Positions & Angles
-    Object.keys(serverData["sessions"][session]["players"]).forEach(
-        (player) => {
-            serverData["sessions"][session]["players"][player]["spaceship"][
-                "position"
-            ] = [50, 50];
-            serverData["sessions"][session]["players"][player]["spaceship"][
-                "angle"
-            ] = 0;
-            serverData["sessions"][session]["players"][player]["spaceship"][
-                "resources"
-            ] = 0;
-            serverData["sessions"][session]["players"][player]["planet"][
-                "position"
-            ] = [50, 50];
-            serverData["sessions"][session]["players"][player]["planet"][
-                "resources"
-            ] = 0;
-        }
-    );
-
-    sendMessageToSession(
-        "sessionReset",
-        { info: serverData["sessions"][session] },
-        session
-    );
 }
 
 function resetSessionTime(session) {
