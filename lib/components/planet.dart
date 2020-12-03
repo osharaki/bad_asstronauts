@@ -15,7 +15,7 @@ class Planet extends SpriteBodyComponent {
   final MainGame game;
   final Vector2 size;
   final Vector2 position;
-  final spaceshipId;
+  final String spaceshipId;
   final TextConfig resourceDisplayConfig = TextConfig(
     fontSize: 48.0,
     fontFamily: 'Awesome Font',
@@ -39,8 +39,8 @@ class Planet extends SpriteBodyComponent {
   void addAtmosphere() {
     planetAtmosphere = PlanetAtmosphere(
       game: game,
-      planet: this,
       size: size,
+      planet: this,
       position: position,
     );
 

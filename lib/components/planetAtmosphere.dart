@@ -30,21 +30,6 @@ class PlanetAtmosphere extends BodyComponent {
     this.position,
   });
 
-  /* @override
-  void render(Canvas c) {
-    super.render(c);
-    TextConfig(
-      fontSize: 48.0,
-      fontFamily: 'Awesome Font',
-      textAlign: TextAlign.center,
-    ).render(
-      c,
-      'Resouuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuurces',
-      game.viewport.getWorldToScreen(position),
-      anchor: Anchor.center,
-    );
-  } */
-
   void destroy() {
     game.remove(this);
   }
@@ -128,26 +113,34 @@ class PlanetAtmosphere extends BodyComponent {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    if (!shot) {
-      if (spaceshipsInOrbit.isNotEmpty) {
-        for (Spaceship spaceship in spaceshipsInOrbit) {
-          if (spaceship.isEgo) {
-            final particle = MyParticle(
-              game: game,
-              startPosition: body.worldCenter,
-              follow: spaceship,
-              life: 2,
-              startSize: 3,
-              speed: 1,
-              endSize: 3,
-              startColor: Colors.brown,
-              endColor: Colors.brown[800],
-            );
 
-            game.add(particle);
-          }
+    if (spaceshipsInOrbit.isNotEmpty) {
+      for (Spaceship spaceship in spaceshipsInOrbit) {
+        if (spaceship.isEgo) {
+          final particle = MyParticle(
+            game: game,
+            startPosition: planet.spaceshipId == spaceship.id
+                ? spaceship.body.position
+                : body.worldCenter,
+            follow: planet.spaceshipId == spaceship.id ? this : spaceship,
+            life: 0.75,
+            startSize: 5,
+            endSize: 2.5,
+            startSpeed: 6,
+            startColor: Colors.yellow,
+            endColor: Colors.amberAccent,
+            startPositionRandom: planet.spaceshipId == spaceship.id
+                ? Vector2(5, 5)
+                : Vector2(50, 50),
+            endPositionRandom: planet.spaceshipId == spaceship.id
+                ? Vector2(250, 250)
+                : Vector2(5, 5),
+            turbulenceMagnitude: Vector2(15, 15),
+            turbulenceSmoothness: 50,
+          );
+
+          game.add(particle);
         }
-        // shot = true;
       }
     }
   }

@@ -53,8 +53,8 @@ Vector2 normalizeVector(Vector2 vector) {
   double x = vector.x;
   double y = vector.y;
 
-  double maxValue = max(x, y);
-  double normalizeFactor = 1 / maxValue.abs();
+  double maxValue = max(x.abs(), y.abs());
+  double normalizeFactor = 1 / maxValue;
 
   double xNormalize = x.abs() * normalizeFactor;
   double yNormalize = y.abs() * normalizeFactor;

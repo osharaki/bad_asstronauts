@@ -89,19 +89,36 @@ class Spaceship extends BodyComponent implements JoystickListener {
     super.render(canvas);
 
     if (isEgo && _move) {
-      final particle = MyParticle(
+      final fireParticle = MyParticle(
         game: game,
         startPosition: body.worldCenter,
         direction: velocity.scaled(-1),
         life: 0.25,
         startSize: 5,
-        speed: 1,
+        startSpeed: 1,
         endSize: 1,
-        startColor: Colors.amber[800],
-        endColor: Colors.grey[800],
+        startColor: Colors.amber[100],
+        endColor: Colors.amber[800],
+        startPositionRandom: Vector2(1, 1),
       );
 
-      game.add(particle);
+      final smokeParticle = MyParticle(
+        game: game,
+        startPosition: body.worldCenter,
+        direction: velocity.scaled(-1),
+        life: 0.75,
+        startSize: 5,
+        startSpeed: 1,
+        endSize: 3,
+        startColor: Colors.grey[600],
+        endColor: Colors.grey[800],
+        startPositionRandom: Vector2(5, 5),
+        turbulenceMagnitude: Vector2(25, 25),
+        turbulenceSmoothness: 60,
+      );
+
+      game.add(smokeParticle);
+      game.add(fireParticle);
     }
 
     posRect = viewport.getWorldToScreen(body.worldCenter);
