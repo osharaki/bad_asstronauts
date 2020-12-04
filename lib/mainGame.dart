@@ -184,16 +184,12 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     );
 
     double distFromAtmosphere = 20; // distance of ship from its home planet's surface
-    double r = planet.size.x + distFromAtmosphere;
-    // TODO calculate ship position and rotation
-    var shipPos = Vector2(
-      homePlanetPos.x + planet.planetAtmosphere.size.x + distFromAtmosphere,
-      homePlanetPos.y,
-    );
+    double distFromPlanetCenter = planet.planetAtmosphere.size.x / 2 + distFromAtmosphere;
+
     Vector2 centralPlanetDirection = centralPlanet.position - planet.position;
-    shipPos = planet.position +
-        (centralPlanetDirection / centralPlanetDirection.length).scaled(distFromAtmosphere);
-    double shipRotation = atan2(centralPlanetDirection.x, centralPlanetDirection.y);
+    Vector2 shipPos = planet.position +
+        (centralPlanetDirection / centralPlanetDirection.length).scaled(distFromPlanetCenter);
+    double shipRotation = atan2(centralPlanetDirection.y * -1, centralPlanetDirection.x);
 
     // Instantiate Components
     Spaceship spaceship = Spaceship(
