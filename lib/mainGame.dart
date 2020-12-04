@@ -190,10 +190,10 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       homePlanetPos.x + planet.planetAtmosphere.size.x + distFromAtmosphere,
       homePlanetPos.y,
     );
-    /* var shipPos = Vector2(
-      centralPlanet.position.x + r * cos(angle * i),
-      centralPlanet.position.y + r * sin(angle * i),
-    ); */
+    Vector2 centralPlanetDirection = centralPlanet.position - planet.position;
+    shipPos = planet.position +
+        (centralPlanetDirection / centralPlanetDirection.length).scaled(distFromAtmosphere);
+    double shipRotation = atan2(centralPlanetDirection.x, centralPlanetDirection.y);
 
     // Instantiate Components
     Spaceship spaceship = Spaceship(
@@ -203,6 +203,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       // TODO restore old size
       size: Vector2(254, 512).scaled(0.02), // scale used to be 0.06
       position: shipPos,
+      rotation: shipRotation,
       // TODO restore
       // isEgo: player == launcher.serverHandler.id ? true : false,
       isEgo: player == '2' ? true : false,
@@ -272,9 +273,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         if (latestRespawnTime == 1) {
           latestRespawnTime = 0;
           // TODO: reset own position and angle to proper initial values sent by server at game start
-          Vector2 initPos =
-              Vector2((launcher.widget.viewportSize / 2).x, (launcher.widget.viewportSize / 2).y);
-          egoSpaceship.body.setTransform(initPos, 0);
+          egoSpaceship.body.setTransform(egoSpaceship.position, 0);
           egoSpaceship.radAngle = 0;
         }
         updateServer(
