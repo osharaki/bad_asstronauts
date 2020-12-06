@@ -124,7 +124,7 @@ class ServerHandler {
 
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
-        launcher.game.players[player]["spaceship"].body.setTransform(position, 0);
+        launcher.game.players[player]["spaceship"].body.setTransform(position, 0.0);
         launcher.game.players[player]["spaceship"].radAngle = angle;
         launcher.game.players[player]["spaceship"].resources = resources;
       }
