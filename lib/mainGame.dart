@@ -169,14 +169,13 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     Image spaceshipImage = images[0];
     Image planetImage = images[1];
 
-    var planetSize = Vector2(10, 10);
+    var planetSize = Vector2(268, 268);
 
     Planet planet = Planet(
       game: this,
       image: planetImage,
       spaceshipId: player,
-      // TODO restore old size
-      size: planetSize, // used to be 268, 268
+      size: planetSize,
       position: homePlanetPos,
       resources: 0,
     );
@@ -194,8 +193,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       game: this,
       image: spaceshipImage,
       id: player,
-      // TODO restore old size
-      size: Vector2(254, 512).scaled(0.02), // scale used to be 0.06
+      size: Vector2(254, 512).scaled(0.06),
       position: shipPos,
       initRotation: shipRotation,
       isEgo: player == launcher.serverHandler.id ? true : false,
