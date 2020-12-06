@@ -146,9 +146,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Add specified players to Game. All in session would be added, if no players specified.
   void addPlayers(
       {Map<String, dynamic> playersList, List<Image> images, Planet centralPlanet}) async {
-    // TODO restore
-    // if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
-    playersList = {'1': null, '2': null, '3': null};
+    if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
 
     // Calculate home planet init positions using equation of the circle in parametric form
     double distFromSurface = 100; // distance of homeplanets from central planet surface
@@ -199,10 +197,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       // TODO restore old size
       size: Vector2(254, 512).scaled(0.02), // scale used to be 0.06
       position: shipPos,
-      rotation: shipRotation,
-      // TODO restore
-      // isEgo: player == launcher.serverHandler.id ? true : false,
-      isEgo: player == '2' ? true : false,
+      initRotation: shipRotation,
+      isEgo: player == launcher.serverHandler.id ? true : false,
     );
 
     // Add Components to game
@@ -212,8 +208,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     ]);
 
     // Attach spaceship to joystick if ego
-    // TODO if (player == launcher.serverHandler.id)
-    if (player == '2') {
+    if (player == launcher.serverHandler.id) {
       joystick.addObserver(spaceship);
       egoSpaceship = spaceship;
     }
@@ -268,9 +263,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       if (egoSpaceship.respawnTime == 0) {
         if (latestRespawnTime == 1) {
           latestRespawnTime = 0;
-          // TODO: reset own position and angle to proper initial values sent by server at game start
           egoSpaceship.body.setTransform(egoSpaceship.position, 0);
-          egoSpaceship.radAngle = 0;
+          egoSpaceship.radAngle = egoSpaceship.initRotation;
         }
         updateServer(
           {
