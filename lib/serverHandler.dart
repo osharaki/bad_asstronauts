@@ -29,8 +29,8 @@ class ServerHandler {
       "data": {
         "host": id,
         "limit": limit,
-        "time": 15000,
-        "remainingTime": 15000,
+        "time": 60000, // TODO used to be 15000
+        "remainingTime": 60000, // TODO used to be 15000
         "respawnTime": launcher.respawnTime,
         "state": "creating",
         "players": {},
@@ -137,6 +137,7 @@ class ServerHandler {
     serverData["players"][player]["planet"]["resources"] = resources;
 
     // TODO: Plug information into Planet class
+    players[player]["planet"].resources = resources;
   }
 
   void updatePlayers() {
