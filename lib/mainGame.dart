@@ -106,7 +106,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   }
 
   void destroyJoystick() {
-    remove(joystick);
+    if (joystick != null) remove(joystick);
     joystick = null;
   }
 
@@ -119,7 +119,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       game: this,
       image: images[2],
       spaceshipId: null,
-      size: Vector2(10, 10), // used to be 268, 268
+      size: Vector2(268, 268), // used to be 268, 268
       position: Vector2.zero(),
       resources: 1000,
     );
@@ -149,7 +149,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     if (playersList == null) playersList = launcher.serverHandler.serverData["players"];
 
     // Calculate home planet init positions using equation of the circle in parametric form
-    double distFromSurface = 100; // distance of homeplanets from central planet surface
+    double distFromSurface = 500; // distance of homeplanets from central planet surface
     double r = centralPlanet.size.x / 2 + distFromSurface;
     double angle = (2 * pi) / playersList.length;
 
@@ -180,7 +180,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
       resources: 0,
     );
 
-    double distFromAtmosphere = 20; // distance of ship from its home planet's surface
+    double distFromAtmosphere = 150; // distance of ship from its home planet's surface
     double distFromPlanetCenter = planet.planetAtmosphere.size.x / 2 + distFromAtmosphere;
 
     Vector2 centralPlanetDirection = centralPlanet.position - planet.position;
@@ -233,8 +233,8 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     Spaceship spaceship = players[player]["spaceship"];
     Planet planet = players[player]["planet"];
 
-    spaceship.destroy();
-    planet.destroy();
+    if (spaceship != null) spaceship.destroy();
+    if (planet != null) planet.destroy();
 
     players.removeWhere((playerId, value) => playerId == player);
 
