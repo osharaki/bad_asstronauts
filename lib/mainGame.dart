@@ -76,6 +76,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Without refreshing Joystick, it is only responsive during the FIRST game of the session. After that the Joystick will be unresponsive.
   void initializeJoystick() {
     joystick = JoystickComponent(
+      priority: 100,
       directional: JoystickDirectional(),
       actions: [
         JoystickAction(
