@@ -18,6 +18,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final Vector2 position;
   final double speed = 159;
   final double capacity = 100;
+  final double initRotation;
   final String id;
   final bool isEgo;
 
@@ -37,17 +38,16 @@ class Spaceship extends BodyComponent implements JoystickListener {
   Vector2 posRect;
   Rect rect;
 
-  Spaceship({
-    rotation,
-    @required this.game,
-    @required Image image,
-    @required this.id,
-    this.size,
-    this.position,
-    this.isEgo = false,
-  }) {
+  Spaceship(
+      {@required this.game,
+      @required Image image,
+      @required this.id,
+      this.size,
+      this.position,
+      this.isEgo = false,
+      this.initRotation}) {
     spaceship = Sprite(image);
-    radAngle = rotation;
+    radAngle = initRotation;
   }
 
   void destroy() {
