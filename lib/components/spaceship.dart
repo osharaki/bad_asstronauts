@@ -30,7 +30,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double resourceReplenishRate = 0.005;
   double resourceCriticalThreshold = 6;
 
-  bool isSpectating = false;
   bool _move = false;
   bool inOrbit = false;
   Sprite spaceship;
@@ -54,12 +53,16 @@ class Spaceship extends BodyComponent implements JoystickListener {
     game.remove(this);
   }
 
+  set move(bool state) => _move = state;
+
   @override
   void update(double dt) {
     super.update(dt);
     if (isEgo) {
+      if (respawnTime != 0) {
+        if (body.getType() != BodyType.STATIC) body.setType(BodyType.STATIC);
+      } else if (body.getType() != BodyType.DYNAMIC) body.setType(BodyType.DYNAMIC);
       if (_move) {
-        print(position);
         moveFromAngle(dt);
 
         // Consume resources by moving
@@ -116,21 +119,21 @@ class Spaceship extends BodyComponent implements JoystickListener {
   }
 
   @override
-  void joystickAction(JoystickActionEvent event) {
-    // TODO: implement joystickChangeDirectional
-  }
+  void joystickAction(JoystickActionEvent event) {}
 
   @override
   void joystickChangeDirectional(JoystickDirectionalEvent event) {
-    // If check is > 0, it will always pass and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
-    if (resources > 0.1) {
-      _move = event.directional != JoystickMoveDirectional.IDLE;
-      if (_move) {
-        radAngle = event.radAngle;
-        currentSpeed = speed * event.intensity;
-      }
-    } else
-      _move = false;
+    if (respawnTime == 0) {
+      // If check is > 0, it will always pass and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
+      if (resources > 0.1) {
+        _move = event.directional != JoystickMoveDirectional.IDLE;
+        if (_move) {
+          radAngle = event.radAngle;
+          currentSpeed = speed * event.intensity;
+        }
+      } else
+        _move = false;
+    }
   }
 
   void moveFromAngle(double dtUpdate) {
