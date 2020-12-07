@@ -296,6 +296,13 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    if (centralPlanet != null)
+      resourceDisplayConfig.render(
+        canvas,
+        centralPlanet.resources.toStringAsFixed(2),
+        viewport.getWorldToScreen(centralPlanet.position),
+        anchor: Anchor.center,
+      );
     for (dynamic player in players.values) {
       resourceDisplayConfig.render(
         canvas,
@@ -359,7 +366,7 @@ class MyCircle extends BodyComponent {
 class MyCircleContactCallback extends ContactCallback<Spaceship, MyCircle> {
   @override
   void begin(Spaceship spaceship, MyCircle circle, Contact contact) {
-    spaceship.isSpectating = true;
+    spaceship.respawnTime = spaceship.game.launcher.respawnTime;
     print('spaceship ${spaceship.id} crashed into circle');
   }
 
