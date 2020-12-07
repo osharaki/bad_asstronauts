@@ -27,7 +27,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double resources = 100;
   double currentSpeed = 0;
   double radAngle;
-  double resourceReplenishRate = 0.005;
+  double resourceReplenishRate = 0.0005;
   double resourceCriticalThreshold = 6;
 
   bool _move = false;
