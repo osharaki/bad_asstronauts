@@ -49,7 +49,6 @@ class Player extends BodyComponent implements JoystickListener {
     /* // this centers camera on this component
     // https://fireslime.xyz/articles/20190911_Basic_Camera_Usage_In_Flame.html
     game.camera.x = body.position.x;
-    // TODO figure out why this inversion is even necessary
     game.camera.y = -body.position.y; */
   }
 
@@ -97,13 +96,11 @@ class Player extends BodyComponent implements JoystickListener {
 
     _rect = _rect.shift(diffBase);
 
-    // TODO figure out why this inversion is even necessary
     body.applyLinearImpulse(Vector2(nextX, -nextY).scaled(20), body.worldCenter, true);
   }
 
   @override
   Body createBody() {
-    // TODO body needs to come to a stop more quickly
     final PolygonShape shape = PolygonShape();
     shape.setAsBoxXY(25, 25);
 
