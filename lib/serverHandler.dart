@@ -116,11 +116,7 @@ class ServerHandler {
       data["position"][0].toDouble(),
       data["position"][1].toDouble(),
     );
-    bool isSpectating = data["isSpectating"];
-
     serverData["players"][player]["spaceship"] = data;
-
-    launcher.game.players[player]["spaceship"].isSpectating = isSpectating;
 
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
@@ -136,7 +132,6 @@ class ServerHandler {
 
     serverData["players"][player]["planet"]["resources"] = resources;
 
-    // TODO: Plug information into Planet class
     players[player]["planet"].resources = resources;
   }
 
