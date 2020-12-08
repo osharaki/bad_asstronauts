@@ -63,6 +63,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
     imageList = images.loadAll([
       "spaceship.png",
+      "spaceship_invisible.png",
       "moon.png",
       "generic_planet1.png",
     ]);
@@ -118,7 +119,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
     centralPlanet = Planet(
       game: this,
-      image: images[2],
+      image: images[3],
       spaceshipId: null,
       size: Vector2(268, 268), // used to be 268, 268
       position: Vector2.zero(),
@@ -168,7 +169,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Add specified player to Game, and assign Planet & Spaceship
   Future<void> addPlayer(String player, List<Image> images, {Vector2 homePlanetPos}) async {
     Image spaceshipImage = images[0];
-    Image planetImage = images[1];
+    Image planetImage = images[2];
 
     var planetSize = Vector2(268, 268);
 
@@ -193,6 +194,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     Spaceship spaceship = Spaceship(
       game: this,
       image: spaceshipImage,
+      imageInvisible: images[1],
       id: player,
       size: Vector2(254, 512).scaled(0.06),
       position: shipPos,

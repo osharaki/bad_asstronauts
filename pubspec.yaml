@@ -78,6 +78,8 @@ flutter:
     - assets/images/joystickBase.png
     - assets/images/joystickKnob.png
     - assets/images/spaceship.png
+    - assets/images/blink_out.png
+    - assets/images/spaceship_invisible.png
     - assets/images/moon.png
     - assets/images/option1_ring.svg
     - assets/images/generic_planet1.png

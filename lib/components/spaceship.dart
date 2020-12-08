@@ -6,6 +6,7 @@ import 'package:flame/components/joystick/joystick_component.dart';
 import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/extensions/vector2.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame/sprite_animation.dart';
 import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -21,7 +22,9 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final double initRotation;
   final String id;
   final bool isEgo;
+  final int crashAnimationCutoff = 4;
 
+  SpriteAnimation crashAnimation;
   int respawnTime = 0;
 
   double resources = 100;
@@ -33,19 +36,23 @@ class Spaceship extends BodyComponent implements JoystickListener {
   bool _move = false;
   bool inOrbit = false;
   Sprite spaceship;
+  Sprite spaceshipInvisible;
 
   Vector2 posRect;
   Rect rect;
-
   Spaceship(
       {@required this.game,
       @required Image image,
+      @required Image imageInvisible,
       @required this.id,
       this.size,
       this.position,
       this.isEgo = false,
       this.initRotation}) {
     spaceship = Sprite(image);
+    spaceshipInvisible = Sprite(imageInvisible);
+    crashAnimation =
+        SpriteAnimation.spriteList([spaceship, spaceshipInvisible], stepTime: 0.07, loop: true);
     radAngle = initRotation;
   }
 
@@ -60,6 +67,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
     super.update(dt);
     if (isEgo) {
       if (respawnTime != 0) {
+        // E.g. if respawnTime==5 and crashAnimationCutoff==4, this gives us a one second long animation
+        if (respawnTime > crashAnimationCutoff) crashAnimation.update(dt);
         if (body.getType() != BodyType.STATIC) body.setType(BodyType.STATIC);
       } else if (body.getType() != BodyType.DYNAMIC) body.setType(BodyType.DYNAMIC);
       if (_move) {
@@ -101,21 +110,26 @@ class Spaceship extends BodyComponent implements JoystickListener {
     canvas.translate(posRect.x, posRect.y);
     canvas.rotate(radAngle == 0.0 ? 0.0 : radAngle + (pi / 2));
     canvas.translate(-posRect.x, -posRect.y);
-    spaceship.renderRect(canvas, rect);
+    if (respawnTime == 0)
+      spaceship.renderRect(canvas, rect);
+    // E.g. if respawnTime==5 and crashAnimationCutoff==4, this gives us a one second long animation
+    else if (respawnTime > crashAnimationCutoff)
+      crashAnimation.getSprite().renderRect(canvas, rect);
     canvas.restore();
-
-    TextConfig(
-      fontSize: 10.0,
-      fontFamily: 'Awesome Font',
-      textAlign: TextAlign.center,
-      color: resources > 20 ? Colors.black : Colors.red,
-    ).render(
-      canvas,
-      resources.toStringAsFixed(2),
-      game.viewport
-          .getWorldToScreen(Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
-      anchor: Anchor.center,
-    );
+    // On-board resources should only be displayed either while the ship hasn't crashed or during the animation sequence after a crash
+    if (!(0 < respawnTime && respawnTime <= crashAnimationCutoff))
+      TextConfig(
+        fontSize: 10.0,
+        fontFamily: 'Awesome Font',
+        textAlign: TextAlign.center,
+        color: resources > 20 ? Colors.black : Colors.red,
+      ).render(
+        canvas,
+        resources.toStringAsFixed(2),
+        game.viewport
+            .getWorldToScreen(Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
+        anchor: Anchor.center,
+      );
   }
 
   @override
