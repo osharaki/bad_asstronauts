@@ -86,9 +86,7 @@ class PlanetContactCallback extends ContactCallback<Spaceship, Planet> {
         // Remove spaceship from list of spaceships in orbit so that the gravitational pull is no longer being applied when the ship respawns
         spaceship.move = false;
 
-        // TODO remove after certain duration (you'll probably need to do this in MainGame)
-        spaceship.game.planetAtmosphereContactCallback
-            .onAtmosphereExit(spaceship, planet.planetAtmosphere);
+        spaceship.crashPlanet = planet;
         spaceship.respawnTime = spaceship.game.launcher.respawnTime;
         spaceship.game.updateServer({
           "position": [spaceship.body.position.x, spaceship.body.position.y],

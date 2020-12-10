@@ -11,6 +11,7 @@ import 'package:flame/text_config.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
+import 'package:gameOff2020/components/planet.dart';
 import 'package:gameOff2020/mainGame.dart';
 
 class Spaceship extends BodyComponent implements JoystickListener {
@@ -22,7 +23,9 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final double initRotation;
   final String id;
   final bool isEgo;
-  final int crashAnimationCutoff = 4;
+  final int crashAnimationCutoff = 3;
+
+  Planet crashPlanet;
 
   SpriteAnimation crashAnimation;
   int respawnTime = 0;
@@ -68,7 +71,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
     if (isEgo) {
       if (respawnTime != 0) {
         // E.g. if respawnTime==5 and crashAnimationCutoff==4, this gives us a one second long animation
-        if (respawnTime > crashAnimationCutoff) crashAnimation.update(dt);
+        if (respawnTime > crashAnimationCutoff)
+          crashAnimation.update(dt);
+        else if (respawnTime == crashAnimationCutoff)
+          game.planetAtmosphereContactCallback.onAtmosphereExit(this, crashPlanet.planetAtmosphere);
         if (body.getType() != BodyType.STATIC) body.setType(BodyType.STATIC);
       } else if (body.getType() != BodyType.DYNAMIC) body.setType(BodyType.DYNAMIC);
       if (_move) {
@@ -125,7 +131,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
         color: resources > 20 ? Colors.black : Colors.red,
       ).render(
         canvas,
-        resources.toStringAsFixed(2),
+        resources.toStringAsFixed(1),
         game.viewport
             .getWorldToScreen(Vector2(body.worldCenter.x, body.worldCenter.y + size.y / 2 - 40)),
         anchor: Anchor.center,
