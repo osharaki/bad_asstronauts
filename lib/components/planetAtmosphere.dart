@@ -19,7 +19,7 @@ class PlanetAtmosphere extends BodyComponent {
   final Planet planet;
   final List<Spaceship> spaceshipsInOrbit = [];
 
-  final double rateMultiplier = 3;
+  final double rateMultiplier = 5;
 
   PlanetAtmosphere({
     @required this.game,
@@ -61,7 +61,7 @@ class PlanetAtmosphere extends BodyComponent {
           // Ensure ship resources never drop below the amount necessary to exit orbit
           if (spaceship.resources > spaceship.resourceCriticalThreshold) {
             double payload = min(spaceship.resources,
-                game.storeRate * spaceship.respawnTime == 0 ? 1.0 : rateMultiplier);
+                game.storeRate * (spaceship.respawnTime == 0 ? 1.0 : rateMultiplier));
             planet.resources += payload;
             spaceship.resources -= payload;
           }
@@ -70,7 +70,7 @@ class PlanetAtmosphere extends BodyComponent {
 
           // Ensure ship's harvest doesn't exceed capacity and planet resources never drop below zero
           double payload = [
-            game.harvestRate * spaceship.respawnTime == 0 ? 1.0 : rateMultiplier,
+            game.harvestRate * (spaceship.respawnTime == 0 ? 1.0 : rateMultiplier),
             spaceship.capacity - spaceship.resources,
             planet.resources,
           ].reduce(min);
@@ -113,7 +113,8 @@ class PlanetAtmosphereContactCallback extends ContactCallback<Spaceship, PlanetA
 
   @override
   void end(Spaceship spaceship, PlanetAtmosphere planetAtmosphere, Contact contact) {
-    onAtmosphereExit(spaceship, planetAtmosphere);
+    // Prevent immediate contact destruction when ship crashes. In that case, we call onAtmosphereExit() later manually in Spacehip.update()
+    if (spaceship.respawnTime == 0) onAtmosphereExit(spaceship, planetAtmosphere);
   }
 
   void onAtmosphereEnter(Spaceship spaceship, PlanetAtmosphere planetAtmosphere) {
