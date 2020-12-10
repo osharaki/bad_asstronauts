@@ -58,8 +58,9 @@ class PlanetAtmosphere extends BodyComponent {
         if (spaceship.id == planet.spaceshipId) {
           // home planet -> store
 
-          // Ensure ship resources never drop below the amount necessary to exit orbit
-          if (spaceship.resources > spaceship.resourceCriticalThreshold) {
+          // If ship hasn't crashed, ensure on-board resources never drop below the amount necessary to exit orbit
+          if (spaceship.resources > spaceship.resourceCriticalThreshold ||
+              spaceship.respawnTime != 0) {
             double payload = min(spaceship.resources,
                 game.storeRate * (spaceship.respawnTime == 0 ? 1.0 : rateMultiplier));
             planet.resources += payload;

@@ -23,7 +23,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final double initRotation;
   final String id;
   final bool isEgo;
-  final int crashAnimationCutoff = 3;
 
   Planet crashPlanet;
 
@@ -70,10 +69,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
     super.update(dt);
     if (isEgo) {
       if (respawnTime != 0) {
-        // E.g. if respawnTime==5 and crashAnimationCutoff==4, this gives us a one second long animation
-        if (respawnTime > crashAnimationCutoff)
+        // If ship has crashed, crash animation will continue until resources are depleted
+        if (resources > 0)
           crashAnimation.update(dt);
-        else if (respawnTime == crashAnimationCutoff)
+        else
           game.planetAtmosphereContactCallback.onAtmosphereExit(this, crashPlanet.planetAtmosphere);
         if (body.getType() != BodyType.STATIC) body.setType(BodyType.STATIC);
       } else if (body.getType() != BodyType.DYNAMIC) body.setType(BodyType.DYNAMIC);
@@ -84,8 +83,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
         // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
         if (!inOrbit) resources -= min(resources, (currentSpeed / 159) / 10);
       }
-      // Resources only start being replenished if they drop below critical levels otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, The fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
-      if (resources < resourceCriticalThreshold) {
+      // Resources only start being replenished if the ship hasn't crashed and if they drop below critical levels. Otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, the fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
+      if (resources < resourceCriticalThreshold && respawnTime == 0) {
         resources += [
           resourceReplenishRate,
           resourceCriticalThreshold - resources,
@@ -118,12 +117,12 @@ class Spaceship extends BodyComponent implements JoystickListener {
     canvas.translate(-posRect.x, -posRect.y);
     if (respawnTime == 0)
       spaceship.renderRect(canvas, rect);
-    // E.g. if respawnTime==5 and crashAnimationCutoff==4, this gives us a one second long animation
-    else if (respawnTime > crashAnimationCutoff)
-      crashAnimation.getSprite().renderRect(canvas, rect);
+    // Crash animation will continue until ship are depleted
+    else if (resources > 0) crashAnimation.getSprite().renderRect(canvas, rect);
+
     canvas.restore();
-    // On-board resources should only be displayed either while the ship hasn't crashed or during the animation sequence after a crash
-    if (!(0 < respawnTime && respawnTime <= crashAnimationCutoff))
+    // Display on-board resources if alive or if dead and resources are not 0
+    if (respawnTime == 0 || (respawnTime > 0 && resources > 0))
       TextConfig(
         fontSize: 10.0,
         fontFamily: 'Awesome Font',
