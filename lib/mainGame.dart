@@ -24,6 +24,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   // Allows us to have access to the screen size from the first tick, as opposed to relying on Game's size property which only gets initialized after the first resize.
   final Vector2 viewportSize;
   final GameLauncherState launcher;
+  final double respawnResources = 20;
   Future<List<Image>> imageList;
 
   PlanetAtmosphereContactCallback planetAtmosphereContactCallback =
@@ -266,6 +267,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
           latestRespawnTime = 0;
           egoSpaceship.body.setTransform(egoSpaceship.position, 0);
           egoSpaceship.radAngle = egoSpaceship.initRotation;
+          egoSpaceship.resources = respawnResources;
         }
         updateServer(
           {
@@ -301,14 +303,14 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     if (centralPlanet != null)
       resourceDisplayConfig.render(
         canvas,
-        centralPlanet.resources.toStringAsFixed(2),
+        centralPlanet.resources.toStringAsFixed(1),
         viewport.getWorldToScreen(centralPlanet.position),
         anchor: Anchor.center,
       );
     for (dynamic player in players.values) {
       resourceDisplayConfig.render(
         canvas,
-        player['planet'].resources.toStringAsFixed(2),
+        player['planet'].resources.toStringAsFixed(1),
         viewport.getWorldToScreen(player['planet'].position),
         anchor: Anchor.center,
       );
