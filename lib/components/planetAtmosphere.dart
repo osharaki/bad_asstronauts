@@ -55,8 +55,8 @@ class PlanetAtmosphere extends BodyComponent {
         spaceship.body.applyForce(
             (body.worldCenter - spaceship.body.worldCenter).scaled(10), spaceship.body.worldCenter);
 
-        if (spaceship.id == planet.spaceshipId) {
-          // home planet -> store
+        if (spaceship.id == planet.spaceshipId || spaceship.respawnTime != 0) {
+          // home planet or crash -> store
 
           // If ship hasn't crashed, ensure on-board resources never drop below the amount necessary to exit orbit
           if (spaceship.resources > spaceship.resourceCriticalThreshold ||
