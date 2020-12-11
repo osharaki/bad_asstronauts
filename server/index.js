@@ -1,5 +1,5 @@
 const WebSocket = require("ws");
-
+const connection = require("./connection.js");
 const wss = new WebSocket.Server({ port: 3000 });
 
 wss.addListener("listening", () => {
@@ -16,7 +16,7 @@ setInterval(updateTime, 1000);
 
 wss.on("connection", (ws) => {
     // Add player to server
-    connectPlayer(ws, wss);
+    connection.connectPlayer(ws, wss);
 
     ws.on("message", (rawMessage) => {
         // Get Player info
@@ -89,7 +89,7 @@ wss.on("connection", (ws) => {
         removePlayerFromSession(player);
 
         // Remove player from server
-        disconnectPlayer(player);
+        connection.disconnectPlayer(player);
     });
 });
 
@@ -116,29 +116,6 @@ function generateID(length = 10) {
     }
 
     return id;
-}
-
-function connectPlayer(websocket, server) {
-    // Generate, Store, & Send Client ID
-    var clientID = generateID();
-    websocket["id"] = clientID;
-    serverData["players"][clientID] = {
-        session: null,
-        websocket: websocket,
-    };
-
-    sendMessageToPlayer("connect", { id: clientID }, clientID);
-
-    // Print
-    console.log(`Connected Client: ${clientID}`);
-}
-
-function disconnectPlayer(player) {
-    // Remove player from server
-    delete serverData["players"][player];
-
-    // Print
-    console.log(`Disconnected Client: ${player}`);
 }
 
 function createSession(data) {
