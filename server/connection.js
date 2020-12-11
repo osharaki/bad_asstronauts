@@ -1,13 +1,17 @@
+const helpers = require("./helpers.js");
+const serverData = require("./data.js").serverData;
+const communication = require("./communication");
+
 exports.connectPlayer = (websocket, server) => {
     // Generate, Store, & Send Client ID
-    var clientID = generateID();
+    var clientID = helpers.generateID();
     websocket["id"] = clientID;
     serverData["players"][clientID] = {
         session: null,
         websocket: websocket,
     };
 
-    sendMessageToPlayer("connect", { id: clientID }, clientID);
+    communication.sendMessageToPlayer("connect", { id: clientID }, clientID);
 
     // Print
     console.log(`Connected Client: ${clientID}`);
