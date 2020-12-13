@@ -163,6 +163,13 @@ class MyParticle extends BodyComponent {
       currentPosition += dir.scaled(currentSpeed);
     } else if (direction != null) {
       currentPosition += direction.scaled(currentSpeed);
+    } else if (endPosition != null) {
+      Vector2 dist =
+          normalizeVector(endPosition - currentPosition).scaled(currentSpeed);
+      // print(dist);
+      currentPosition = endPosition;
+      print(endPosition);
+      // currentPosition += dist;
     }
 
     // Turbulence

@@ -117,31 +117,38 @@ class PlanetAtmosphere extends BodyComponent {
     if (spaceshipsInOrbit.isNotEmpty) {
       for (Spaceship spaceship in spaceshipsInOrbit) {
         if (spaceship.isEgo) {
+          // final particle = MyParticle(
+          //   game: game,
+          //   startPosition: planet.spaceshipId == spaceship.id
+          //       ? spaceship.body.position
+          //       : body.worldCenter,
+          //   follow: planet.spaceshipId == spaceship.id ? this : spaceship,
+          //   life: 0.75,
+          //   startSize: 5,
+          //   endSize: 2.5,
+          //   startSpeed: 6,
+          //   startColor: Colors.yellow,
+          //   endColor: Colors.amberAccent,
+          //   startPositionRandom: planet.spaceshipId == spaceship.id
+          //       ? Vector2(5, 5)
+          //       : Vector2(50, 50),
+          //   endPositionRandom: planet.spaceshipId == spaceship.id
+          //       ? Vector2(5, 5)
+          //       : Vector2(5, 5),
+          //   curve: Vector2(
+          //     getRandomValueInRange(min: -5, max: 5).toDouble(),
+          //     getRandomValueInRange(min: -5, max: 5).toDouble(),
+          //   ),
+          //   curvature: 0.5,
+          //   turbulenceMagnitude: Vector2(15, 15),
+          //   turbulenceSmoothness: 50,
+          // );
+
           final particle = MyParticle(
             game: game,
-            startPosition: planet.spaceshipId == spaceship.id
-                ? spaceship.body.position
-                : body.worldCenter,
-            follow: planet.spaceshipId == spaceship.id ? this : spaceship,
-            life: 0.75,
-            startSize: 5,
-            endSize: 2.5,
-            startSpeed: 6,
-            startColor: Colors.yellow,
-            endColor: Colors.amberAccent,
-            startPositionRandom: planet.spaceshipId == spaceship.id
-                ? Vector2(5, 5)
-                : Vector2(50, 50),
-            endPositionRandom: planet.spaceshipId == spaceship.id
-                ? Vector2(5, 5)
-                : Vector2(5, 5),
-            curve: Vector2(
-              getRandomValueInRange(min: -5, max: 5).toDouble(),
-              getRandomValueInRange(min: -5, max: 5).toDouble(),
-            ),
-            curvature: 0.25,
-            turbulenceMagnitude: Vector2(15, 15),
-            turbulenceSmoothness: 50,
+            startPosition: body.worldCenter,
+            endPosition: spaceship.body.worldCenter,
+            life: 1,
           );
 
           game.add(particle);
