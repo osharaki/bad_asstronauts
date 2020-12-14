@@ -3,10 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-// import 'package:web_socket_channel/web_socket_channel.dart';
-import "package:web_socket_channel/io.dart";
-// import 'package:web_socket_channel/html.dart';
-
+import 'conditional_dependencies/socket_channel_interface.dart';
 import 'serverHandler.dart';
 import 'mainMenu.dart';
 import 'mainGame.dart';
@@ -31,16 +28,12 @@ class GameLauncherState extends State<GameLauncher> {
   Map<String, dynamic> playersInfo = {};
 
   MainGame game;
-  IOWebSocketChannel channel;
+  SocketChannel channel = SocketChannel();
   ServerHandler serverHandler;
 
   @override
   void initState() {
     super.initState();
-    channel = IOWebSocketChannel.connect(DotEnv().env['WSS_IP']);
-    /* channel = !kIsWeb
-        ? IOWebSocketChannel.connect(DotEnv().env['WSS_IP'])
-        : HtmlWebSocketChannel.connect(DotEnv().env['WSS_LOCALHOST']); */
     serverHandler = ServerHandler(launcher: this);
     game = MainGame(launcher: this, viewportSize: widget.viewportSize);
   }
