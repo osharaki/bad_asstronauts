@@ -7,7 +7,7 @@ import 'package:flame/extensions/vector2.dart';
 import 'package:flame/palette.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:gameOff2020/mainGame.dart';
+import 'package:bad_asstronauts/mainGame.dart';
 
 class Player extends BodyComponent implements JoystickListener {
   final _whitePaint = BasicPalette.white.paint;

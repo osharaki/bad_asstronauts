@@ -1,4 +1,4 @@
-package com.example.gameOff2020
+package com.example.bad_asstronauts
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gameOff2020/gameLauncher.dart';
-import 'package:gameOff2020/utils/math.dart';
+import 'package:bad_asstronauts/gameLauncher.dart';
+import 'package:bad_asstronauts/utils/math.dart';
 
 GameLauncherState launcher;
 

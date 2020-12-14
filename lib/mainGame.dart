@@ -13,7 +13,7 @@ import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
-import 'package:gameOff2020/gameLauncher.dart';
+import 'package:bad_asstronauts/gameLauncher.dart';
 
 import 'components/player.dart';
 import 'components/planet.dart';

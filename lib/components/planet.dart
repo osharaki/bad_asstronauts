@@ -6,7 +6,7 @@ import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:forge2d/forge2d.dart';
-import 'package:gameOff2020/components/planetAtmosphere.dart';
+import 'package:bad_asstronauts/components/planetAtmosphere.dart';
 
 import '../mainGame.dart';
 import 'spaceship.dart';

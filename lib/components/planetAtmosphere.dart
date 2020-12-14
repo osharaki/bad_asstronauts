@@ -6,8 +6,8 @@ import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
-import 'package:gameOff2020/components/planet.dart';
-import 'package:gameOff2020/mainGame.dart';
+import 'package:bad_asstronauts/components/planet.dart';
+import 'package:bad_asstronauts/mainGame.dart';
 
 import 'spaceship.dart';
 

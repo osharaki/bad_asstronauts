@@ -1,13 +1,17 @@
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import "package:flutter/material.dart";
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+// import 'package:web_socket_channel/web_socket_channel.dart';
+import "package:web_socket_channel/io.dart";
+// import 'package:web_socket_channel/html.dart';
 
 import 'serverHandler.dart';
 import 'mainMenu.dart';
 import 'mainGame.dart';
 import 'gameOverlay.dart';
 import 'waitingRoom.dart';
-import "package:flutter/material.dart";
-import "package:web_socket_channel/io.dart";
 
 class GameLauncher extends StatefulWidget {
   final Vector2 viewportSize;
@@ -22,7 +26,7 @@ class GameLauncherState extends State<GameLauncher> {
   // UI Variables
   String state = "out";
   int remainingPlayers = 0;
-  int respawnTime = 5;  
+  int respawnTime = 5;
   String remainingTime = "";
   Map<String, dynamic> playersInfo = {};
 
@@ -34,6 +38,9 @@ class GameLauncherState extends State<GameLauncher> {
   void initState() {
     super.initState();
     channel = IOWebSocketChannel.connect(DotEnv().env['WSS_IP']);
+    /* channel = !kIsWeb
+        ? IOWebSocketChannel.connect(DotEnv().env['WSS_IP'])
+        : HtmlWebSocketChannel.connect(DotEnv().env['WSS_LOCALHOST']); */
     serverHandler = ServerHandler(launcher: this);
     game = MainGame(launcher: this, viewportSize: widget.viewportSize);
   }
