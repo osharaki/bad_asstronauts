@@ -3,7 +3,6 @@ const communication = require("./communication");
 const sessionManager = require("./session");
 
 module.exports = () => {
-    // TODO migrate
     if (serverData["sessions"]) {
         Object.keys(serverData["sessions"]).forEach((session) => {
             if (serverData["sessions"][session]["state"] == "playing") {

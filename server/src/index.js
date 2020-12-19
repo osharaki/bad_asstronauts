@@ -1,4 +1,5 @@
 const WebSocket = require("ws");
+const { performance } = require("perf_hooks");
 
 const connection = require("./connection.js");
 const sessionManager = require("./session");
@@ -12,7 +13,44 @@ wss.addListener("listening", () => {
     console.log("WebSocket server running...");
 });
 
-setInterval(updateTime, 1000);
+/* 
+How the time update works
+=========================
+performance.now() returns the accurate time elapsed in ms since the start of
+execution. The intervals in the denominators (e.g. gameClockInterval) determine
+how frequently the updates happen. For example, a denominator of 1000 results in
+ca. 1 second intervals, 500 in 2, and so on. Keeping track of the time step
+(i.e. tick) allows us to track the progression of time by rounding down dt and
+checking whether its value has surpassed the last tick.
+*/
+
+let dt = 0;
+let tick = 0; // Stores the current discrete time step
+let t0 = 0; // DEV
+const clockInterval = 5;
+const gameClockInterval = 1000;
+const debug = 0;
+setInterval(() => {
+    dt = performance.now();
+
+    if (Math.floor(dt / gameClockInterval) != tick) {
+        if (debug) {
+            // DEV
+            console.log(
+                `Time since previous update: ${performance.now() - t0}`
+            );
+            t0 = performance.now();
+            console.log(`dt: ${dt}`);
+            console.log(`tick: ${tick}`);
+            console.log(
+                `dt/${gameClockInterval}: ${Math.floor(dt / gameClockInterval)}`
+            );
+        }
+
+        tick += 1;
+        updateTime();
+    }
+}, clockInterval);
 
 wss.on("connection", (ws) => {
     // Add player to server
