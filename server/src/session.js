@@ -1,6 +1,119 @@
 const helpers = require("./helpers");
-const serverData = require("./data").serverData;
+const { serverData, sessions } = require("./data");
 const communication = require("./communication");
+const { Player, Planet } = require("./data");
+
+class Session {
+    constructor(id, hostId, maxPlayers) {
+        this.id = id;
+        this.hostId = hostId;
+        this.players = [];
+        this.planets = [new Planet(-1, 1000)];
+        this.state = "waiting";
+        this.maxPlayers = maxPlayers;
+        this.time = 60000;
+        this.remainingTime = this.time;
+
+        this.addPlayer(this.hostId);
+    }
+
+    addPlayer(playerId) {
+        this.players.push(new Player(playerId, 100));
+        this.planets.push(new Planet(playerId, 0));
+    }
+
+    removePlayer(playerId) {
+        this.players.forEach((player) => {
+            if (player.id == playerId) {
+                // Approve player leaving
+                // TODO Re-add communication!
+                /* communication.sendMessageToPlayer("youLeft", null, playerId); */
+
+                this.players.splice(this.players.indexOf(player), 1);
+            }
+
+            // If no more players in session
+            if (this.players.length()) {
+                this.endSession();
+            } else {
+                // Assign new host
+                if (playerId == this.host) {
+                    this.assignRandomHostToSession(); // TODO Implement this method
+                }
+
+                // Inform session that player left
+                // TODO Re-add communication!
+                /* communication.sendMessageToSession(
+                    "playerLeft",
+                    { player: playerId, info: this },
+                    this.id
+                ); */
+
+                // Print
+                console.log(
+                    `Removed player ${playerId} from session ${this.id}`
+                );
+            }
+        });
+    }
+
+    endSession() {
+        this.players.forEach((player) => {
+            if (player.id != this.hostId) {
+                // TODO Re-add communication!
+                /* communication.sendMessageToPlayer(
+                    "sessionTerminated",
+                    null,
+                    player.id
+                ); */
+            }
+
+            this.removePlayer(player.id);
+        });
+
+        sessions.splice(sessions.indexOf(this), 1);
+    }
+
+    updateSessionState(state) {
+        if (!state) {
+            if (this.players.length == 0) {
+                this.endSession();
+                return;
+            }
+
+            if (this.state == "creating") {
+                this.state = "waiting";
+            } else if (this.state == "waiting") {
+                // TODO: Check ready state for players
+                if (this.players.size() == this.limit) {
+                    // newState = "playing";
+                    console.log("Session Full!");
+                }
+            } else if (this.state == "playing") {
+                if (this.remainingTime <= 0) {
+                    this.state = "waiting";
+                }
+            }
+        } else if (this.state != state) {
+            // TODO Re-add communicate
+            /* communication.sendMessageToSession(
+                "stateChanged",
+                { state: state },
+                this.id
+            ); */
+
+            if (this.state == "waiting" && state == "playing") {
+                this.remainingTime = this.time;
+            }
+
+            console.log(`Old State: ${this.state}`);
+            console.log(`New State: ${state}`);
+            this.state = state;
+        }
+    }
+
+    // TODO Port rest of methods
+}
 
 const removePlayerFromSession = (player, session = null) => {
     // Get player's session
@@ -268,6 +381,7 @@ const assignRandomHostToSession = (session) => {
 
 const startSession = (session) => {
     updateSessionState(session, "playing");
+    sessions[session].updateSessionState("playing");
 };
 
 const getSessionColors = (session) => {
@@ -304,16 +418,16 @@ const sessionExists = (session) => {
     return false;
 };
 
-const createSession = (data) => {
+const createSession = (data, sessionId) => {
+    // FIXME remove all the object stuff and keep just the class operations
     var host = data["host"];
-    var session = helpers.generateID(4);
 
-    serverData["sessions"][session] = data;
-    serverData["sessions"][session]["id"] = session;
+    serverData["sessions"][sessionId] = data;
+    serverData["sessions"][sessionId]["id"] = sessionId;
 
-    addPlayerToSpecificSession(host, session);
+    addPlayerToSpecificSession(host, sessionId);
 
-    console.log(`Created Session: ${session}`);
+    console.log(`Created Session: ${sessionId}`);
 };
 
 module.exports = {
@@ -326,4 +440,5 @@ module.exports = {
     startSession,
     getSessionColors,
     getPlayerSession,
+    Session,
 };

@@ -4,8 +4,9 @@ const { performance } = require("perf_hooks");
 const connection = require("./connection.js");
 const sessionManager = require("./session");
 const communication = require("./communication");
-const serverData = require("./data.js").serverData;
+const { serverData, sessions } = require("./data.js");
 const updateTime = require("./time.js");
+const generateID = require("./helpers").generateID;
 
 const wss = new WebSocket.Server({ port: 3000 });
 
@@ -68,6 +69,10 @@ wss.on("connection", (ws) => {
         if (action == "join") {
             session = data["session"];
 
+            if (sessions[session]) {
+                sessions[session].addPlayer(player);
+                sessions[session].updateSessionState();
+            }
             if (session in serverData["sessions"]) {
                 sessionManager.addPlayerToSpecificSession(player, session);
             } else {
@@ -79,22 +84,24 @@ wss.on("connection", (ws) => {
         } else if (action == "leave") {
             sessionManager.removePlayerFromSession(player);
         } else if (action == "updateSpaceship") {
-            serverData["sessions"][session]["players"][player][
-                "spaceship"
-            ] = data;
-            communication.sendMessageToSession(
-                "spaceshipUpdated",
-                {
-                    player: player,
-                    info: {
-                        resources: data["resources"],
-                        position: data["position"],
-                        angle: data["angle"],
+            if (serverData["sessions"][session] != null) {
+                serverData["sessions"][session]["players"][player][
+                    "spaceship"
+                ] = data;
+                communication.sendMessageToSession(
+                    "spaceshipUpdated",
+                    {
+                        player: player,
+                        info: {
+                            resources: data["resources"],
+                            position: data["position"],
+                            angle: data["angle"],
+                        },
                     },
-                },
-                session,
-                [player]
-            );
+                    session,
+                    [player]
+                );
+            }
         } else if (action == "updatePlanet") {
             // TODO this never gets executed, client never sends such an action
             player = data["player"];
@@ -108,7 +115,13 @@ wss.on("connection", (ws) => {
                 session
             );
         } else if (action == "create") {
-            sessionManager.createSession(data);
+            const sessionId = generateID(4);
+            sessionManager.createSession(data, sessionId); // XXX Remove 🔥
+            sessions[sessionId] = new sessionManager.Session(
+                sessionId,
+                data["host"],
+                data["limit"]
+            );
         } else if (action == "joinRandom") {
             sessionManager.addPlayerToRandomSession(player);
         } else if (action == "start") {

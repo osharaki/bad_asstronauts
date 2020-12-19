@@ -1,8 +1,25 @@
-const serverData = require("./data").serverData;
+const { serverData, sessions } = require("./data");
 const communication = require("./communication");
 const sessionManager = require("./session");
 
 module.exports = () => {
+    Object.keys(sessions).forEach((session) => {
+        if (sessions[session].state == "playing") {
+            sessions[session].remainingTime -= 1000;
+
+            communication.sendMessageToSession(
+                "timeUpdated",
+                {
+                    remainingTime: sessions[session].remainingTime,
+                },
+                session
+            );
+
+            sessions[session].updateSessionState();
+            // TODO Add ship respawn stuff
+        }
+    });
+
     if (serverData["sessions"]) {
         Object.keys(serverData["sessions"]).forEach((session) => {
             if (serverData["sessions"][session]["state"] == "playing") {
