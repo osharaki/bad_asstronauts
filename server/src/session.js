@@ -30,9 +30,7 @@ class Session {
     }
 
     addPlayer(playerId) {
-        const playerColor = this.availableColors[
-            Math.floor(Math.random() * this.availableColors.length)
-        ];
+        const playerColor = this.availableColors.pop();
         this.players.push(new Player(playerId, playerColor, 100));
         this.planets.push(new Planet(playerId, 0));
     }
@@ -40,23 +38,19 @@ class Session {
     removePlayer(playerId) {
         this.players.forEach((player) => {
             if (player.id == playerId) {
-                // Approve player leaving
-                // TODO Re-add communication!
-                /* communication.sendMessageToPlayer("youLeft", null, playerId); */
+                communication.sendMessageToPlayer("youLeft", null, playerId);
 
                 const i = this.players.indexOf(player);
                 this.players.splice(i, 1);
                 this.planets.splice(i + 1, 1); // Central planet is always at index 0, so we always shift by 1
             }
 
-            // If no more players in session
             if (this.players.length == 0) {
                 this.endSession();
             } else {
                 // Assign new host
-                // XXX test host leaving
-                if (playerId == this.host) {
-                    this.assignRandomHostToSession(); // TODO Implement this method
+                if (playerId == this.hostId) {
+                    this.assignRandomHostToSession();
                 }
 
                 // Inform session that player left
@@ -66,15 +60,34 @@ class Session {
                     { player: playerId, info: payload },
                     this.id
                 );
+
                 this.availableColors.push(player.color);
 
                 // Print
                 console.log(
                     `Removed player ${playerId} from session ${this.id}`
                 );
-                console.log(this);
+                // console.log(this);
             }
         });
+    }
+
+    assignRandomHostToSession() {
+        const newHost = this.players[
+            Math.floor(Math.random() * this.players.length)
+        ];
+        this.hostId = newHost.id;
+
+        // Send the updated session information to all players in the session
+        const payload = this.serializeSession();
+        communication.sendMessageToSession(
+            "update",
+            { info: payload },
+            this.id
+        );
+        console.log(
+            `Player ${this.hostId} assigned as session ${this.id} host`
+        );
     }
 
     serializeSession() {
@@ -127,7 +140,7 @@ class Session {
                 // TODO: Check ready state for players
                 if (this.players.length == this.limit) {
                     // newState = "playing";
-                    console.log("Session Full!");
+                    // console.log("Session Full!");
                 }
             } else if (this.state == "playing") {
                 if (this.remainingTime <= 0) {
@@ -146,8 +159,8 @@ class Session {
                 this.remainingTime = this.time;
             }
 
-            console.log(`Old State: ${this.state}`);
-            console.log(`New State: ${state}`);
+            /* console.log(`Old State: ${this.state}`);
+            console.log(`New State: ${state}`); */
             this.state = state;
         }
     }
@@ -171,7 +184,7 @@ const removePlayerFromSession = (player, session = null) => {
             delete serverData["sessions"][session]["players"][player];
 
             // Approve player leaving
-            communication.sendMessageToPlayer("youLeft", null, player);
+            // communication.sendMessageToPlayer("youLeft", null, player);
 
             // If no more players in session
             if (sessionEmpty(session)) {
@@ -255,7 +268,7 @@ const updateSessionState = (session, setState = null) => {
             // TODO: Check ready state for players
             if (numberOfPlayers == limit) {
                 // newState = "playing";
-                console.log("Session Full!");
+                // console.log("Session Full!");
             }
         } else if (state == "playing") {
             if (remainingTime <= 0) {
@@ -280,8 +293,8 @@ const updateSessionState = (session, setState = null) => {
         }
 
         // Print
-        console.log(`Old State: ${state}`);
-        console.log(`New State: ${newState}`);
+        /* console.log(`Old State: ${state}`);
+        console.log(`New State: ${newState}`); */
     }
 };
 
@@ -389,7 +402,7 @@ const addPlayerToSpecificSession = (player, session) => {
         );
 
         // Print
-        console.log(`Added player ${player} to session ${session}`);
+        // console.log(`Added player ${player} to session ${session}`);
 
         // Send latest information to session
         updateSession(session);
@@ -442,7 +455,7 @@ const assignHostToSession = (host, session) => {
     serverData["sessions"][session]["host"] = host;
 
     // Send the updated session information to all players in the session
-    updateSession(session);
+    // updateSession(session);
 };
 
 const sessionExists = (session) => {
