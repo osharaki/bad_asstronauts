@@ -11,14 +11,29 @@ class Session {
         this.planets = [new Planet(-1, 1000)];
         this.state = "waiting";
         this.maxPlayers = maxPlayers;
+        this.respawnTime = 5;
         this.time = 60000;
         this.remainingTime = this.time;
+        this.availableColors = [
+            "0xFFDF2828",
+            "0xFF28DF68",
+            "0xFF477EAE",
+            "0xFFFF9100",
+            "0xFFFFD23F",
+            "0xFFaa00ff",
+            "0xFFFFC30E",
+            "0xFFF3FCF0",
+            "0xFFEE4266",
+        ];
 
         this.addPlayer(this.hostId);
     }
 
     addPlayer(playerId) {
-        this.players.push(new Player(playerId, 100));
+        const playerColor = this.availableColors[
+            Math.floor(Math.random() * this.availableColors.length)
+        ];
+        this.players.push(new Player(playerId, playerColor, 100));
         this.planets.push(new Planet(playerId, 0));
     }
 
@@ -29,32 +44,56 @@ class Session {
                 // TODO Re-add communication!
                 /* communication.sendMessageToPlayer("youLeft", null, playerId); */
 
-                this.players.splice(this.players.indexOf(player), 1);
+                const i = this.players.indexOf(player);
+                this.players.splice(i, 1);
+                this.planets.splice(i + 1, 1); // Central planet is always at index 0, so we always shift by 1
             }
 
             // If no more players in session
-            if (this.players.length()) {
+            if (this.players.length == 0) {
                 this.endSession();
             } else {
                 // Assign new host
+                // XXX test host leaving
                 if (playerId == this.host) {
                     this.assignRandomHostToSession(); // TODO Implement this method
                 }
 
                 // Inform session that player left
-                // TODO Re-add communication!
-                /* communication.sendMessageToSession(
+                const payload = this.serializeSession();
+                communication.sendMessageToSession(
                     "playerLeft",
-                    { player: playerId, info: this },
+                    { player: playerId, info: payload },
                     this.id
-                ); */
+                );
+                this.availableColors.push(player.color);
 
                 // Print
                 console.log(
                     `Removed player ${playerId} from session ${this.id}`
                 );
+                console.log(this);
             }
         });
+    }
+
+    serializeSession() {
+        const payload = {
+            id: this.id,
+            host: this.hostId,
+            limit: this.maxPlayers,
+            respawnTime: this.respawnTime,
+            state: this.state,
+            players: {},
+        };
+        this.players.forEach((player, i) => {
+            payload["players"][player.id] = {
+                color: player.color,
+                planet: { resources: this.planets[i + 1].resources },
+            };
+        });
+        // TODO Serialize planet information
+        return payload;
     }
 
     endSession() {
@@ -70,8 +109,9 @@ class Session {
 
             this.removePlayer(player.id);
         });
-
-        sessions.splice(sessions.indexOf(this), 1);
+        delete sessions[this.id];
+        console.log(`Deleted session was ${this.id}`);
+        console.log(sessions);
     }
 
     updateSessionState(state) {
@@ -85,7 +125,7 @@ class Session {
                 this.state = "waiting";
             } else if (this.state == "waiting") {
                 // TODO: Check ready state for players
-                if (this.players.size() == this.limit) {
+                if (this.players.length == this.limit) {
                     // newState = "playing";
                     console.log("Session Full!");
                 }
@@ -145,14 +185,14 @@ const removePlayerFromSession = (player, session = null) => {
                 }
 
                 // Inform session that player left
-                communication.sendMessageToSession(
+                /* communication.sendMessageToSession(
                     "playerLeft",
                     { player: player, info: serverData["sessions"][session] },
                     session
                 );
 
                 // Print
-                console.log(`Removed player ${player} from session ${session}`);
+                console.log(`Removed player ${player} from session ${session}`); */
             }
         }
     }
@@ -421,7 +461,6 @@ const sessionExists = (session) => {
 const createSession = (data, sessionId) => {
     // FIXME remove all the object stuff and keep just the class operations
     var host = data["host"];
-
     serverData["sessions"][sessionId] = data;
     serverData["sessions"][sessionId]["id"] = sessionId;
 

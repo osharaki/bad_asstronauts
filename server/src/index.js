@@ -83,6 +83,7 @@ wss.on("connection", (ws) => {
             sessionManager.updateSession(session);
         } else if (action == "leave") {
             sessionManager.removePlayerFromSession(player);
+            sessions[data["session"]].removePlayer(player);
         } else if (action == "updateSpaceship") {
             if (serverData["sessions"][session] != null) {
                 serverData["sessions"][session]["players"][player][

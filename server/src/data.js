@@ -14,8 +14,9 @@ class Planet {
 }
 
 class Player {
-    constructor(id, resources) {
+    constructor(id, color, resources) {
         this.id = id;
+        this.color = color;
         this.resources = resources;
     }
 }
