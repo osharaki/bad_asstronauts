@@ -64,11 +64,9 @@ wss.on("connection", (ws) => {
         // sessionId
         // FIXME Instead of always trying to fetch the sessionId on every
         // message, fetch it on demand in the if-branches that need it
-        let session = sessions[players[player].sessionId]
+        let sessionId = sessions[players[player].sessionId]
             ? sessions[players[player].sessionId].id
             : null;
-        // let session = serverData["players"][player]["session"]; // TODO
-        // remove this 🔥
 
         // Extract data from message
         const message = JSON.parse(rawMessage);
@@ -76,31 +74,18 @@ wss.on("connection", (ws) => {
         const data = message["data"];
 
         if (action == "join") {
-            session = data["session"];
+            sessionId = data["session"];
 
-            if (sessions[session] != null) {
-                sessions[session].addPlayer(players[player]);
-                sessions[session].updateSessionState();
+            if (sessions[sessionId] != null) {
+                sessions[sessionId].addPlayer(players[player]);
+                sessions[sessionId].updateSessionState();
             } else {
                 communication.sendMessageToPlayer("wrongSession", null, player);
             }
-
-            // TODO remove this 🔥
-            /* if (session in serverData["sessions"]) {
-                sessionManager.addPlayerToSpecificSession(player, session);
-            } else {
-                // communication.sendMessageToPlayer("wrongSession", null, player);
-            } */
-        } else if (action == "update") {
-            // XXX no such message is sent by client
-            // serverData["sessions"][session] = data;
-            // sessionManager.updateSession(session);
         } else if (action == "leave") {
-            // sessionManager.removePlayerFromSession(player); //TODO Remove
-            // this 🔥
             sessions[data["session"]].removePlayer(player);
-        } else if (action == "updateSpaceship") {
-            for (const spaceship of sessions[session].spaceships) {
+        } else if (sessionId && action == "updateSpaceship") {
+            for (const spaceship of sessions[sessionId].spaceships) {
                 if (spaceship.id == player) {
                     spaceship.position = data["position"];
                     spaceship.resources = data["resources"];
@@ -109,13 +94,6 @@ wss.on("connection", (ws) => {
                     break;
                 }
             }
-
-            // TODO Remove serverData 🔥
-            /* if (serverData["sessions"][session] != null) {
-                serverData["sessions"][session]["players"][player][
-                    "spaceship"
-                ] = data;
-            } */
 
             communication.sendMessageToSession(
                 "spaceshipUpdated",
@@ -127,15 +105,15 @@ wss.on("connection", (ws) => {
                         angle: data["angle"],
                     },
                 },
-                session,
+                sessionId,
                 [player]
             );
-        } else if (action == "updatePlanet") {
+        } else if (sessionId && action == "updatePlanet") {
             // FIXME this never gets executed, client never sends such an action
             player = data["player"];
             const info = data["info"];
 
-            for (const planet of sessions[session].planets) {
+            for (const planet of sessions[sessionId].planets) {
                 if (planet.id == player) {
                     planet.resources = info["resources"];
                     planet.position = info["position"];
@@ -144,15 +122,11 @@ wss.on("connection", (ws) => {
                 }
             }
 
-            // TODO Remove serverData 🔥
-            /* serverData["sessions"][session]["players"][player]["planet"] =
-            info; */
-
             console.log(`${player} RESOURCES: ${info["resources"]}`);
             communication.sendMessageToSession(
                 "planetUpdated",
                 { player: player, info: info },
-                session
+                sessionId
             );
         } else if (action == "create") {
             if (players[data["host"]].sessionId == null) {
@@ -162,6 +136,12 @@ wss.on("connection", (ws) => {
                     players[data["host"]],
                     data["limit"]
                 );
+
+                // addPlayer() was moved outside of Session's constructor since
+                // we're calling sendMessageToSession(), which uses sessions.
+                // Since at that point, sessions[sessionId] would still be null,
+                // we defer the call to addPlayer() till after it's populated by
+                // calling it here.
                 sessions[sessionId].addPlayer(players[data["host"]]);
                 console.log(sessionId);
             }
@@ -173,13 +153,10 @@ wss.on("connection", (ws) => {
     });
 
     ws.on("close", (reason) => {
-        // XXX Doesn't always get triggered
-
         // Get player info
         const playerId = ws["id"];
-        // Remove player from session
-        // sessionManager.removePlayerFromSession(player); // TODO remove this 🔥
 
+        // Remove player from session
         if (sessions[players[playerId].sessionId])
             sessions[players[playerId].sessionId].removePlayer(playerId);
 

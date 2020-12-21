@@ -1,9 +1,3 @@
-const serverData = {
-    players: {},
-    sessions: {},
-    assets: {},
-};
-
 const sessions = {};
 const players = {};
 
@@ -40,7 +34,6 @@ module.exports = {
     Player,
     Planet,
     Spaceship,
-    serverData,
     sessions,
     players,
 };
