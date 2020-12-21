@@ -24,7 +24,6 @@ class GameLauncherState extends State<GameLauncher> {
   String state = "out";
   int remainingPlayers = 0;
   int respawnTime = 5;
-  String remainingTime = "";
   Map<String, dynamic> playersInfo = {};
 
   MainGame game;
@@ -51,6 +50,7 @@ class GameLauncherState extends State<GameLauncher> {
   }
 
   void updatePlayersInfo(Map<String, dynamic> newPlayersInfo) {
+    // print(newPlayersInfo);
     updateRemainingPlayers(newPlayersInfo.length);
 
     setState(() {
@@ -67,13 +67,6 @@ class GameLauncherState extends State<GameLauncher> {
     String time = "$minute:${second.round().toString().padLeft(2, '0')}";
 
     return time;
-  }
-
-  void updateRemainingTime() {
-    // setState(() {
-    //   remainingTime =
-    //       convertMillisecondsToTime(serverHandler.serverData["remainingTime"]);
-    // });
   }
 
   @override
