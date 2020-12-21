@@ -1,18 +1,18 @@
 const helpers = require("./helpers");
-const { serverData, sessions } = require("./data");
+const { serverData, sessions, players, Planet, Spaceship } = require("./data");
 const communication = require("./communication");
-const { Player, Planet } = require("./data");
 
 class Session {
-    constructor(id, hostId, maxPlayers) {
+    constructor(id, host, maxPlayers) {
         this.id = id;
-        this.hostId = hostId;
+        this.hostId = host.id;
         this.players = [];
         this.planets = [new Planet(-1, 1000)];
+        this.spaceships = [];
         this.state = "waiting";
         this.maxPlayers = maxPlayers;
         this.respawnTime = 5;
-        this.time = 60000;
+        this.time = 5000; // TODO Used to be 60000
         this.remainingTime = this.time;
         this.availableColors = [
             "0xFFDF2828",
@@ -26,13 +26,26 @@ class Session {
             "0xFFEE4266",
         ];
 
-        this.addPlayer(this.hostId);
+        // this.addPlayer(host); // TODO Remove this, we're adding players outside now
     }
 
-    addPlayer(playerId) {
+    addPlayer(player) {
+        const playerId = player.id;
         const playerColor = this.availableColors.pop();
-        this.players.push(new Player(playerId, playerColor, 100));
+        player.color = playerColor;
+        player.sessionId = this.id;
+
+        this.players.push(player);
         this.planets.push(new Planet(playerId, 0));
+        this.spaceships.push(new Spaceship(playerId));
+        players[playerId].sessionId = this.id;
+
+        // Inform session that player joined
+        communication.sendMessageToSession(
+            "playerJoined",
+            { player: playerId, info: this.serializeSession() },
+            this.id
+        );
     }
 
     removePlayer(playerId) {
@@ -43,6 +56,13 @@ class Session {
                 const i = this.players.indexOf(player);
                 this.players.splice(i, 1);
                 this.planets.splice(i + 1, 1); // Central planet is always at index 0, so we always shift by 1
+                players[player.id].sessionId = null;
+
+                /* console.log(
+                    `Removed player ${playerId} from session ${this.id}`
+                );
+                console.log(players);
+                console.log(this); */
             }
 
             if (this.players.length == 0) {
@@ -62,12 +82,6 @@ class Session {
                 );
 
                 this.availableColors.push(player.color);
-
-                // Print
-                console.log(
-                    `Removed player ${playerId} from session ${this.id}`
-                );
-                // console.log(this);
             }
         });
     }
@@ -112,12 +126,16 @@ class Session {
     endSession() {
         this.players.forEach((player) => {
             if (player.id != this.hostId) {
-                // TODO Re-add communication!
-                /* communication.sendMessageToPlayer(
+                // XXX This is never executed since the host doesn't currently
+                // have the ability to terminate the session, only to leave it.
+                // This means that the only time this method is called is when
+                // the last player leaves the session. Since the last player is
+                // by default also the host, the if-condition fails.
+                communication.sendMessageToPlayer(
                     "sessionTerminated",
                     null,
                     player.id
-                ); */
+                );
             }
 
             this.removePlayer(player.id);
@@ -128,6 +146,7 @@ class Session {
     }
 
     updateSessionState(state) {
+        let stateChanged = false;
         if (!state) {
             if (this.players.length == 0) {
                 this.endSession();
@@ -136,6 +155,7 @@ class Session {
 
             if (this.state == "creating") {
                 this.state = "waiting";
+                stateChanged = true;
             } else if (this.state == "waiting") {
                 // TODO: Check ready state for players
                 if (this.players.length == this.limit) {
@@ -145,24 +165,25 @@ class Session {
             } else if (this.state == "playing") {
                 if (this.remainingTime <= 0) {
                     this.state = "waiting";
+                    stateChanged = true;
                 }
             }
         } else if (this.state != state) {
-            // TODO Re-add communicate
-            /* communication.sendMessageToSession(
-                "stateChanged",
-                { state: state },
-                this.id
-            ); */
-
             if (this.state == "waiting" && state == "playing") {
+                // reset time
                 this.remainingTime = this.time;
             }
-
-            /* console.log(`Old State: ${this.state}`);
-            console.log(`New State: ${state}`); */
             this.state = state;
+            stateChanged = true;
         }
+        if (stateChanged)
+            communication.sendMessageToSession(
+                "stateChanged",
+                { state: this.state },
+                this.id
+            );
+        console.log(`Old State: ${this.state}`);
+        console.log(`New State: ${state}`);
     }
 
     // TODO Port rest of methods
@@ -216,11 +237,11 @@ const endSession = (session) => {
         Object.keys(serverData["sessions"][session]["players"]).forEach(
             (player) => {
                 if (player != serverData["sessions"][session]["host"]) {
-                    communication.sendMessageToPlayer(
+                    /* communication.sendMessageToPlayer(
                         "sessionTerminated",
                         null,
                         player
-                    );
+                    ); */
                 }
 
                 removePlayerFromSession(player);
@@ -282,11 +303,11 @@ const updateSessionState = (session, setState = null) => {
     // Communicate
     if (newState != state) {
         serverData["sessions"][session]["state"] = newState;
-        communication.sendMessageToSession(
+        /* communication.sendMessageToSession(
             "stateChanged",
             { state: newState },
             session
-        );
+        ); */
 
         if (state == "waiting" && newState == "playing") {
             resetSession(session);
@@ -317,43 +338,23 @@ const sessionEmpty = (session) => {
 };
 
 const addPlayerToRandomSession = (player) => {
-    // Get Random Session ID
-    var session = fetchRandomSession();
+    let foundSession = false;
 
-    if (session != false) {
-        // Add Player to Session
-        addPlayerToSpecificSession(player, session);
-    } else {
-        // No sessions found
-        communication.sendMessageToPlayer("noSessions", null, player);
-    }
-};
-
-const fetchRandomSession = () => {
-    var sessions = Object.keys(serverData["sessions"]);
-    var sessionCount = sessions.length;
-    var foundSession = false;
-    var count = 0;
-
-    while (count != sessionCount) {
-        // Add Count
-        count += 1;
-
-        // Pick Random Session
-        var randomSessionIndex = Math.floor(Math.random() * sessions.length);
-        var randomSession = sessions[randomSessionIndex];
-
-        // Remove Session from Sessions, so next iteration we don't pick it again
-        sessions = helpers.removeItemFromIterable(randomSession, sessions);
-
-        // Join session if waiting
-        if (serverData["sessions"][randomSession]["state"] == "waiting") {
-            foundSession = randomSession;
+    for (const session of Object.values(sessions)) {
+        if (
+            session.state == "waiting" &&
+            session.players.length < session.maxPlayers
+        ) {
+            session.addPlayer(player);
+            foundSession = true;
             break;
         }
     }
 
-    return foundSession;
+    if (!foundSession) {
+        // No sessions found
+        communication.sendMessageToPlayer("noSessions", null, player);
+    }
 };
 
 const fetchRandomPlayerFromSession = (session) => {
@@ -395,11 +396,11 @@ const addPlayerToSpecificSession = (player, session) => {
         helpers.assignPlayerColor(player);
 
         // Inform session that player joined
-        communication.sendMessageToSession(
+        /* communication.sendMessageToSession(
             "playerJoined",
             { player: player, info: getSessionData(session) },
             session
-        );
+        ); */
 
         // Print
         // console.log(`Added player ${player} to session ${session}`);
@@ -433,7 +434,7 @@ const assignRandomHostToSession = (session) => {
 };
 
 const startSession = (session) => {
-    updateSessionState(session, "playing");
+    // updateSessionState(session, "playing"); // TODO Remove this 🔥
     sessions[session].updateSessionState("playing");
 };
 

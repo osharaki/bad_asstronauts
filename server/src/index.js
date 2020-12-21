@@ -4,7 +4,7 @@ const { performance } = require("perf_hooks");
 const connection = require("./connection.js");
 const sessionManager = require("./session");
 const communication = require("./communication");
-const { serverData, sessions } = require("./data.js");
+const { sessions, players } = require("./data.js");
 const updateTime = require("./time.js");
 const generateID = require("./helpers").generateID;
 
@@ -58,57 +58,96 @@ wss.on("connection", (ws) => {
     connection.connectPlayer(ws, wss);
     ws.on("message", (rawMessage) => {
         // Get Player info
-        var player = ws["id"];
-        var session = serverData["players"][player]["session"];
+        let player = ws["id"];
+
+        // Check required since a player trying to create a session will have no
+        // sessionId
+        // FIXME Instead of always trying to fetch the sessionId on every
+        // message, fetch it on demand in the if-branches that need it
+        let session = sessions[players[player].sessionId]
+            ? sessions[players[player].sessionId].id
+            : null;
+        // let session = serverData["players"][player]["session"]; // TODO
+        // remove this 🔥
 
         // Extract data from message
-        var message = JSON.parse(rawMessage);
-        var action = message["action"];
-        var data = message["data"];
+        const message = JSON.parse(rawMessage);
+        const action = message["action"];
+        const data = message["data"];
 
         if (action == "join") {
             session = data["session"];
 
-            if (sessions[session]) {
-                sessions[session].addPlayer(player);
+            if (sessions[session] != null) {
+                sessions[session].addPlayer(players[player]);
                 sessions[session].updateSessionState();
-            }
-            if (session in serverData["sessions"]) {
-                sessionManager.addPlayerToSpecificSession(player, session);
             } else {
                 communication.sendMessageToPlayer("wrongSession", null, player);
             }
+
+            // TODO remove this 🔥
+            /* if (session in serverData["sessions"]) {
+                sessionManager.addPlayerToSpecificSession(player, session);
+            } else {
+                // communication.sendMessageToPlayer("wrongSession", null, player);
+            } */
         } else if (action == "update") {
-            serverData["sessions"][session] = data;
-            sessionManager.updateSession(session);
+            // XXX no such message is sent by client
+            // serverData["sessions"][session] = data;
+            // sessionManager.updateSession(session);
         } else if (action == "leave") {
-            sessionManager.removePlayerFromSession(player);
+            // sessionManager.removePlayerFromSession(player); //TODO Remove
+            // this 🔥
             sessions[data["session"]].removePlayer(player);
         } else if (action == "updateSpaceship") {
-            if (serverData["sessions"][session] != null) {
+            for (const spaceship of sessions[session].spaceships) {
+                if (spaceship.id == player) {
+                    spaceship.position = data["position"];
+                    spaceship.resources = data["resources"];
+                    spaceship.angle = data["angle"];
+                    spaceship.respawnTime = data["respawnTime"];
+                    break;
+                }
+            }
+
+            // TODO Remove serverData 🔥
+            /* if (serverData["sessions"][session] != null) {
                 serverData["sessions"][session]["players"][player][
                     "spaceship"
                 ] = data;
-                communication.sendMessageToSession(
-                    "spaceshipUpdated",
-                    {
-                        player: player,
-                        info: {
-                            resources: data["resources"],
-                            position: data["position"],
-                            angle: data["angle"],
-                        },
-                    },
-                    session,
-                    [player]
-                );
-            }
-        } else if (action == "updatePlanet") {
-            // TODO this never gets executed, client never sends such an action
-            player = data["player"];
-            var info = data["info"];
+            } */
 
-            serverData["sessions"][session]["players"][player]["planet"] = info;
+            communication.sendMessageToSession(
+                "spaceshipUpdated",
+                {
+                    player: player,
+                    info: {
+                        resources: data["resources"],
+                        position: data["position"],
+                        angle: data["angle"],
+                    },
+                },
+                session,
+                [player]
+            );
+        } else if (action == "updatePlanet") {
+            // FIXME this never gets executed, client never sends such an action
+            player = data["player"];
+            const info = data["info"];
+
+            for (const planet of sessions[session].planets) {
+                if (planet.id == player) {
+                    planet.resources = info["resources"];
+                    planet.position = info["position"];
+                    // TODO update remaining attributes
+                    break;
+                }
+            }
+
+            // TODO Remove serverData 🔥
+            /* serverData["sessions"][session]["players"][player]["planet"] =
+            info; */
+
             console.log(`${player} RESOURCES: ${info["resources"]}`);
             communication.sendMessageToSession(
                 "planetUpdated",
@@ -116,13 +155,16 @@ wss.on("connection", (ws) => {
                 session
             );
         } else if (action == "create") {
-            const sessionId = generateID(4);
-            sessionManager.createSession(data, sessionId); // XXX Remove 🔥
-            sessions[sessionId] = new sessionManager.Session(
-                sessionId,
-                data["host"],
-                data["limit"]
-            );
+            if (players[data["host"]].sessionId == null) {
+                const sessionId = generateID(4);
+                sessions[sessionId] = new sessionManager.Session(
+                    sessionId,
+                    players[data["host"]],
+                    data["limit"]
+                );
+                sessions[sessionId].addPlayer(players[data["host"]]);
+                console.log(sessionId);
+            }
         } else if (action == "joinRandom") {
             sessionManager.addPlayerToRandomSession(player);
         } else if (action == "start") {
@@ -131,15 +173,17 @@ wss.on("connection", (ws) => {
     });
 
     ws.on("close", (reason) => {
-        // TODO doesn't detect broken connections. See https://www.npmjs.com/package/ws#how-to-detect-and-close-broken-connections
+        // XXX Doesn't always get triggered
 
         // Get player info
-        var player = ws["id"];
-
+        const playerId = ws["id"];
         // Remove player from session
-        sessionManager.removePlayerFromSession(player);
+        // sessionManager.removePlayerFromSession(player); // TODO remove this 🔥
+
+        if (sessions[players[playerId].sessionId])
+            sessions[players[playerId].sessionId].removePlayer(playerId);
 
         // Remove player from server
-        connection.disconnectPlayer(player);
+        connection.disconnectPlayer(playerId);
     });
 });

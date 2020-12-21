@@ -1,25 +1,24 @@
-const helpers = require("./helpers.js");
-const serverData = require("./data.js").serverData;
+const { sessions, players } = require("./data.js");
 
 const sendMessageToSession = (action, data, session, except = []) => {
-    if (serverData["sessions"][session] != null) {
-        var players = serverData["sessions"][session]["players"];
+    if (sessions[session] != null) {
+        const players = sessions[session].players;
 
         // Send message to all players in the session
-        Object.keys(players).forEach((player) => {
-            if (!helpers.iterableContainsItem(except, player)) {
-                sendMessageToPlayer(action, data, player);
-            }
+        players.forEach((player) => {
+            if (except.includes(player.id)) return;
+            sendMessageToPlayer(action, data, player.id);
         });
     }
 };
 
-function sendMessageToPlayer(action, data, player) {
+function sendMessageToPlayer(action, data, playerId) {
     // Create Message
     const message = compileMessage(action, data);
 
     // Get WebSocket
-    var playerWebSocket = serverData["players"][player]["websocket"];
+    let playerWebSocket;
+    if (players[playerId]) playerWebSocket = players[playerId].ws;
 
     // Send
     playerWebSocket.send(message);
