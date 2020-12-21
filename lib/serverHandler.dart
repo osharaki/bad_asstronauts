@@ -230,9 +230,7 @@ class ServerHandler {
 
       // Time Updated
     } else if (action == "timeUpdated") {
-      // TODO: Screen flickers on time tick
       serverData["remainingTime"] = data["remainingTime"];
-      launcher.updateRemainingTime();
 
       // Session Reset
     } else if (action == "sessionReset") {

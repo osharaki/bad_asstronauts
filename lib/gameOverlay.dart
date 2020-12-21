@@ -48,7 +48,7 @@ class GameOverlayState extends State<GameOverlay> {
                     )
                   : Container(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   IconButton(
@@ -58,25 +58,6 @@ class GameOverlayState extends State<GameOverlay> {
                       state == "close" ? Icons.menu : Icons.arrow_back,
                     ),
                     onPressed: toggleState,
-                  ),
-                  Expanded(
-                    child: Container(),
-                    flex: 3,
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      widget.launcher.remainingTime,
-                      style: TextStyle(
-                        fontSize: 30,
-                        color: Colors.white.withAlpha(200),
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(),
-                    flex: 1,
                   ),
                 ],
               ),
@@ -89,8 +70,7 @@ class GameOverlayState extends State<GameOverlay> {
                           highlightedBorderColor: Colors.red[900],
                           highlightColor: Colors.red[900].withAlpha(75),
                           borderSide: BorderSide(color: Colors.red[900]),
-                          onPressed: () => widget.launcher.serverHandler
-                              .requestLeaveSession(),
+                          onPressed: () => widget.launcher.serverHandler.requestLeaveSession(),
                           child: Text(
                             "LEAVE",
                             style: TextStyle(

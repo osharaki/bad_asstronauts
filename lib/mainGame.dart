@@ -38,6 +38,12 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
     textAlign: TextAlign.center,
   );
 
+  final TextConfig gameTimerConfig = TextConfig(
+    fontSize: 24.0,
+    fontFamily: 'BigShouldersStencilDisplay2',
+    textAlign: TextAlign.center,
+  );
+
   // double resources = 10000;
 
   // storeRate being twice the harvest rate provides home field (sadeeq) advantage
@@ -269,14 +275,15 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
           egoSpaceship.radAngle = egoSpaceship.initRotation;
           egoSpaceship.resources = respawnResources;
         }
-        updateServer(
-          {
-            "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
-            "angle": egoSpaceship.radAngle,
-            "resources": egoSpaceship.resources,
-            "respawnTime": egoSpaceship.respawnTime,
-          },
-        );
+        if (launcher.state == "playing")
+          updateServer(
+            {
+              "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
+              "angle": egoSpaceship.radAngle,
+              "resources": egoSpaceship.resources,
+              "respawnTime": egoSpaceship.respawnTime,
+            },
+          );
       } else
         // It's necessary to keep track of the last respawnTime so that when its value is 0 we can tell whether it just hit 0 or if if's been like that for a while
         latestRespawnTime = egoSpaceship.respawnTime;
@@ -300,6 +307,13 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    if (launcher.serverHandler.serverData["remainingTime"] != null)
+      gameTimerConfig.render(
+          canvas,
+          launcher.convertMillisecondsToTime(launcher.serverHandler.serverData["remainingTime"]),
+          Vector2(viewportSize.x - 200, 30),
+          anchor: Anchor.topLeft);
+
     if (centralPlanet != null)
       resourceDisplayConfig.render(
         canvas,
@@ -307,6 +321,7 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
         viewport.getWorldToScreen(centralPlanet.position),
         anchor: Anchor.center,
       );
+
     for (dynamic player in players.values) {
       resourceDisplayConfig.render(
         canvas,
@@ -329,21 +344,6 @@ class MyCircle extends BodyComponent {
   MyCircle(this.game, this.radius) {
     position = Vector2(game.size.x / 2 + 100, game.size.y / 2);
   }
-
-  /* @override
-  void render(Canvas c) {
-    super.render(c);
-    TextConfig(
-      fontSize: 48.0,
-      fontFamily: 'Awesome Font',
-      textAlign: TextAlign.center,
-    ).render(
-      c,
-      'Resources',
-      game.viewport.getWorldToScreen(position),
-      anchor: Anchor.center,
-    );
-  } */
 
   @override
   Body createBody() {

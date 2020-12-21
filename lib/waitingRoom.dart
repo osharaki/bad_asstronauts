@@ -95,8 +95,7 @@ class WaitingRoomState extends State<WaitingRoom> {
                       borderSide: BorderSide(color: Colors.green),
                       highlightColor: Colors.green,
                       highlightedBorderColor: Colors.green,
-                      onPressed: () =>
-                          widget.launcher.serverHandler.requestStartSession(),
+                      onPressed: () => widget.launcher.serverHandler.requestStartSession(),
                       child: Text(
                         "START",
                         style: TextStyle(
@@ -116,8 +115,7 @@ class WaitingRoomState extends State<WaitingRoom> {
                 borderSide: BorderSide(color: Colors.red[900]),
                 highlightColor: Colors.red[900].withAlpha(75),
                 highlightedBorderColor: Colors.red[900],
-                onPressed: () =>
-                    widget.launcher.serverHandler.requestLeaveSession(),
+                onPressed: () => widget.launcher.serverHandler.requestLeaveSession(),
                 child: Text(
                   "LEAVE",
                   style: TextStyle(

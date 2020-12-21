@@ -28,21 +28,6 @@ class PlanetAtmosphere extends BodyComponent {
     this.position,
   });
 
-  /* @override
-  void render(Canvas c) {
-    super.render(c);
-    TextConfig(
-      fontSize: 48.0,
-      fontFamily: 'Awesome Font',
-      textAlign: TextAlign.center,
-    ).render(
-      c,
-      'Resouuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuurces',
-      game.viewport.getWorldToScreen(position),
-      anchor: Anchor.center,
-    );
-  } */
-
   void destroy() {
     game.remove(this);
   }
