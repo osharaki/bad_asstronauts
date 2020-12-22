@@ -13,10 +13,15 @@ class Planet {
 class Spaceship {
     constructor(id) {
         this.id = id;
+        this.thrust = false;
+        this.respawnTime = 0;
+        this.inOrbit = false;
         this.position = null;
         this.angle = null;
         this.resources = null;
-        this.respawnTime = 0;
+        this.resourceCriticalThreshold = null;
+        this.resourceReplenishRate = null;
+        this.currentSpeed = null;
     }
 }
 

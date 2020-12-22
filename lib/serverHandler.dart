@@ -5,8 +5,6 @@ import 'package:flame/extensions/vector2.dart';
 import 'package:flutter/material.dart' hide Image;
 
 import 'gameLauncher.dart';
-import 'components/planet.dart';
-import 'components/spaceship.dart';
 
 // TODO: Enforce Session Limit
 
@@ -29,8 +27,8 @@ class ServerHandler {
       "data": {
         "host": id,
         "limit": limit,
-        "time": 60000, // TODO used to be 15000
-        "remainingTime": 60000, // TODO used to be 15000
+        "time": 60000,
+        "remainingTime": 60000,
         "respawnTime": launcher.respawnTime,
         "state": "creating",
         "players": {},
@@ -94,10 +92,6 @@ class ServerHandler {
     });
   }
 
-  /* void initializeGame() {
-    launcher.game.refreshGame();
-  } */
-
   void removePlayer(String player) {
     // TODO: Earlier players see later players right off the bat, but later players can only see earlier players when they move. Why? Must be some information being sent to people already in session. Make sure to add people THEN update the info.
 
@@ -110,19 +104,23 @@ class ServerHandler {
   }
 
   void updateLocalSpaceship(String player, Map<String, dynamic> data) {
-    double angle = data["angle"].toDouble();
-    double resources = data["resources"].toDouble();
-    Vector2 position = Vector2(
-      data["position"][0].toDouble(),
-      data["position"][1].toDouble(),
-    );
+    // null checks are important especially for first couple of server updates
+    // when it still hasn't received any data from the client.
+    double angle = data["angle"] != null ? data["angle"].toDouble() : null;
+    double resources = data["resources"] != null ? data["resources"].toDouble() : null;
+    Vector2 position = data["position"] != null
+        ? Vector2(
+            data["position"][0].toDouble(),
+            data["position"][1].toDouble(),
+          )
+        : null;
     serverData["players"][player]["spaceship"] = data;
-
+    if (resources != null) launcher.game.players[player]["spaceship"].resources = resources;
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
-        launcher.game.players[player]["spaceship"].body.setTransform(position, 0.0);
-        launcher.game.players[player]["spaceship"].radAngle = angle;
-        launcher.game.players[player]["spaceship"].resources = resources;
+        if (position != null)
+          launcher.game.players[player]["spaceship"].body.setTransform(position, 0.0);
+        if (angle != null) launcher.game.players[player]["spaceship"].radAngle = angle;
       }
     }
   }
@@ -135,26 +133,6 @@ class ServerHandler {
     players[player]["planet"].resources = resources;
   }
 
-  void updatePlayers() {
-    // if (serverData["state"] == "playing") {
-    //   players.keys.forEach((player) {
-    //     dynamic angle = serverData["players"][player]["spaceship"]["angle"];
-
-    //     Offset position = launcher.game.getWorldPositionFromPercent(
-    //         serverData["players"][player]["spaceship"]["position"]);
-
-    //     Offset planetPosition = launcher.game.getWorldPositionFromPercent(
-    //         serverData["players"][player]["planet"]["position"]);
-
-    //     // Update info
-    //     players[player]["spaceship"].worldPosition = position;
-    //     players[player]["spaceship"].angle = angle.toDouble();
-
-    //     players[player]["planet"].position = planetPosition;
-    //   });
-    // }
-  }
-
   void sendDataToServer({
     @required String action,
     @required Map<String, dynamic> data,
@@ -164,35 +142,22 @@ class ServerHandler {
   }
 
   void onReceiveMessage(String rawMessage) {
-    // {"action": <actionName>, "data": {<field>: <value>}}
     Map message = jsonDecode(rawMessage);
     String action = message["action"];
     Map<String, dynamic> data = message["data"];
 
-    // ACTIONS
-    // Connect
-    if (action == "connect") {
-      // Store ID
+    if (action == "connect")
       id = data["id"];
-
-      // Update
-    } else if (action == "update") {
+    else if (action == "update")
       serverData = data["info"];
-      updatePlayers();
-
-      // Player Joined
-    } else if (action == "playerJoined") {
+    else if (action == "playerJoined") {
       serverData = data["info"];
       String player = data["player"];
 
       launcher.updatePlayersInfo(serverData["players"]);
       addPlayers();
 
-      if (player == id) {
-        launcher.updateState("waiting");
-      }
-
-      // Player Left
+      if (player == id) launcher.updateState("waiting");
     } else if (action == "playerLeft") {
       serverData = data["info"];
 
@@ -211,47 +176,26 @@ class ServerHandler {
       }
 
       launcher.updateState(state);
-
-      // Joined Wrong Session
-    } else if (action == "wrongSession") {
+    } else if (action == "wrongSession")
       print("WRONG SESSION!");
-
-      // You left
-    } else if (action == "youLeft") {
+    else if (action == "youLeft")
       leaveSession();
-
-      // Session Terminated
-    } else if (action == "sessionTerminated") {
+    else if (action == "sessionTerminated")
       print("HOST ENDED SESSION");
-
-      // No Sessions Available
-    } else if (action == "noSessions") {
+    else if (action == "noSessions")
       print("NO SESSIONS AVAILABLE");
-
-      // Time Updated
-    } else if (action == "timeUpdated") {
+    else if (action == "timeUpdated")
       serverData["remainingTime"] = data["remainingTime"];
-
-      // Session Reset
-    } else if (action == "sessionReset") {
+    else if (action == "sessionReset")
       serverData = data["info"];
-      // initializeGame();
-      updatePlayers();
+    else if (action == "gameUpdated") {
+      dynamic spaceshipsUpdate = data['spaceships'];
+      print(spaceshipsUpdate);
+      spaceshipsUpdate.forEach((playerID, spaceshipData) {
+        updateLocalSpaceship(playerID, spaceshipData);
+      });
 
-      // Spaceship updated
-    } else if (action == "spaceshipUpdated") {
-      // {"player":<id>, "info": {"position":[50, 50], "angle":10, "resources":100}}
-      String player = data["player"];
-      Map<String, dynamic> info = data["info"];
-
-      updateLocalSpaceship(player, info);
-
-      // Planet Updated
-    } else if (action == "planetUpdated") {
-      String player = data["player"];
-      Map<String, dynamic> info = data["info"];
-
-      updateLocalPlanet(player, info);
+      // TODO use planet update data
     } else if (action == "respawnTimerUpdated") {
       print(data);
       int respawnTime = data['respawnTime'];

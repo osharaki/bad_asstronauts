@@ -109,13 +109,21 @@ class Session {
             respawnTime: this.respawnTime,
             state: this.state,
             players: {},
+            spaceships: {},
         };
         this.players.forEach((player, i) => {
             payload["players"][player.id] = {
                 color: player.color,
                 planet: { resources: this.planets[i + 1].resources },
             };
+
+            payload["spaceships"][player.id] = {
+                position: this.spaceships[i].position,
+                angle: this.spaceships[i].angle,
+                resources: this.spaceships[i].resources,
+            };
         });
+
         // TODO Serialize planet information
         return payload;
     }
@@ -179,8 +187,8 @@ class Session {
                 { state: this.state },
                 this.id
             );
-        console.log(`Old State: ${this.state}`);
-        console.log(`New State: ${state}`);
+        /* console.log(`Old State: ${this.state}`);
+        console.log(`New State: ${state}`); */
     }
 }
 

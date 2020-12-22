@@ -5,7 +5,7 @@ const connection = require("./connection.js");
 const sessionManager = require("./session");
 const communication = require("./communication");
 const { sessions, players } = require("./data.js");
-const updateTime = require("./time.js");
+const { updateTime, updateGame } = require("./game.js");
 const generateID = require("./helpers").generateID;
 
 const wss = new WebSocket.Server({ port: 3000 });
@@ -26,15 +26,22 @@ checking whether its value has surpassed the last tick.
 */
 
 let dt = 0;
-let tick = 0; // Stores the current discrete time step
 let t0 = 0; // DEV
 const clockInterval = 5;
 const gameClockInterval = 1000;
+let gameClockTick = 0; // Stores the current discrete time step
+const gameUpdateInterval = 25; // set to ~16 to mimic Flame update interval
+let gameUpdateTick = 0; // Stores the current discrete time step
 const debug = 0;
 setInterval(() => {
     dt = performance.now();
 
-    if (Math.floor(dt / gameClockInterval) != tick) {
+    if (Math.floor(dt / gameUpdateInterval) != gameUpdateTick) {
+        updateGame();
+        gameUpdateTick += 1;
+    }
+
+    if (Math.floor(dt / gameClockInterval) != gameClockTick) {
         if (debug) {
             // DEV
             console.log(
@@ -42,13 +49,13 @@ setInterval(() => {
             );
             t0 = performance.now();
             console.log(`dt: ${dt}`);
-            console.log(`tick: ${tick}`);
+            console.log(`gameClockTick: ${gameClockTick}`);
             console.log(
                 `dt/${gameClockInterval}: ${Math.floor(dt / gameClockInterval)}`
             );
         }
 
-        tick += 1;
+        gameClockTick += 1;
         updateTime();
     }
 }, clockInterval);
@@ -91,23 +98,16 @@ wss.on("connection", (ws) => {
                     spaceship.resources = data["resources"];
                     spaceship.angle = data["angle"];
                     spaceship.respawnTime = data["respawnTime"];
+                    spaceship.resourceReplenishRate =
+                        data["resourceReplenishRate"];
+                    spaceship.resourceCriticalThreshold =
+                        data["resourceCriticalThreshold"];
+                    spaceship.currentSpeed = data["currentSpeed"];
+                    spaceship.inOrbit = data["inOrbit"];
+                    spaceship.thrust = data["thrust"];
                     break;
                 }
             }
-
-            communication.sendMessageToSession(
-                "spaceshipUpdated",
-                {
-                    player: player,
-                    info: {
-                        resources: data["resources"],
-                        position: data["position"],
-                        angle: data["angle"],
-                    },
-                },
-                sessionId,
-                [player]
-            );
         } else if (sessionId && action == "updatePlanet") {
             // FIXME this never gets executed, client never sends such an action
             player = data["player"];

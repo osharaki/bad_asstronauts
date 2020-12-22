@@ -35,7 +35,7 @@ class Spaceship extends BodyComponent implements JoystickListener {
   double resourceReplenishRate = 0.0005;
   double resourceCriticalThreshold = 6;
 
-  bool _move = false;
+  bool move = false;
   bool inOrbit = false;
   Sprite spaceship;
   Sprite spaceshipInvisible;
@@ -62,8 +62,6 @@ class Spaceship extends BodyComponent implements JoystickListener {
     game.remove(this);
   }
 
-  set move(bool state) => _move = state;
-
   @override
   void update(double dt) {
     super.update(dt);
@@ -76,19 +74,8 @@ class Spaceship extends BodyComponent implements JoystickListener {
           game.planetAtmosphereContactCallback.onAtmosphereExit(this, crashPlanet.planetAtmosphere);
         if (body.getType() != BodyType.STATIC) body.setType(BodyType.STATIC);
       } else if (body.getType() != BodyType.DYNAMIC) body.setType(BodyType.DYNAMIC);
-      if (_move) {
+      if (move) {
         moveFromAngle(dt);
-
-        // Consume resources by moving
-        // We normalize currentSpeed (turn into a value between 0 and 1) by dividing it by its maximum possible value
-        if (!inOrbit) resources -= min(resources, (currentSpeed / 159) / 10);
-      }
-      // Resources only start being replenished if the ship hasn't crashed and if they drop below critical levels. Otherwise home planets would have an endless supply of resources, draining the ship as soon as it replenishes its resources and the ship will be stuck. On the planet side of things, the fact that home planets only drain when their ship's resources exceed this critical threshold also ensures that a ship's resources below the threshold act solely as an emergency backup to allow the ship to escape orbit.
-      if (resources < resourceCriticalThreshold && respawnTime == 0) {
-        resources += [
-          resourceReplenishRate,
-          resourceCriticalThreshold - resources,
-        ].reduce(min);
       }
 
       posRect = viewport.getWorldToScreen(body.worldCenter);
@@ -145,13 +132,13 @@ class Spaceship extends BodyComponent implements JoystickListener {
     if (respawnTime == 0) {
       // If check is > 0, it will always pass and the ship will never stop moving as it is constantly replenishing and its fuel never actually reaches 0
       if (resources > 0.1) {
-        _move = event.directional != JoystickMoveDirectional.IDLE;
-        if (_move) {
+        move = event.directional != JoystickMoveDirectional.IDLE;
+        if (move) {
           radAngle = event.radAngle;
           currentSpeed = speed * event.intensity;
         }
       } else
-        _move = false;
+        move = false;
     }
   }
 
