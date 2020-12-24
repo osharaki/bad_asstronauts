@@ -95,13 +95,8 @@ wss.on("connection", (ws) => {
             for (const spaceship of sessions[sessionId].spaceships) {
                 if (spaceship.id == player) {
                     spaceship.position = data["position"];
-                    spaceship.resources = data["resources"];
                     spaceship.angle = data["angle"];
                     spaceship.respawnTime = data["respawnTime"];
-                    spaceship.resourceReplenishRate =
-                        data["resourceReplenishRate"];
-                    spaceship.resourceCriticalThreshold =
-                        data["resourceCriticalThreshold"];
                     spaceship.currentSpeed = data["currentSpeed"];
                     spaceship.inOrbit = data["inOrbit"];
                     spaceship.thrust = data["thrust"];

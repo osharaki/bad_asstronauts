@@ -284,7 +284,6 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
             {
               "position": [egoSpaceship.body.position.x, egoSpaceship.body.position.y],
               "angle": egoSpaceship.radAngle,
-              "resources": egoSpaceship.resources,
               "respawnTime": egoSpaceship.respawnTime,
               "inOrbit": egoSpaceship.inOrbit,
               "currentSpeed": egoSpaceship.currentSpeed,
