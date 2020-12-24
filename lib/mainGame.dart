@@ -199,15 +199,19 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
 
     // Instantiate Components
     Spaceship spaceship = Spaceship(
-      game: this,
-      image: spaceshipImage,
-      imageInvisible: images[1],
-      id: player,
-      size: Vector2(254, 512).scaled(0.06),
-      position: shipPos,
-      initRotation: shipRotation,
-      isEgo: player == launcher.serverHandler.id ? true : false,
-    );
+        game: this,
+        image: spaceshipImage,
+        imageInvisible: images[1],
+        id: player,
+        size: Vector2(254, 512).scaled(0.06),
+        position: shipPos,
+        initRotation: shipRotation,
+        isEgo: player == launcher.serverHandler.id ? true : false,
+        resources: launcher.serverHandler.serverData["spaceships"][player]["resources"],
+        resourceCriticalThreshold: launcher.serverHandler.serverData["spaceships"][player]
+            ["resourceCriticalThreshold"],
+        resourceReplenishRate: launcher.serverHandler.serverData["spaceships"][player]
+            ["resourceReplenishRate"]);
 
     // Add Components to game
     addAll([
@@ -282,8 +286,6 @@ class MainGame extends Forge2DGame with MultiTouchDragDetector {
               "angle": egoSpaceship.radAngle,
               "resources": egoSpaceship.resources,
               "respawnTime": egoSpaceship.respawnTime,
-              "resourceReplenishRate": egoSpaceship.resourceReplenishRate,
-              "resourceCriticalThreshold": egoSpaceship.resourceCriticalThreshold,
               "inOrbit": egoSpaceship.inOrbit,
               "currentSpeed": egoSpaceship.currentSpeed,
               "thrust": egoSpaceship.move,

@@ -23,17 +23,17 @@ class Spaceship extends BodyComponent implements JoystickListener {
   final double initRotation;
   final String id;
   final bool isEgo;
+  final double resourceReplenishRate;
+  final double resourceCriticalThreshold;
 
   Planet crashPlanet;
 
   SpriteAnimation crashAnimation;
   int respawnTime = 0;
 
-  double resources = 100;
   double currentSpeed = 0;
   double radAngle;
-  double resourceReplenishRate = 0.0005;
-  double resourceCriticalThreshold = 6;
+  double resources;
 
   bool move = false;
   bool inOrbit = false;
@@ -50,7 +50,10 @@ class Spaceship extends BodyComponent implements JoystickListener {
       this.size,
       this.position,
       this.isEgo = false,
-      this.initRotation}) {
+      this.initRotation,
+      this.resourceCriticalThreshold,
+      this.resourceReplenishRate,
+      this.resources}) {
     spaceship = Sprite(image);
     spaceshipInvisible = Sprite(imageInvisible);
     crashAnimation =

@@ -46,7 +46,7 @@ const updateGame = () => {
             // TODO Inform clients of updates
             communication.sendMessageToSession(
                 "gameUpdated",
-                session.serializeSession(),
+                session.serializeDynamicData(),
                 session.id
             );
         }

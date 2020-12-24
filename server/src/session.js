@@ -74,10 +74,9 @@ class Session {
             }
 
             // Inform session that player left
-            const payload = this.serializeSession();
             communication.sendMessageToSession(
                 "playerLeft",
-                { player: playerId, info: payload },
+                { player: playerId, info: this.serializePlayers() },
                 this.id
             );
         }
@@ -90,10 +89,9 @@ class Session {
         this.hostId = newHost.id;
 
         // Send the updated session information to all players in the session
-        const payload = this.serializeSession();
         communication.sendMessageToSession(
             "update",
-            { info: payload },
+            { info: this.hostId },
             this.id
         );
         console.log(
@@ -117,6 +115,37 @@ class Session {
                 planet: { resources: this.planets[i + 1].resources },
             };
 
+            payload["spaceships"][player.id] = {
+                resources: this.spaceships[i].resources,
+                resourceReplenishRate: this.spaceships[i].resourceReplenishRate,
+                resourceCriticalThreshold: this.spaceships[i]
+                    .resourceCriticalThreshold,
+            };
+        });
+
+        // TODO Serialize planet information
+        return payload;
+    }
+
+    serializePlayers() {
+        const payload = {
+            players: {},
+        };
+        this.players.forEach((player, i) => {
+            payload["players"][player.id] = {
+                color: player.color,
+                planet: { resources: this.planets[i + 1].resources },
+            };
+        });
+        return payload;
+    }
+
+    serializeDynamicData() {
+        const payload = {
+            spaceships: {},
+            planets: {},
+        };
+        this.players.forEach((player, i) => {
             payload["spaceships"][player.id] = {
                 position: this.spaceships[i].position,
                 angle: this.spaceships[i].angle,

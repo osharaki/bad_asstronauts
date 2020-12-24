@@ -75,10 +75,12 @@ class ServerHandler {
   }
 
   void addPlayer(String player) {
-    players[player] = {
-      "spaceship": null,
-      "planet": null,
-    };
+    if (!players.containsKey(player)) {
+      players[player] = {
+        "spaceship": null,
+        "planet": null,
+      };
+    }
   }
 
   void addPlayers() {
@@ -114,7 +116,7 @@ class ServerHandler {
             data["position"][1].toDouble(),
           )
         : null;
-    serverData["players"][player]["spaceship"] = data;
+    // serverData["players"][player]["spaceship"] = data;
     if (resources != null) launcher.game.players[player]["spaceship"].resources = resources;
     if (player != id) {
       if (launcher.game.players.containsKey(player)) {
@@ -149,17 +151,17 @@ class ServerHandler {
     if (action == "connect")
       id = data["id"];
     else if (action == "update")
-      serverData = data["info"];
+      serverData["host"] = data["info"];
     else if (action == "playerJoined") {
-      serverData = data["info"];
       String player = data["player"];
+      serverData = data["info"];
 
       launcher.updatePlayersInfo(serverData["players"]);
-      addPlayers();
+      addPlayer(player);
 
       if (player == id) launcher.updateState("waiting");
     } else if (action == "playerLeft") {
-      serverData = data["info"];
+      serverData["players"] = data["info"]["players"];
 
       removePlayer(data["player"]);
       launcher.updatePlayersInfo(serverData["players"]);
@@ -190,7 +192,7 @@ class ServerHandler {
       serverData = data["info"];
     else if (action == "gameUpdated") {
       dynamic spaceshipsUpdate = data['spaceships'];
-      print(spaceshipsUpdate);
+      // print(spaceshipsUpdate);
       spaceshipsUpdate.forEach((playerID, spaceshipData) {
         updateLocalSpaceship(playerID, spaceshipData);
       });
@@ -211,7 +213,7 @@ class ServerHandler {
     return remainingPlayers;
   }
 
-  void update(double t) {
+  /* void update(double t) {
     // Planets
     players.keys.forEach((player) {
       players[player]["planet"].update(t);
@@ -233,5 +235,5 @@ class ServerHandler {
     players.keys.forEach((player) {
       players[player]["spaceship"].render(canvas);
     });
-  }
+  } */
 }

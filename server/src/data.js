@@ -16,11 +16,11 @@ class Spaceship {
         this.thrust = false;
         this.respawnTime = 0;
         this.inOrbit = false;
+        this.resources = 100;
+        this.resourceCriticalThreshold = 6;
+        this.resourceReplenishRate = 0.0005;
         this.position = null;
         this.angle = null;
-        this.resources = null;
-        this.resourceCriticalThreshold = null;
-        this.resourceReplenishRate = null;
         this.currentSpeed = null;
     }
 }
